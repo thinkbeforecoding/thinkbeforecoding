@@ -1,0 +1,384 @@
+<p>Enough talking, Action !</p>
+<p>Today, we will build a basic event sourcing infrastructure. Get the beta 2 of Visual Studio 2010, we’ll be using C# dynamic features to go straight to our goal.</p>
+<h2>Then Event Storage</h2>
+<p>Let’s hide the ugly details of the event storage behind two simple interfaces :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0"><span style="COLOR: blue">&nbsp;&nbsp;&nbsp; public</span> <span style="COLOR: blue">interface</span> <span style="COLOR: #2b91af">IEventStorage</span> : <span style="COLOR: #2b91af">IDisposable</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">IAggregateRootStorage</span>&lt;TId&gt; GetAggregateRootStore&lt;TAggregateRoot, TId&gt;()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">where</span> TAggregateRoot : AggregateRoot&lt;TId&gt;;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">interface</span> <span style="COLOR: #2b91af">IAggregateRootStorage</span>&lt;<span style="COLOR: blue">in</span> TId&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">void</span> Append(TId id, <span style="COLOR: #2b91af">IEnumerable</span>&lt;<span style="COLOR: blue">object</span>&gt; events);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">IEnumerable</span>&lt;<span style="COLOR: blue">object</span>&gt; <span style="COLOR: blue">this</span>[TId id] { <span style="COLOR: blue">get</span>; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>And we start with a minimal in memory implementation, the event storage first :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0"><span style="COLOR: blue">&nbsp;&nbsp;&nbsp; public</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">EventStorage</span> : <span style="COLOR: #2b91af">IEventStorage</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">Dictionary</span>&lt;<span style="COLOR: #2b91af">Type</span>, <span style="COLOR: blue">dynamic</span>&gt; stores = <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">Dictionary</span>&lt;<span style="COLOR: #2b91af">Type</span>, <span style="COLOR: blue">dynamic</span>&gt;();</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: #2b91af">IAggregateRootStorage</span>&lt;TId&gt; GetAggregateRootStorage&lt;TAggregateRoot, TId&gt;() </p>
+<p style="MARGIN: 0"><span style="COLOR: blue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; where</span> TAggregateRoot : AggregateRoot&lt;TId&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">dynamic</span> store;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">if</span> (!stores.TryGetValue(<span style="COLOR: blue">typeof</span>(TAggregateRoot), <span style="COLOR: blue">out</span> store))</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; store = <span style="COLOR: blue">new</span> AggregateRootStorage&lt;TId&gt;();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; stores.Add(<span style="COLOR: blue">typeof</span> (TAggregateRoot), store);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> store;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">void</span> Dispose()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; stores.Clear();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>Here I could replace dynamic by object, and cast to requested type on return. I use dynamic because this kind of code is not compile time safe anyway. There’s a specific storage for each Aggregate Root type, especially depending on identifier type, for type safety.</p>
+<p>Then the AggregateRootStorage :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0"><span style="COLOR: blue">&nbsp;&nbsp;&nbsp; class</span> <span style="COLOR: #2b91af">AggregateRootStorage</span>&lt;TId&gt; : <span style="COLOR: #2b91af">IAggregateRootStorage</span>&lt;TId&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">Dictionary</span>&lt;TId, <span style="COLOR: #2b91af">List</span>&lt;<span style="COLOR: blue">object</span>&gt;&gt; store = <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">Dictionary</span>&lt;TId, <span style="COLOR: #2b91af">List</span>&lt;<span style="COLOR: blue">object</span>&gt;&gt;();</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">void</span> Append(TId id, <span style="COLOR: #2b91af">IEnumerable</span>&lt;<span style="COLOR: blue">object</span>&gt; events)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">List</span>&lt;<span style="COLOR: blue">object</span>&gt; aggregateRootEvents;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">if</span> (!store.TryGetValue(id, <span style="COLOR: blue">out</span> aggregateRootEvents))</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; aggregateRootEvents = <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">List</span>&lt;<span style="COLOR: blue">object</span>&gt;();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; store.Add(id, aggregateRootEvents);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; aggregateRootEvents.AddRange(events);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: #2b91af">IEnumerable</span>&lt;<span style="COLOR: blue">object</span>&gt; <span style="COLOR: blue">this</span>[TId id]</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">get</span> { <span style="COLOR: blue">return</span> store[id]; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>It simply stores list of events associated with aggregate root identifier.</p>
+<h2>The Aggregate Root</h2>
+<p>Aggregate roots manage uncommitted events :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">interface</span> <span style="COLOR: #2b91af">IUncommittedEvents</span> : <span style="COLOR: #2b91af">IEnumerable</span>&lt;<span style="COLOR: blue">object</span>&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">bool</span> HasEvents { <span style="COLOR: blue">get</span>; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">void</span> Commit();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>The interface can indicates whether there are events, returns the events, and clears the uncommitted events by committing.</p>
+<p>Quick implementation :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">internal</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">UncommittedEvents</span> : <span style="COLOR: #2b91af">IUncommittedEvents</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">List</span>&lt;<span style="COLOR: blue">object</span>&gt; events = <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">List</span>&lt;<span style="COLOR: blue">object</span>&gt;();</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">void</span> Append(<span style="COLOR: blue">object</span> @event)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; events.Add(@event);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">IEnumerator</span>&lt;<span style="COLOR: blue">object</span>&gt; <span style="COLOR: #2b91af">IEnumerable</span>&lt;<span style="COLOR: blue">object</span>&gt;.GetEnumerator()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> events.GetEnumerator();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">bool</span> HasEvents</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">get</span> { <span style="COLOR: blue">return</span> events.Count != 0; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">void</span> <span style="COLOR: #2b91af">IUncommittedEvents</span>.Commit()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; events.Clear();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">IEnumerator</span> <span style="COLOR: #2b91af">IEnumerable</span>.GetEnumerator()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> events.GetEnumerator();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>Nothing tricky here neither.</p>
+<p>Now, the IAggregateRoot interface used by the repository gives access to the uncommitted events:</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0"><span style="COLOR: blue">&nbsp;&nbsp;&nbsp; public</span> <span style="COLOR: blue">interface</span> <span style="COLOR: #2b91af">IAggregateRoot</span>&lt;<span style="COLOR: blue">out</span> TId&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TId Id { <span style="COLOR: blue">get</span>; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">IUncommittedEvents</span> UncommittedEvents { <span style="COLOR: blue">get</span>; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>The AggregateRoot class will maintain the uncommitted events :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">abstract</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">AggregateRoot</span>&lt;TId&gt; : <span style="COLOR: #2b91af">IAggregateRoot</span>&lt;TId&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">UncommittedEvents</span> uncommittedEvents = <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">UncommittedEvents</span>();</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">protected</span> <span style="COLOR: blue">void</span> Replay(<span style="COLOR: #2b91af">IEnumerable</span>&lt;<span style="COLOR: blue">object</span>&gt; events)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dynamic me = <span style="COLOR: blue">this</span>;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">foreach</span> (<span style="COLOR: blue">var</span> @event <span style="COLOR: blue">in</span> events)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; me.Apply(@event);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">protected</span> <span style="COLOR: blue">void</span> Append(<span style="COLOR: blue">object</span> @event)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; uncommittedEvents.Append(@event);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">abstract</span> TId Id { <span style="COLOR: blue">get</span>; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">IUncommittedEvents</span> <span style="COLOR: #2b91af">IAggregateRoot</span>&lt;TId&gt;.UncommittedEvents</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">get</span> { <span style="COLOR: blue">return</span> uncommittedEvents; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>The Append method will be use by child class to append events after they are applied.</p>
+<p>The Replay method is used in the child class constructor to rebuild the Aggregate Root state from events.</p>
+<p>Here I use a dynamic me variable to dispatch events on specific child class Apply methods. A .Net 2 or 3.5 implementation would use reflection to dispatch events on Apply methods.</p>
+<p>The UncommittedEvents property is implemented explicitly so that it does not appear in standard class use.</p>
+<h2>The Repository</h2>
+<p>The repository is just very slightly longer. I added a session concept so that several repositories can submit changes in a single transaction :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">internal</span> <span style="COLOR: blue">interface</span> <span style="COLOR: #2b91af">ISessionItem</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">void</span> SubmitChanges();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>&nbsp;</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">abstract</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">Repository</span>&lt;TId, TAggregateRoot&gt; : ISessionItem</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">where</span> TAggregateRoot : <span style="COLOR: #2b91af">AggregateRoot</span>&lt;TId&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">Dictionary</span>&lt;TId, TAggregateRoot&gt; users = <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">Dictionary</span>&lt;TId, TAggregateRoot&gt;();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">IAggregateRootStorage</span>&lt;TId&gt; aggregateRootStorage;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">protected</span> Repository()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; aggregateRootStorage = Session.Enlist(<span style="COLOR: blue">this</span>);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">void</span> Add(TAggregateRoot user)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; users.Add(user.Id, user);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> TAggregateRoot <span style="COLOR: blue">this</span>[TId id]</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">get</span> { <span style="COLOR: blue">return</span> Find(id) ?? Load(id); }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> TAggregateRoot Find(TId id)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TAggregateRoot user;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> users.TryGetValue(id, <span style="COLOR: blue">out</span> user) ? user : <span style="COLOR: blue">null</span>;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> TAggregateRoot Load(TId id)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">var</span> events = aggregateRootStorage[id];</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">var</span> user = CreateInstance(id, events);</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; users.Add(id, user);</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> user;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">protected</span> <span style="COLOR: blue">abstract</span> TAggregateRoot CreateInstance(TId id, <span style="COLOR: #2b91af">IEnumerable</span>&lt;<span style="COLOR: blue">object</span>&gt; events);</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">void</span> SubmitChanges()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">foreach</span> (<span style="COLOR: #2b91af">IAggregateRoot</span>&lt;TId&gt; user <span style="COLOR: blue">in</span> users.Values)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">var</span> uncomitedEvents = user.UncommittedEvents;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">if</span> (uncomitedEvents.HasEvents)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; aggregateRootStorage.Append(user.Id, uncomitedEvents);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PublishEvents(uncomitedEvents);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; uncomitedEvents.Commit();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; users.Clear();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">protected</span> <span style="COLOR: blue">void</span> PublishEvents(<span style="COLOR: #2b91af">IUncommittedEvents</span> uncommittedEvents)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">foreach</span> (dynamic @event <span style="COLOR: blue">in</span> uncommittedEvents)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DomainEvents.Raise(@event);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>The constructor enlist the repository in current session.</p>
+<p>The Add method registers the aggregate root in the repository, its events will be persisted in SubmitChanges()</p>
+<p>The indexer finds an entity already in memory or loads it from the event store. The abstract CreateInstance method implementation will be responsible for instantiation.</p>
+<p>Submit changes does what is expected, and also publish committed events. Will see the trick with dynamic @events when we analyze domain events.</p>
+<h2>The Session and its Factory</h2>
+<p>Just to group the SubmitChanges on several repositories :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">interface</span> <span style="COLOR: #2b91af">ISessionFactory</span> : <span style="COLOR: #2b91af">IDisposable</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">ISession</span> OpenSession();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">SessionFactory</span> : <span style="COLOR: #2b91af">ISessionFactory</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">IEventStorage</span> eventStorage;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> SessionFactory(<span style="COLOR: #2b91af">IEventStorage</span> eventStorage)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">this</span>.eventStorage = eventStorage;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: #2b91af">ISession</span> OpenSession()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">Session</span>(eventStorage);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">void</span> Dispose()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; eventStorage.Dispose();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">interface</span> <span style="COLOR: #2b91af">ISession</span> : <span style="COLOR: #2b91af">IDisposable</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">void</span> SubmitChanges();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">Session</span> : <span style="COLOR: #2b91af">ISession</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">IEventStorage</span> eventStorage;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">HashSet</span>&lt;<span style="COLOR: #2b91af">ISessionItem</span>&gt; enlistedItems = <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">HashSet</span>&lt;<span style="COLOR: #2b91af">ISessionItem</span>&gt;();</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [<span style="COLOR: #2b91af">ThreadStatic</span>] <span style="COLOR: blue">private</span> <span style="COLOR: blue">static</span> <span style="COLOR: #2b91af">Session</span> current;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">internal</span> Session(<span style="COLOR: #2b91af">IEventStorage</span> eventStorage)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">this</span>.eventStorage = eventStorage;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">if</span> (current != <span style="COLOR: blue">null</span>)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">throw</span> <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">InvalidOperationException</span>(<span style="COLOR: #a31515">"Cannot nest unit of work"</span>);</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; current = <span style="COLOR: blue">this</span>;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">static</span> <span style="COLOR: #2b91af">Session</span> Current</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">get</span> { <span style="COLOR: blue">return</span> current; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">void</span> SubmitChanges()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">foreach</span> (<span style="COLOR: blue">var</span> enlisted <span style="COLOR: blue">in</span> enlistedItems)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; enlisted.SubmitChanges();</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; enlistedItems.Clear();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">void</span> Dispose()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; current = <span style="COLOR: blue">null</span>;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">internal</span> <span style="COLOR: blue">static</span> <span style="COLOR: #2b91af">IAggregateRootStorage</span>&lt;TId&gt; Enlist&lt;TId, TAggregateRoot&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (<span style="COLOR: #2b91af">Repository</span>&lt;TId, TAggregateRoot&gt; repository) </p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">where</span> TAggregateRoot : <span style="COLOR: #2b91af">AggregateRoot</span>&lt;TId&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">var</span> unitOfWork = Current;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; unitOfWork.enlistedItems.Add(repository);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> unitOfWork.eventStorage.GetAggregateRootStorage&lt;TAggregateRoot, TId&gt;();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>Ok almost everything is here. The last part, for events to be used by other parts of the system, needed to go CQRS.</p>
+<h2>Domain Events</h2>
+<p>Here, I made a minor variation on <a href="http://www.udidahan.com/2009/06/14/domain-events-salvation/" target="_blank">Udi Dahan’s DomainEvents</a> implementation :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0"><span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">DomainEvents</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [<span style="COLOR: #2b91af">ThreadStatic</span>] <span style="COLOR: blue">private</span> <span style="COLOR: blue">static</span> <span style="COLOR: #2b91af">List</span>&lt;<span style="COLOR: #2b91af">Delegate</span>&gt; actions;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">static</span> <span style="COLOR: #2b91af">List</span>&lt;<span style="COLOR: #2b91af">Handler</span>&gt; handlers;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">void</span> Register&lt;T&gt;(<span style="COLOR: #2b91af">Action</span>&lt;T&gt; callback) </p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">if</span> (actions == <span style="COLOR: blue">null</span>) actions = <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">List</span>&lt;<span style="COLOR: #2b91af">Delegate</span>&gt;();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; actions.Add(callback);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">void</span> RegisterHanlder&lt;T&gt;(<span style="COLOR: #2b91af">Func</span>&lt;T&gt; factory)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">if</span> (handlers == <span style="COLOR: blue">null</span>) handlers = <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">List</span>&lt;<span style="COLOR: #2b91af">Handler</span>&gt;();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handlers.Add(<span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">Handler</span>&lt;T&gt;(factory));</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: green">//Raises the given domain event&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">void</span> Raise&lt;T&gt;(T @event)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">if</span> (actions != <span style="COLOR: blue">null</span>)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">foreach</span> (<span style="COLOR: #2b91af">Delegate</span> action <span style="COLOR: blue">in</span> actions) </p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">if</span> (action <span style="COLOR: blue">is</span> <span style="COLOR: #2b91af">Action</span>&lt;T&gt;) </p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ((<span style="COLOR: #2b91af">Action</span>&lt;T&gt;) action)(@event);</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">if</span> (handlers != <span style="COLOR: blue">null</span>)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">foreach</span> (<span style="COLOR: blue">var</span> h <span style="COLOR: blue">in</span> handlers)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">if</span> (h.Handles&lt;T&gt;())</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">var</span> handler= h.CreateInstance&lt;T&gt;();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handler.Handle(@event);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">abstract</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">Handler</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">abstract</span> <span style="COLOR: blue">bool</span> Handles&lt;E&gt;();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">abstract</span> <span style="COLOR: #2b91af">Handles</span>&lt;E&gt; CreateInstance&lt;E&gt;();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">Handler</span>&lt;T&gt; : <span style="COLOR: #2b91af">Handler</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">Func</span>&lt;T&gt; factory;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> Handler(<span style="COLOR: #2b91af">Func</span>&lt;T&gt; factory)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">this</span>.factory = factory;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">override</span> <span style="COLOR: blue">bool</span> Handles&lt;E&gt;()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> <span style="COLOR: blue">typeof</span> (Handles&lt;E&gt;)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .IsAssignableFrom(<span style="COLOR: blue">typeof</span> (T));</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">override</span> <span style="COLOR: #2b91af">Handles</span>&lt;E&gt; CreateInstance&lt;E&gt;()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> (<span style="COLOR: #2b91af">Handles</span>&lt;E&gt;)factory();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">interface</span> <span style="COLOR: #2b91af">Handles</span>&lt;<span style="COLOR: blue">in</span> T&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">void</span> Handle(T @event);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p><em>Edit : Changed the Handles&lt;E&gt;, T should be casted as Handles&lt;E&gt;, not as E, of course.</em></p>
+<p>Event handlers can be registerd as Action&lt;T&gt; delegates or as class that implements once or more Handles&lt;T&gt;.</p>
+<p>The private Handler and Handler&lt;T&gt; classes are used to find handlers that handles a specific message and dispatch it, without using a Dependency Injection Container like Udi’s implementation.</p>
+<p>The simple dynamic-fu in the repository was to call DomainEvents.Raise&lt;T&gt; using a dynamic dispatch. This way, Raise is always called with the actual event type in T. No tricky reflection is needed for the dispatch. inside Raise&lt;T&gt;, we can the rely on T as being the actual event type. Funky !</p>
+<h2>Next Time…</h2>
+<p>There’s already a lot of code for a single post, every thing is in place at infrastructure level. You can already try it for yourself if you can figure how to.</p>
+<p>The sample will come in the next post, stay tuned.</p>

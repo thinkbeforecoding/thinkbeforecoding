@@ -1,0 +1,450 @@
+<p>Last time we tried to imagine how we could change usual event sourcing definition$ to get a monoidal approach.</p>  <p>&#160;</p>  <p>Here are some examples to make it work in real life.</p>  <h2>Monoids properties</h2>  <p>We'll try to do it properly, and test that the proposed solutions are proper monoids.</p>  <p>&#160;</p>  <p>Let's recap what defines a monoid:</p>  <ul>   <li>closure of operation </li>    <li>associativity </li>    <li>neutral element </li> </ul>  <h2>How to test it</h2>  <p>the closure of operation is given by the signature of the operation. In F# it should have a signature like 'a -&gt; 'a –&gt; 'a which represents a function that takes to arguments of type 'a and return a result of the same type 'a.</p>  <p>&#160;</p>  <p>For associativity, we'll use the following test function:</p>  <table class="pre"><tbody>     <tr>       <td class="lines">         <pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span></pre>
+      </td>
+
+      <td class="snippet">
+        <pre class="fssnip"><span class="k">let</span> <span onmouseover="showTip(event, &#39;fs1&#39;, 1)" onmouseout="hideTip(event, &#39;fs1&#39;, 1)" class="i">isAssociative</span> <span class="o">(*)</span> <span onmouseover="showTip(event, &#39;fs2&#39;, 2)" onmouseout="hideTip(event, &#39;fs2&#39;, 2)" class="i">x</span> <span onmouseover="showTip(event, &#39;fs3&#39;, 3)" onmouseout="hideTip(event, &#39;fs3&#39;, 3)" class="i">y</span> <span onmouseover="showTip(event, &#39;fs4&#39;, 4)" onmouseout="hideTip(event, &#39;fs4&#39;, 4)" class="i">z</span> <span class="o">=</span>
+   ((<span onmouseover="showTip(event, &#39;fs2&#39;, 5)" onmouseout="hideTip(event, &#39;fs2&#39;, 5)" class="i">x</span> <span class="o">*</span> <span onmouseover="showTip(event, &#39;fs3&#39;, 6)" onmouseout="hideTip(event, &#39;fs3&#39;, 6)" class="i">y</span>) <span class="o">*</span> <span onmouseover="showTip(event, &#39;fs4&#39;, 7)" onmouseout="hideTip(event, &#39;fs4&#39;, 7)" class="i">z</span>) <span class="o">=</span> (<span onmouseover="showTip(event, &#39;fs2&#39;, 8)" onmouseout="hideTip(event, &#39;fs2&#39;, 8)" class="i">x</span> <span class="o">*</span> (<span onmouseover="showTip(event, &#39;fs3&#39;, 9)" onmouseout="hideTip(event, &#39;fs3&#39;, 9)" class="i">y</span> <span class="o">*</span> <span onmouseover="showTip(event, &#39;fs4&#39;, 10)" onmouseout="hideTip(event, &#39;fs4&#39;, 10)" class="i">z</span>))</pre>
+      </td>
+    </tr>
+  </tbody></table>
+
+<p>It take a function that will be called '<em>' and three values x y z. It will then test the associativity of '</em>' using FsCheck, a F# port of QuickCheck.</p>
+
+<p>&#160;</p>
+
+<p>FsCheck test the given property for a wide range of values. We'll just have to provide the operator, and FsCheck will check it the associativity holds for a lot of values.</p>
+
+<p>&#160;</p>
+
+<p>For the neutral element, will use the following test function:</p>
+
+<table class="pre"><tbody>
+    <tr>
+      <td class="lines">
+        <pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span></pre>
+      </td>
+
+      <td class="snippet">
+        <pre class="fssnip"><span class="k">let</span> <span onmouseover="showTip(event, &#39;fs5&#39;, 11)" onmouseout="hideTip(event, &#39;fs5&#39;, 11)" class="i">isNeutralElement</span> <span class="o">(*)</span> <span onmouseover="showTip(event, &#39;fs6&#39;, 12)" onmouseout="hideTip(event, &#39;fs6&#39;, 12)" class="i">neutral</span> <span onmouseover="showTip(event, &#39;fs7&#39;, 13)" onmouseout="hideTip(event, &#39;fs7&#39;, 13)" class="i">x</span> <span class="o">=</span>
+    <span onmouseover="showTip(event, &#39;fs7&#39;, 14)" onmouseout="hideTip(event, &#39;fs7&#39;, 14)" class="i">x</span> <span class="o">*</span> <span onmouseover="showTip(event, &#39;fs6&#39;, 15)" onmouseout="hideTip(event, &#39;fs6&#39;, 15)" class="i">neutral</span> <span class="o">=</span> <span onmouseover="showTip(event, &#39;fs6&#39;, 16)" onmouseout="hideTip(event, &#39;fs6&#39;, 16)" class="i">neutral</span> <span class="o">*</span> <span onmouseover="showTip(event, &#39;fs7&#39;, 17)" onmouseout="hideTip(event, &#39;fs7&#39;, 17)" class="i">x</span></pre>
+      </td>
+    </tr>
+  </tbody></table>
+
+<p>&#160;</p>
+
+<p>Here we'll have to provide the the operator - called '*' inside the function - and the neutral element.</p>
+
+<h2>Trivial cases</h2>
+
+<p>There are some obvious trivial cases.</p>
+
+<p>&#160;</p>
+
+<p>Let's try to follow the number of occurrences of a specific event in state. The number of time a user did </p>
+
+<p>something.</p>
+
+<p>&#160;</p>
+
+<p>The map function is simply:</p>
+
+<table class="pre"><tbody>
+    <tr>
+      <td class="lines">
+        <pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span></pre>
+      </td>
+
+      <td class="snippet">
+        <pre class="fssnip"><span class="k">let</span> <span onmouseover="showTip(event, &#39;fs8&#39;, 18)" onmouseout="hideTip(event, &#39;fs8&#39;, 18)" class="i">map</span> <span class="o">=</span> <span class="k">function</span>
+    | <span onmouseover="showTip(event, &#39;fs9&#39;, 19)" onmouseout="hideTip(event, &#39;fs9&#39;, 19)" class="i">TheUserDidSomething</span> <span class="k">-&gt;</span> <span class="n">1</span>
+    | _ <span class="k">-&gt;</span> <span class="n">0</span></pre>
+      </td>
+    </tr>
+  </tbody></table>
+
+<p>&#160;</p>
+
+<p>The combine operation is then really simple:</p>
+
+<table class="pre"><tbody>
+    <tr>
+      <td class="lines">
+        <pre class="fssnip"><span class="l">1: </span></pre>
+      </td>
+
+      <td class="snippet">
+        <pre class="fssnip"><span class="k">let</span> <span onmouseover="showTip(event, &#39;fs10&#39;, 20)" onmouseout="hideTip(event, &#39;fs10&#39;, 20)" class="i">combine</span> <span onmouseover="showTip(event, &#39;fs11&#39;, 21)" onmouseout="hideTip(event, &#39;fs11&#39;, 21)" class="i">acc</span> <span onmouseover="showTip(event, &#39;fs12&#39;, 22)" onmouseout="hideTip(event, &#39;fs12&#39;, 22)" class="i">v</span> <span class="o">=</span> <span onmouseover="showTip(event, &#39;fs11&#39;, 23)" onmouseout="hideTip(event, &#39;fs11&#39;, 23)" class="i">acc</span> <span class="o">+</span> <span onmouseover="showTip(event, &#39;fs12&#39;, 24)" onmouseout="hideTip(event, &#39;fs12&#39;, 24)" class="i">v</span></pre>
+      </td>
+    </tr>
+  </tbody></table>
+
+<p>and the neutral element is obviously 0.</p>
+
+<p>&#160;</p>
+
+<p>No need to check it with FsCheck, (N, +, 0) is a monoid..</p>
+
+<p>&#160;</p>
+
+<p>Another a bit less obvious is when an event sets a value while others don't.</p>
+
+<p>&#160;</p>
+
+<p>For instance, let's keep track of the last user address when a user moves.</p>
+
+<p>&#160;</p>
+
+<p>For combination, we'll use the 'right' function, which always takes it's rightmost argument:</p>
+
+<table class="pre"><tbody>
+    <tr>
+      <td class="lines">
+        <pre class="fssnip"><span class="l">1: </span></pre>
+      </td>
+
+      <td class="snippet">
+        <pre class="fssnip"><span class="k">let</span> <span onmouseover="showTip(event, &#39;fs13&#39;, 25)" onmouseout="hideTip(event, &#39;fs13&#39;, 25)" class="i">right</span> <span onmouseover="showTip(event, &#39;fs7&#39;, 26)" onmouseout="hideTip(event, &#39;fs7&#39;, 26)" class="i">x</span> <span onmouseover="showTip(event, &#39;fs14&#39;, 27)" onmouseout="hideTip(event, &#39;fs14&#39;, 27)" class="i">y</span> <span class="o">=</span> <span onmouseover="showTip(event, &#39;fs14&#39;, 28)" onmouseout="hideTip(event, &#39;fs14&#39;, 28)" class="i">y</span></pre>
+      </td>
+    </tr>
+  </tbody></table>
+
+<p>&#160;</p>
+
+<p>The adress should, of course, not change on other events, and for that, we'll use an option:</p>
+
+<table class="pre"><tbody>
+    <tr>
+      <td class="lines">
+        <pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span></pre>
+      </td>
+
+      <td class="snippet">
+        <pre class="fssnip"><span class="k">let</span> <span onmouseover="showTip(event, &#39;fs15&#39;, 29)" onmouseout="hideTip(event, &#39;fs15&#39;, 29)" class="i">map'</span> <span class="o">=</span> <span class="k">function</span>
+    | <span onmouseover="showTip(event, &#39;fs16&#39;, 30)" onmouseout="hideTip(event, &#39;fs16&#39;, 30)" class="i">UserMoved</span> (<span onmouseover="showTip(event, &#39;fs17&#39;, 31)" onmouseout="hideTip(event, &#39;fs17&#39;, 31)" class="i">user</span>, <span onmouseover="showTip(event, &#39;fs18&#39;, 32)" onmouseout="hideTip(event, &#39;fs18&#39;, 32)" class="i">newAddress</span>) <span class="k">-&gt;</span> <span onmouseover="showTip(event, &#39;fs19&#39;, 33)" onmouseout="hideTip(event, &#39;fs19&#39;, 33)" class="i">Some</span> <span onmouseover="showTip(event, &#39;fs18&#39;, 34)" onmouseout="hideTip(event, &#39;fs18&#39;, 34)" class="i">newAddress</span>
+    | _ <span class="k">-&gt;</span> <span onmouseover="showTip(event, &#39;fs20&#39;, 35)" onmouseout="hideTip(event, &#39;fs20&#39;, 35)" class="i">None</span></pre>
+      </td>
+    </tr>
+  </tbody></table>
+
+<p>&#160;</p>
+
+<p>The right function can then be tweaked to take the right argument only when it has a value:</p>
+
+<table class="pre"><tbody>
+    <tr>
+      <td class="lines">
+        <pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span></pre>
+      </td>
+
+      <td class="snippet">
+        <pre class="fssnip"><span class="k">let</span> <span onmouseover="showTip(event, &#39;fs21&#39;, 36)" onmouseout="hideTip(event, &#39;fs21&#39;, 36)" class="i">right'</span> <span onmouseover="showTip(event, &#39;fs22&#39;, 37)" onmouseout="hideTip(event, &#39;fs22&#39;, 37)" class="i">x</span> <span onmouseover="showTip(event, &#39;fs23&#39;, 38)" onmouseout="hideTip(event, &#39;fs23&#39;, 38)" class="i">y</span> <span class="o">=</span>
+    <span class="k">match</span> <span onmouseover="showTip(event, &#39;fs22&#39;, 39)" onmouseout="hideTip(event, &#39;fs22&#39;, 39)" class="i">x</span>,<span onmouseover="showTip(event, &#39;fs23&#39;, 40)" onmouseout="hideTip(event, &#39;fs23&#39;, 40)" class="i">y</span> <span class="k">with</span>
+    | <span onmouseover="showTip(event, &#39;fs22&#39;, 41)" onmouseout="hideTip(event, &#39;fs22&#39;, 41)" class="i">x</span>, <span onmouseover="showTip(event, &#39;fs20&#39;, 42)" onmouseout="hideTip(event, &#39;fs20&#39;, 42)" class="i">None</span> <span class="k">-&gt;</span> <span onmouseover="showTip(event, &#39;fs22&#39;, 43)" onmouseout="hideTip(event, &#39;fs22&#39;, 43)" class="i">x</span>
+    | _, <span onmouseover="showTip(event, &#39;fs23&#39;, 44)" onmouseout="hideTip(event, &#39;fs23&#39;, 44)" class="i">y</span> <span class="k">-&gt;</span> <span onmouseover="showTip(event, &#39;fs23&#39;, 45)" onmouseout="hideTip(event, &#39;fs23&#39;, 45)" class="i">y</span></pre>
+      </td>
+    </tr>
+  </tbody></table>
+
+<p>right' has a signature of 'a option -&gt; 'a option -&gt; 'a option, so it's closed on operation.</p>
+
+<p>&#160;</p>
+
+<p>It's associative since, whatever x y z, (x right' y right' z) return the last defined term, however composed.</p>
+
+<p>&#160;</p>
+
+<p>None is the neutral element. Added to the left, it keeps what's on the right, added to the right, it keeps what's on the left.</p>
+
+<p>&#160;</p>
+
+<p>We can check it with FsCheck:</p>
+
+<table class="pre"><tbody>
+    <tr>
+      <td class="lines">
+        <pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span></pre>
+      </td>
+
+      <td class="snippet">
+        <pre class="fssnip"><span onmouseover="showTip(event, &#39;fs24&#39;, 46)" onmouseout="hideTip(event, &#39;fs24&#39;, 46)" class="i">Check</span><span class="o">.</span><span onmouseover="showTip(event, &#39;fs25&#39;, 47)" onmouseout="hideTip(event, &#39;fs25&#39;, 47)" class="i">Quick</span> (<span onmouseover="showTip(event, &#39;fs5&#39;, 48)" onmouseout="hideTip(event, &#39;fs5&#39;, 48)" class="i">isNeutralElement</span> <span onmouseover="showTip(event, &#39;fs21&#39;, 49)" onmouseout="hideTip(event, &#39;fs21&#39;, 49)" class="i">right'</span> <span onmouseover="showTip(event, &#39;fs20&#39;, 50)" onmouseout="hideTip(event, &#39;fs20&#39;, 50)" class="i">None</span>)
+<span onmouseover="showTip(event, &#39;fs24&#39;, 51)" onmouseout="hideTip(event, &#39;fs24&#39;, 51)" class="i">Check</span><span class="o">.</span><span onmouseover="showTip(event, &#39;fs25&#39;, 52)" onmouseout="hideTip(event, &#39;fs25&#39;, 52)" class="i">Quick</span> (<span onmouseover="showTip(event, &#39;fs1&#39;, 53)" onmouseout="hideTip(event, &#39;fs1&#39;, 53)" class="i">isAssociative</span> <span onmouseover="showTip(event, &#39;fs21&#39;, 54)" onmouseout="hideTip(event, &#39;fs21&#39;, 54)" class="i">right'</span>)</pre>
+      </td>
+    </tr>
+  </tbody></table>
+
+<h2>A less trivial case</h2>
+
+<p>But what about mixing both ? Some events change the value by increments, while some other set a specific value ? Like a stopwatch that increments with a button to reset it.</p>
+
+<p>&#160;</p>
+
+<p>Can we model this kind of thing as a monoid ?</p>
+
+<p>&#160;</p>
+
+<p>We have an increment or a reset value, let's model it as a discriminated union:</p>
+
+<table class="pre"><tbody>
+    <tr>
+      <td class="lines">
+        <pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span></pre>
+      </td>
+
+      <td class="snippet">
+        <pre class="fssnip"><span class="k">type</span> <span onmouseover="showTip(event, &#39;fs26&#39;, 55)" onmouseout="hideTip(event, &#39;fs26&#39;, 55)" class="i">ChangeReset</span><span class="o">&lt;</span><span class="o">'</span><span class="i">T</span><span class="o">&gt;</span> <span class="o">=</span>
+    | <span onmouseover="showTip(event, &#39;fs27&#39;, 56)" onmouseout="hideTip(event, &#39;fs27&#39;, 56)" class="i">Change</span> <span class="k">of</span> <span class="o">'</span><span class="i">T</span>
+    | <span onmouseover="showTip(event, &#39;fs28&#39;, 57)" onmouseout="hideTip(event, &#39;fs28&#39;, 57)" class="i">Reset</span> <span class="k">of</span> <span class="o">'</span><span class="i">T</span></pre>
+      </td>
+    </tr>
+  </tbody></table>
+
+<p>&#160;</p>
+
+<p>&#160;</p>
+
+<p>A map function, that map events to state change, would be something like:</p>
+
+<table class="pre"><tbody>
+    <tr>
+      <td class="lines">
+        <pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span></pre>
+      </td>
+
+      <td class="snippet">
+        <pre class="fssnip"><span class="k">let</span> <span onmouseover="showTip(event, &#39;fs29&#39;, 58)" onmouseout="hideTip(event, &#39;fs29&#39;, 58)" class="i">map''</span> <span class="o">=</span> <span class="k">function</span>
+    | <span onmouseover="showTip(event, &#39;fs30&#39;, 59)" onmouseout="hideTip(event, &#39;fs30&#39;, 59)" class="i">TimePassed</span> <span onmouseover="showTip(event, &#39;fs31&#39;, 60)" onmouseout="hideTip(event, &#39;fs31&#39;, 60)" class="i">duration</span> <span class="k">-&gt;</span> <span onmouseover="showTip(event, &#39;fs27&#39;, 61)" onmouseout="hideTip(event, &#39;fs27&#39;, 61)" class="i">Change</span> <span onmouseover="showTip(event, &#39;fs31&#39;, 62)" onmouseout="hideTip(event, &#39;fs31&#39;, 62)" class="i">duration</span>
+    | <span onmouseover="showTip(event, &#39;fs32&#39;, 63)" onmouseout="hideTip(event, &#39;fs32&#39;, 63)" class="i">ButtonPushed</span> <span class="k">-&gt;</span> <span onmouseover="showTip(event, &#39;fs28&#39;, 64)" onmouseout="hideTip(event, &#39;fs28&#39;, 64)" class="i">Reset</span> <span class="n">0.</span>
+    | _ <span class="k">-&gt;</span> <span onmouseover="showTip(event, &#39;fs27&#39;, 65)" onmouseout="hideTip(event, &#39;fs27&#39;, 65)" class="i">Change</span> <span class="n">0.</span></pre>
+      </td>
+    </tr>
+  </tbody></table>
+
+<p>&#160;</p>
+
+<p>The first two cases are a direct mapping, for other events, we use the Change 0. values that actually use the neutral element of the underlying monoid. Adding 0 will not change the value.</p>
+
+<p>&#160;</p>
+
+<p>We have here an underlying monoid, here, talking about duration, we use numbers, with addition and 0. </p>
+
+<p>&#160;</p>
+
+<p>But imagine we want to add items to a list, but sometime, reset the list to a specific one like the empty list.</p>
+
+<p>&#160;</p>
+
+<p>we can define a high order combine operation like this:</p>
+
+<table class="pre"><tbody>
+    <tr>
+      <td class="lines">
+        <pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span></pre>
+      </td>
+
+      <td class="snippet">
+        <pre class="fssnip"><span class="k">let</span> <span onmouseover="showTip(event, &#39;fs33&#39;, 66)" onmouseout="hideTip(event, &#39;fs33&#39;, 66)" class="i">combine'</span> <span class="o">(*)</span> <span onmouseover="showTip(event, &#39;fs34&#39;, 67)" onmouseout="hideTip(event, &#39;fs34&#39;, 67)" class="i">x</span> <span onmouseover="showTip(event, &#39;fs35&#39;, 68)" onmouseout="hideTip(event, &#39;fs35&#39;, 68)" class="i">y</span> <span class="o">=</span>
+    <span class="k">match</span> <span onmouseover="showTip(event, &#39;fs34&#39;, 69)" onmouseout="hideTip(event, &#39;fs34&#39;, 69)" class="i">x</span>,<span onmouseover="showTip(event, &#39;fs35&#39;, 70)" onmouseout="hideTip(event, &#39;fs35&#39;, 70)" class="i">y</span> <span class="k">with</span>
+    | <span onmouseover="showTip(event, &#39;fs27&#39;, 71)" onmouseout="hideTip(event, &#39;fs27&#39;, 71)" class="i">Change</span> <span onmouseover="showTip(event, &#39;fs36&#39;, 72)" onmouseout="hideTip(event, &#39;fs36&#39;, 72)" class="i">xi</span>, <span onmouseover="showTip(event, &#39;fs27&#39;, 73)" onmouseout="hideTip(event, &#39;fs27&#39;, 73)" class="i">Change</span> <span onmouseover="showTip(event, &#39;fs37&#39;, 74)" onmouseout="hideTip(event, &#39;fs37&#39;, 74)" class="i">yi</span> <span class="k">-&gt;</span> <span onmouseover="showTip(event, &#39;fs27&#39;, 75)" onmouseout="hideTip(event, &#39;fs27&#39;, 75)" class="i">Change</span> (<span class="i">xi</span> <span class="o">*</span> <span onmouseover="showTip(event, &#39;fs37&#39;, 76)" onmouseout="hideTip(event, &#39;fs37&#39;, 76)" class="i">yi</span>)
+    | <span onmouseover="showTip(event, &#39;fs28&#39;, 77)" onmouseout="hideTip(event, &#39;fs28&#39;, 77)" class="i">Reset</span> <span onmouseover="showTip(event, &#39;fs38&#39;, 78)" onmouseout="hideTip(event, &#39;fs38&#39;, 78)" class="i">xv</span>, <span onmouseover="showTip(event, &#39;fs27&#39;, 79)" onmouseout="hideTip(event, &#39;fs27&#39;, 79)" class="i">Change</span> <span onmouseover="showTip(event, &#39;fs37&#39;, 80)" onmouseout="hideTip(event, &#39;fs37&#39;, 80)" class="i">yi</span> <span class="k">-&gt;</span> <span onmouseover="showTip(event, &#39;fs28&#39;, 81)" onmouseout="hideTip(event, &#39;fs28&#39;, 81)" class="i">Reset</span> (<span class="i">xv</span> <span class="o">*</span> <span onmouseover="showTip(event, &#39;fs37&#39;, 82)" onmouseout="hideTip(event, &#39;fs37&#39;, 82)" class="i">yi</span>)
+    | _ , <span onmouseover="showTip(event, &#39;fs28&#39;, 83)" onmouseout="hideTip(event, &#39;fs28&#39;, 83)" class="i">Reset</span> <span onmouseover="showTip(event, &#39;fs39&#39;, 84)" onmouseout="hideTip(event, &#39;fs39&#39;, 84)" class="i">yv</span> <span class="k">-&gt;</span> <span onmouseover="showTip(event, &#39;fs28&#39;, 85)" onmouseout="hideTip(event, &#39;fs28&#39;, 85)" class="i">Reset</span> <span onmouseover="showTip(event, &#39;fs39&#39;, 86)" onmouseout="hideTip(event, &#39;fs39&#39;, 86)" class="i">yv</span></pre>
+      </td>
+    </tr>
+  </tbody></table>
+
+<p>&#160;</p>
+
+<p>It combines to changes as a new change using the underlying monoid operation - called '*' here. It combines changes as a change.</p>
+
+<p>&#160;</p>
+
+<p>The second line states, that a value (Reset) combined with a change will apply the change to the value.</p>
+
+<p>&#160;</p>
+
+<p>But the third line says that when a Reset value is on the right of anything, it overrides what's on it's left.</p>
+
+<p>This operation is by it's signature closed on the ChangeReset&lt;'t&gt; type.</p>
+
+<p>&#160;</p>
+
+<p>It's associative, because while combining changes, it has the associativity of the underlying monoid, and when combining Reset values it has the associativity of the right operation.</p>
+
+<p>&#160;</p>
+
+<p>The neutral element is a change with the value of the neutral element of the underlying monoid.</p>
+
+<p>&#160;</p>
+
+<p>We can verify it with FsCheck:</p>
+
+<table class="pre"><tbody>
+    <tr>
+      <td class="lines">
+        <pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span></pre>
+      </td>
+
+      <td class="snippet">
+        <pre class="fssnip"><span onmouseover="showTip(event, &#39;fs24&#39;, 87)" onmouseout="hideTip(event, &#39;fs24&#39;, 87)" class="i">Check</span><span class="o">.</span><span onmouseover="showTip(event, &#39;fs25&#39;, 88)" onmouseout="hideTip(event, &#39;fs25&#39;, 88)" class="i">Quick</span> (<span onmouseover="showTip(event, &#39;fs5&#39;, 89)" onmouseout="hideTip(event, &#39;fs5&#39;, 89)" class="i">isNeutralElement</span> (<span onmouseover="showTip(event, &#39;fs33&#39;, 90)" onmouseout="hideTip(event, &#39;fs33&#39;, 90)" class="i">combine'</span> (<span class="o">+</span>)) (<span onmouseover="showTip(event, &#39;fs27&#39;, 91)" onmouseout="hideTip(event, &#39;fs27&#39;, 91)" class="i">Change</span> <span class="n">0</span>))
+<span onmouseover="showTip(event, &#39;fs24&#39;, 92)" onmouseout="hideTip(event, &#39;fs24&#39;, 92)" class="i">Check</span><span class="o">.</span><span onmouseover="showTip(event, &#39;fs25&#39;, 93)" onmouseout="hideTip(event, &#39;fs25&#39;, 93)" class="i">Quick</span> (<span onmouseover="showTip(event, &#39;fs1&#39;, 94)" onmouseout="hideTip(event, &#39;fs1&#39;, 94)" class="i">isAssociative</span> (<span onmouseover="showTip(event, &#39;fs33&#39;, 95)" onmouseout="hideTip(event, &#39;fs33&#39;, 95)" class="i">combine'</span> (<span class="o">+</span>)))</pre>
+      </td>
+    </tr>
+  </tbody></table>
+
+<h2>General structure</h2>
+
+<p>I had some remarks that we needed it to be a group and not only a monoid. The right' and combine function clearly don't define a group because elements don't have a inverse/opposite.</p>
+
+<p>&#160;</p>
+
+<p>What would be the opposite of Reset 5 ? It set the value 5 whatever is on its left.</p>
+
+<p>&#160;</p>
+
+<p>The idea is to take the set of state values S.</p>
+
+<p>&#160;</p>
+
+<p>Then take the set of changes from states in S to other states in S that are represented by the events.</p>
+
+<p>&#160;</p>
+
+<p>Make the union of it. SC = S U C. SC will contain more that valid aggregate states. It will also contain things that are not state, like a value that indicate that the state did not change.</p>
+
+<p>&#160;</p>
+
+<p>But we will ensure the following things: the function that convert to changes will return items of C:</p>
+
+<table class="pre"><tbody>
+    <tr>
+      <td class="lines">
+        <pre class="fssnip"><span class="l">1: </span></pre>
+      </td>
+
+      <td class="snippet">
+        <pre class="fssnip"><span class="i">map</span><span class="o">:</span> <span onmouseover="showTip(event, &#39;fs40&#39;, 96)" onmouseout="hideTip(event, &#39;fs40&#39;, 96)" class="i">Event</span> <span class="k">-&gt;</span> <span class="i">C</span> </pre>
+      </td>
+    </tr>
+  </tbody></table>
+
+<p>&#160;</p>
+
+<p>The combine operation will be closed on SC, so it can accept States from S and change from C, and it will be closed on SC: combine: </p>
+
+<p>SC -&gt; SC -&gt; SC</p>
+
+<p>&#160;</p>
+
+<p>But it will also ensure that when a state is given on the left, it will also return a state:</p>
+
+<p>combine:&#160; S -&gt; SC -&gt; S</p>
+
+<p>&#160;</p>
+
+<p>The right' operation ensure this. The state need a value at its start, you can add as many None on the right, it'll still have it's value, and any new value will return this value.</p>
+
+<p>&#160;</p>
+
+<p>For the ChangeReset type, the State is represented by the Reset values -that are actual values- it's S, while changes are represented by the Change values that define C.</p>
+
+<p>&#160;</p>
+
+<p>As long as a Reset value is given at the outmost left, the result will be a Reset value that is part of S.</p>
+
+<p>With this, we don't need a group, but we can do with something that is only slightly more restraint than a monoid, only to keep the semantic of state.</p>
+
+<h2>But we need more that a single value !</h2>
+
+<p>Of course aggregate state is usually composed of more than a single value.</p>
+
+<p>&#160;</p>
+
+<p>Let's start small and consider a pair.</p>
+
+<table class="pre"><tbody>
+    <tr>
+      <td class="lines">
+        <pre class="fssnip"><span class="l">1: </span></pre>
+      </td>
+
+      <td class="snippet">
+        <pre class="fssnip"><span class="k">type</span> <span onmouseover="showTip(event, &#39;fs41&#39;, 97)" onmouseout="hideTip(event, &#39;fs41&#39;, 97)" class="i">State</span><span class="o">&lt;</span><span class="o">'</span><span class="i">a</span>,<span class="o">'</span><span class="i">b</span><span class="o">&gt;</span> <span class="o">=</span> <span class="o">'</span><span class="i">a</span> <span class="o">*</span> <span class="o">'</span><span class="i">b</span></pre>
+      </td>
+    </tr>
+  </tbody></table>
+
+<p>&#160;</p>
+
+<p>If 'a and 'b are monoids we can easily combine them :</p>
+
+<table class="pre"><tbody>
+    <tr>
+      <td class="lines">
+        <pre class="fssnip"><span class="l">1: </span></pre>
+      </td>
+
+      <td class="snippet">
+        <pre class="fssnip"><span class="k">let</span> <span onmouseover="showTip(event, &#39;fs42&#39;, 98)" onmouseout="hideTip(event, &#39;fs42&#39;, 98)" class="i">combine''</span> (<span class="o">+</span>) <span class="o">(*)</span> (<span onmouseover="showTip(event, &#39;fs43&#39;, 99)" onmouseout="hideTip(event, &#39;fs43&#39;, 99)" class="i">xa</span>,<span onmouseover="showTip(event, &#39;fs44&#39;, 100)" onmouseout="hideTip(event, &#39;fs44&#39;, 100)" class="i">xb</span>) (<span onmouseover="showTip(event, &#39;fs45&#39;, 101)" onmouseout="hideTip(event, &#39;fs45&#39;, 101)" class="i">ya</span>,<span onmouseover="showTip(event, &#39;fs46&#39;, 102)" onmouseout="hideTip(event, &#39;fs46&#39;, 102)" class="i">yb</span>) <span class="o">=</span> (<span onmouseover="showTip(event, &#39;fs43&#39;, 103)" onmouseout="hideTip(event, &#39;fs43&#39;, 103)" class="i">xa</span> <span class="o">+</span> <span onmouseover="showTip(event, &#39;fs45&#39;, 104)" onmouseout="hideTip(event, &#39;fs45&#39;, 104)" class="i">ya</span>, <span onmouseover="showTip(event, &#39;fs44&#39;, 105)" onmouseout="hideTip(event, &#39;fs44&#39;, 105)" class="i">xb</span> <span class="o">*</span> <span onmouseover="showTip(event, &#39;fs46&#39;, 106)" onmouseout="hideTip(event, &#39;fs46&#39;, 106)" class="i">yb</span>)</pre>
+      </td>
+    </tr>
+  </tbody></table>
+
+<p>where + is the operation on 'a and * the operation on 'b.</p>
+
+<p>&#160;</p>
+
+<p>The neutral element is simply</p>
+
+<table class="pre"><tbody>
+    <tr>
+      <td class="lines">
+        <pre class="fssnip"><span class="l">1: </span></pre>
+      </td>
+
+      <td class="snippet">
+        <pre class="fssnip"><span class="k">let</span> <span onmouseover="showTip(event, &#39;fs47&#39;, 107)" onmouseout="hideTip(event, &#39;fs47&#39;, 107)" class="i">neutral</span> <span onmouseover="showTip(event, &#39;fs48&#39;, 108)" onmouseout="hideTip(event, &#39;fs48&#39;, 108)" class="i">neutrala</span> <span onmouseover="showTip(event, &#39;fs49&#39;, 109)" onmouseout="hideTip(event, &#39;fs49&#39;, 109)" class="i">neutralb</span> <span class="o">=</span> (<span onmouseover="showTip(event, &#39;fs48&#39;, 110)" onmouseout="hideTip(event, &#39;fs48&#39;, 110)" class="i">neutrala</span>, <span onmouseover="showTip(event, &#39;fs49&#39;, 111)" onmouseout="hideTip(event, &#39;fs49&#39;, 111)" class="i">neutralb</span>)</pre>
+      </td>
+    </tr>
+  </tbody></table>
+
+<p>You can easily check that combine is closed on operation, associative, and that neutral is the neutral element.</p>
+
+<p>&#160;</p>
+
+<p>recursively, you can build a triple as a pair of a pair with a single element (('a,'b), 'c), then a quadruple and any tuple.</p>
+
+<p>&#160;</p>
+
+<p>Since a structure - a record - is just a tuple with names, any struct with monoidal members is also a monoid.</p>
+
+<p>&#160;</p>
+
+<p>And since in Event Sourcing, all the tricky decisions are done before emitting an event, applying the event should just be setting values, incrementing / decrementing values, adding / removing items to sets or lists, all those operation are monoidal, hence almost all aggregates should be convertible to monoidal Event Sourcing.</p>
+
+<p>&#160;</p>
+
+<p>Of course it doesn't mean you should do Event Sourcing this way, but it was rather funny to explore this !</p>
+
+<p>&#160;</p>
+
+<p>Have fun !</p>

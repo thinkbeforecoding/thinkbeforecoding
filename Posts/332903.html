@@ -1,0 +1,85 @@
+<p><img style="BORDER-BOTTOM: 0; BORDER-LEFT: 0; MARGIN: 0 0 0 5px; DISPLAY: inline; FLOAT: right; BORDER-TOP: 0; BORDER-RIGHT: 0" title="syringe" alt="syringe" src="http://thinkbeforecoding.com/public/WindowsLiveWriter_Hownottoinjectservicesinentities_BF72_syringe_3.jpg" width="170" height="244" />I’ve seen lot of people asking where and how to inject services in entities. The services in question are often repositories by the way… </p>
+<p>The response is simple : </p>
+<p>&nbsp;<strong>- DO NOT inject services in entities !</strong></p>
+<p>- Ok I see, you’re against dependency injection</p>
+<p><strong>- NO, I'm not against dependency injection, I use it a lot.</strong></p>
+<p>- You can still use a static service locator…</p>
+<p><strong>- I avoid service locator when I can, especially when the service locator must be static…</strong></p>
+<p><em>– So you’ll get an anemic object model !</em></p>
+<p><strong>- I don’t think so.</strong></p>
+<p>&nbsp;</p>
+<h3>Injecting services in entities is wrong</h3>
+<p>You’ll find me a bit presumptuous, but I say it again : <strong>Injecting services in entities is wrong</strong>.</p>
+<p>Nesting objects is not a problem from an OO point of view, but we’re talking about a special kind of objects, entities.</p>
+<p>&nbsp;</p>
+<p>Entities are all about their state management, and this state management can require several objects.</p>
+<ul>
+<li>Code infrastructure objects like lists or dictionary to handle collection of data, </li>
+<li>Object oriented constructs to leverage code maintenance techniques like strategies. </li>
+</ul>
+<p>Entities don’t have to be classes with public setters and getters… you should even avoid this to keep you entities in a consistent state.</p>
+<p>But there is no reason for an entity to keep a reference on a service, since it’s not part of its state.</p>
+<p>There are usually three situations in which people thinks they need it :</p>
+<ul>
+<li>Lazy loads </li>
+<li>Relations </li>
+<li>Behavior methods </li>
+</ul>
+<p>Let’s review each point…</p>
+<p>&nbsp;</p>
+<h4>Lazy loads</h4>
+<p>Sometimes, an entity property is heavy to load and is not required by all code paths. In this case, loading it upfront can lead to performance problems.</p>
+<p>The usual way to work it out is to hold a reference to a data access object or a repository and to load and cache the requested data on demand.</p>
+<p>&nbsp;</p>
+<p>&nbsp;<em>Using a data access layer object in the entity is clearly a break of persistence ignorance, but using a repository is not a better option.</em></p>
+<p>&nbsp;</p>
+<p>The repository is a way to abstract persistence in the model, but it’s still a persistence concern even if modeled in terms of domain terms.</p>
+<p>I’ve already posted about ways to solve this problem in <a href="http://www.thinkbeforecoding.com/post/2009/02/07/Lazy-load-and-persistence-ignorance">Lazy load and persistence ignorance</a> and <a href="http://thinkbeforecoding.com/post/2009/02/08/Lazy-loads-and-persistence-ignorance-Part-2">part 2</a>.</p>
+<p>&nbsp;</p>
+<h4>Relations</h4>
+<p>I was twitting yesterday with <a href="https://twitter.com/kbaley">Kyle Baley</a> about the need to have an Event repository in the Users entity. He wanted to get the User Team for the current event. I think you don’t need more context to understand the problem.</p>
+<p>The User did not know about the current event so it <em>needed</em> the Event repository to find it and find the corresponding team.</p>
+<p>But why does the User entity expose a CurrentTeam property if it doesn’t know about Events ? There’s something missing here.</p>
+<p>The whole picture becomes clearer if you add a Participant entity that embodies the participation of a user to an Event, and no repository is needed anymore since you don’t need a CurrentTeam property on User.</p>
+<p>&nbsp;<strong>Make relations clear instead of hiding it in repositories.</strong></p>
+<p>&nbsp;</p>
+<h4>Behavior methods</h4>
+<p>If I have mail message entity and I want a Send method on it ?</p>
+<p>Tiding your entity to the service that will use it is not conceptually satisfying. The server that will send the message is a medium and is not part of the entity itself.</p>
+<p>It’s seems better to call server.Send(message).</p>
+<p>The problem is that you can end breaking the <strong>tell don’t ask</strong> principle because the Send method will ask the message for each property value. And you can be tempted to put computations that should be in the message entity inside the Send method.</p>
+<p>&nbsp;</p>
+<p>Let’s call <strong>Double Dispatch</strong> to the rescue !</p>
+<ul>
+<li>Design a server interface presenting a Send method that take the parameters it need (title, recipients, message body…) </li>
+<li>Add a SendThrough method to your entity that takes the server interface as parameter </li>
+<li>Implement SendTrhough so that it computes values to pass to the Send method </li>
+<li>That’s it. </li>
+</ul>
+<p>&nbsp;</p>
+<p>Here is a small sample implementation :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">interface</span> <span style="COLOR: #2b91af">IMailService</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">void</span> Send(<span style="COLOR: blue">string</span> sender, <span style="COLOR: blue">string</span> recipient, <span style="COLOR: blue">string</span> subject, <span style="COLOR: blue">string</span> body);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">Message</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: green">//...</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">void</span> SendThrough(<span style="COLOR: #2b91af">IMailService</span> mailService)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">string</span> subject = isReply ? <span style="COLOR: #a31515">"Re : "</span> + title : title;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mailService.Send(sender, recipient, subject, GetMessageBody(content));</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>The entity is not tied to the service before needed. So no need for injection.</p>
+<p>&nbsp;</p>
+<h3>Is injection useless ?</h3>
+<p>There is no problem to inject services with other services, and it’s even easier since services have no state, they only need their dependencies in constructor, and to my opinion it’s the cleanest injection mode.</p>
+<p>Usually domain services will need infrastructure services dependencies, and in this case a dependency injection framework can make things easier.</p>
+<p>Following the preceding advice, you’ll never need to use your dependency injection framework as a service locator, and you’ll never have to perform buildups on your entities, <em>and you’ll feel much better</em>.</p>
+<p>&nbsp;</p>
+<h3>What’s your way to deal with it ?</h3>
+<p>For now I’ve always find a way to get rid of services inside entities, but I really would like to hear cases where you’re stuck with it to see if another way is possible, or cases where you think there is really a good reason to go this way.</p>

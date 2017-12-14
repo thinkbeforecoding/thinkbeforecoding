@@ -1,0 +1,5 @@
+out/
+packages/
+paket-files/
+.vs/
+.fake/

@@ -1,0 +1,20 @@
+<p>Error handling has always been something quite difficult to grasp in software design and still is.</p>
+<p>Exceptions are now widespread in languages, and it helps a lot to manage corner case where something fails badly.</p>
+<p>But should we use Exceptions to manage business errors ? </p>
+<h2>The business errors</h2>
+<p>What do we call business errors actually ?</p>
+<h3>Broken Invariants</h3>
+<p>What if an invariance rule is broken ?</p>
+<p><strong>The situation should never happen</strong> : There is a bug. A bug is not a business error, correct it and deploy.</p>
+<p><strong>The situation can happens sometimes </strong>: This is not an invariant, but a rare state. It should be handled as any other state change.</p>
+<h3>Invalid commands</h3>
+<p>What if we receive an invalid command ?</p>
+<p><strong>The command data is meaningless</strong> : There’s a bug, you should always validate that command data is not just garbage.</p>
+<p><strong>The command leads to an invalid state</strong> : The user nonetheless requested to perform the command.</p>
+<p>In this case the event will be ‘the request was rejected’. The event can be handled by sending an email back to the customer, or a support request can be started so that the support can call the customer and manage the problem. <em>All this is part of the business process anyway</em>.</p>
+<h2>Corner cases create business opportunities</h2>
+<p>I can often see discussions around account validation for credit, to make the transaction fail when your account goes below zero.</p>
+<p>But it’s not what’s happening in real life. Transaction is accepted, then the bank charges you because your account is in the red zone.</p>
+<p>I’m currently working in the hotel business. When a booking is received and&nbsp; there’s no room left, should I reject the booking ? Another client can cancel soon, or I can move the customer to another hotel nearby, but just saying ‘there’s no room left’ is not a good business answer ! Overbooking management has even become a strategic practice in the business.</p>
+<p>To fully manage your customers you should embrace the whole business lifecycle in your system. This includes support and corner case management. Part of it will be done by hand, other part automatically, but you should not just report an exception is a trace log.</p>
+<p>These critical situations are usually the one in which you customer needs you more than in any other case, you should design your fault handling strategy with care and make it a full concern of you business.</p>

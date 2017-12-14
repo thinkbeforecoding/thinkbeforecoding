@@ -1,0 +1,23 @@
+<p><a href="http://thinkbeforecoding.com/public/WindowsLiveWriter_Whatsthebestdesign_D516_Mercator_1569_1__2.png"><img style="BORDER-BOTTOM: 0; BORDER-LEFT: 0; MARGIN: 0 0 5px 15px; DISPLAY: inline; BORDER-TOP: 0; BORDER-RIGHT: 0" title="Mercator_1569"[1] border="0" alt="Mercator_1569"[1] align="right" src="http://thinkbeforecoding.com/public/WindowsLiveWriter_Whatsthebestdesign_D516_Mercator_1569_1__thumb.png" width="244" height="156" /></a>Those who already read the book should already know this. It’s still interesting for newcomers and you can&nbsp; send comments if you want !</p>
+<p>During his <a href="http://thinkbeforecoding.com/post/2009/06/16/Met-Eric-Evans-at-ParisJug" target="_blank">Talk at ParisJug</a>, Eric Evans presented two possible models for Cargo itinerary. </p>
+<p>The first one was around the notion of Stops (at a Stop, you unload, then you load), and the second one was around the notion of Legs(you load at the start of a Leg, and unload at the end). An itinerary could be seen as a list of stops or a list of legs.</p>
+<p>The question was, <em>which model is best</em> ?</p>
+<p>Of course, there is no answer to this question.</p>
+<p>The same question was translated to a comparison of maps. First an map of China from the 16th century, and a Mercator projection map. </p>
+<p>We should be inclined to say that the second one is best. But the first one was largely enough for the need at that time. And if you inspect the Mercator projection, you can notice that it is not that accurate for some tasks. For example, the Greenland seems abnormally large.</p>
+<p>Why do we use Mercator projection then ? </p>
+<p><a href="http://en.wikipedia.org/wiki/Mercator_projection" target="_blank">It became the standard map projection for nautical purposes because of its ability to represent lines of constant course, known as rhumb lines or loxodromes, as straight segments</a>.</p>
+<p>If you want a map to compare country areas, use a <a href="http://en.wikipedia.org/wiki/Gall-Peters_projection" target="_blank">Gall-Petters projection</a> or a&nbsp; <a href="http://en.wikipedia.org/wiki/Goode_homolosine_projection" target="_blank">Goode homolosine projection</a>…</p>
+<p>So the question becomes :</p>
+<blockquote>
+<p>Which model is more useful ?</p>
+</blockquote>
+<p>And for the question to be complete :</p>
+<blockquote>
+<p>Which model is more useful for what ?</p>
+</blockquote>
+<p>To come back to the cargo application, Stops will be useful to produce orders to unload and reload containers from cargos, but legs will be useful if you need to track transport location or change routing during transport.</p>
+<p>You’ll have noticed :</p>
+<blockquote>
+<p>It depends on the context</p>
+</blockquote>

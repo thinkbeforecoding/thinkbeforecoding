@@ -1,0 +1,104 @@
+<p>I Could not sleep… 3am and this idea…</p>
+<p>&nbsp;</p>
+<p>Event sourcing is about <strong>fold</strong> but there is no <strong>monoid</strong> around !</p>
+<p>&nbsp;</p>
+<h3>What’s a monoid ?</h3>
+<p>&nbsp;</p>
+<p>First, for those that didn’t had a chance to see <a href="https://twitter.com/cyriux" target="_blank">Cyrille Martaire</a>’s&nbsp; fabulous explanation with beer glasses, or read the great series of post on <a href="http://fsharpforfunandprofit.com/posts/monoids-without-tears/" target="_blank">F# for fun and profit</a>, here is a quick recap:</p>
+<p>&nbsp;</p>
+<p>We need a <strong>set</strong>.</p>
+<p>Let’s take a simple one, positive integers.</p>
+<p>&nbsp;</p>
+<p>And an <strong>operation</strong>, let say + which takes two positive integers.</p>
+<p>&nbsp;</p>
+<p>It returns… a positive integer. The operation is said to be <strong>closed on the set</strong>.</p>
+<p>&nbsp;</p>
+<p>Something interesting is that 3 + 8 + 2 = 13 = (3 + 8) + 2 = 3 + (8 + 2).</p>
+<p>This is <strong>associativity</strong>: (x + y) + z = x + (y + z)</p>
+<p>&nbsp;</p>
+<p>Le last interesting thing is 0, the <strong>neutral element</strong>:</p>
+<p> x + 0 = 0 + x = x</p>
+<p>&nbsp;</p>
+<p>(N,+,0) is a <strong>monoid</strong>.</p>
+<p>&nbsp;</p>
+<p>Let say it again:</p>
+<p>(S, *, ø) is a monoid if</p>
+<ul>   <li>* is closed on S&nbsp; (* : S –&gt; S &gt; S)</li>
+<li>* is associative ( (x * y) * z = x * (y * z) )</li>
+<li>ø is the neutral element of * ( x * ø = ø * x = x )</li>
+</ul>
+<p><em>warning: it doesn’t need to be commutative so x * y can be different from y * x !</em></p>
+<p>&nbsp;</p>
+<p>Some famous monoids:</p>
+<p> (int, +, 0)</p>
+<p> (int, *, 1)</p>
+<p> (lists, concat, empty list)</p>
+<p> (strings, concat, empty string)</p>
+<p>…</p>
+<p>&nbsp;</p>
+<h3>The link with Event Sourcing</h3>
+<p>&nbsp;</p>
+<p>Event sourcing is based on an application function apply : State –&gt; Event –&gt; State, which returns the new state based on previous state and an event.</p>
+<p>&nbsp;</p>
+<p>Current state is then:</p>
+<p>fold apply emptyState events</p>
+<p>&nbsp;</p>
+<p>(for those using C# Linq, fold is the same as .Aggregate)</p>
+<p>&nbsp;</p>
+<p>Which is great because higher level functions and all…</p>
+<p>&nbsp;</p>
+<p>But fold is event more powerful with monoids ! For integers, fold is called sum, and the cool thing is that it’s associative !</p>
+<p>&nbsp;</p>
+<p>With a monoid you can fold subsets, then combine them together after (still in the right order). This is what give the full power of map reduce: move code to the data. Combine in place, then combine results. As long as you have monoids, it works.</p>
+<p>&nbsp;</p>
+<p>But apply will not be part of a monoid. It’s not closed on a set.</p>
+<p>&nbsp;</p>
+<p>To make it closed on a set it should have the following signature:</p>
+<p>&nbsp;</p>
+<p>apply: State –&gt; State –&gt; State, so we should maybe rename the function combine.</p>
+<p>&nbsp;</p>
+<h3>Let’s dream</h3>
+<p>&nbsp;</p>
+<p>Let’s imagine we have a combine operation closed on State.</p>
+<p>&nbsp;</p>
+<p>Now, event sourcing goes from:</p>
+<p>&nbsp;</p>
+<p>decide: Command –&gt; State –&gt; Event list</p>
+<p>apply: State –&gt; Event –&gt; State</p>
+<p>&nbsp;</p>
+<p>to:</p>
+<p>decide: Command –&gt; State –&gt; Event list</p>
+<p>convert: Event –&gt; State</p>
+<p>combine: State –&gt; State –&gt; State</p>
+<p>&nbsp;</p>
+<p>the previous apply function is then just:</p>
+<p>apply state event = combine state (convert event)</p>
+<p>&nbsp;</p>
+<p>and fold distribution gives:</p>
+<p>&nbsp;</p>
+<p><strong>fold apply emptyState events = fold combine emptyState (map convert events)&nbsp; </strong></p>
+<p>&nbsp;</p>
+<p>(where map applies the convert fonction to each item of the events list, as does .Select in Linq)</p>
+<p>&nbsp;</p>
+<p>The great advantage here is that we map then fold which is another name for reduce !</p>
+<p>&nbsp;</p>
+<p>Application of events can be done in parallel by chuncks and then combined !</p>
+<p>&nbsp;</p>
+<h3>Is it just a dream ?</h3>
+<p>&nbsp;</p>
+<p>Surely not.</p>
+<p>&nbsp;</p>
+<p>Most of the tricky decisions have been taken in the decide function which didn’t change. The apply function usually just set state members to values present in the event, or increment/decrement values, or add items to a list… No business decision is taken in the apply function, and most of the primitive types in state members are already monoids under there usual operations…</p>
+<p>&nbsp;</p>
+<p>And a group (tuple, list..) of monoid is also a monoid under a simple composition:</p>
+<p>if (N1,*,n1) and (N2,¤,n2) are monoids then N1 * N2 is a monoid with an operator &lt;*&gt; ( (x1,x2) &lt;*&gt; (y1,y2) = (x1*y1, x2¤y2)) and a neutral element (n1,n2)…</p>
+<p>&nbsp;</p>
+<p>To view it more easily, the convert fonction converts an event to a <strong>Delta</strong>, a difference of the State.</p>
+<p>&nbsp;</p>
+<p>Those delta can then be aggregated/folded to make a bigger delta.</p>
+<p>It can then be applied to a initial value to get the result !</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>The idea seams quite interesting and I never read anything about this.. If anyone knows prior study of the subject, I’m interested.</p>
+<p>&nbsp;</p>
+<p>Next time we’ll see how to make monoids for some common patterns we can find in the apply function, to use them in the convert function. </p>

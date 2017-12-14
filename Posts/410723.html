@@ -1,0 +1,26 @@
+<p>This is a recurring question on the <a href="http://tech.groups.yahoo.com/group/domaindrivendesign/" target="_blank">DDD yahoo group</a>. And there was a simple explanation during the <a href="http://thinkbeforecoding.com/post/2009/06/16/Met-Eric-Evans-at-ParisJug" target="_blank">ParisJug talk</a>. </p>
+<p>DDD is not a silver bullet for all application development, it just helps to manage complexity when the complexity comes from the domain.</p>
+<p>No need for DDD when working on a technical application or a small application with few interactions.</p>
+<p>You could benefit from DDD when your application looks like the Cargo sample :</p>
+<ul>
+<li>Route containers based on transports availability </li>
+<li>Take cost and time into account </li>
+<li>Know where are the boats </li>
+<li>Organize loads and unloads </li>
+<li>Manage container storage (emit order of missions for employees on site) </li>
+<li>Provide container tracking and tracing to clients </li>
+<li>Transports can be late, manage it </li>
+<li>Transports can be canceled, manage it </li>
+<li>Contracts can be changed, destination can change </li>
+<li>Containers can be incorrectly routed even if emitted orders where correct, manage it. </li>
+<li>Manage taxes </li>
+<li>Manage time zones </li>
+<li>Manage currencies </li>
+<li>Manager constraints and local rules on dangerous containers contents </li>
+</ul>
+<p>In this kind of application, the complexity doesn’t come from an Xml web service or a database schema. Even without taking account any technical concern, <strong>it is complex</strong> !</p>
+<p>So there is a simple rule of thumb to know if DDD could apply (independently from the size of the project) :</p>
+<blockquote>
+<p>Try DDD if Domain Complexity &gt;&gt; Technical Complexity</p>
+</blockquote>
+<p>In other case you can just go with your preferred classic architecture.</p>

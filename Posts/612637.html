@@ -1,0 +1,79 @@
+<a href="http://thinkbeforecoding.com/public/WindowsLiveWriter/Time_14D45/556656621_ba9e8c870f_1__2.jpg"><img width="134" height="134" title="556656621_ba9e8c870f[1]" align="right" style="margin: 0 8px 0 15px; border: 0 currentColor; display: inline;" alt="556656621_ba9e8c870f[1]" src="http://thinkbeforecoding.com/public/WindowsLiveWriter/Time_14D45/556656621_ba9e8c870f_1__thumb.jpg" border="0" /></a>  <h3><strong>How do we usually manage time in applications ? </strong></h3>
+<p>Timers, threads, concurrency locks…</p>
+<p>If we want to practice Domain Driven Design, we’re surely at the wrong level of abstraction.</p>
+<p>&nbsp;</p>
+<h3>What is time, btw ?</h3>
+<p>Tricky question. We know what time is, but… giving a definition is not that easy.</p>
+<p>What defines time ? The second ?</p>
+<p>Not really. It is used as a measure of time, but it doesn’t seem sufficient.</p>
+<p>&nbsp;</p>
+<p>Let’s have a look at <a href="http://en.wikipedia.org/wiki/Time" target="_blank">Wikipedia’s definition of time</a>&nbsp; :</p>
+<blockquote>
+<p><strong>Time</strong> is a part of the measuring system used to sequence events, to compare the durations of events and the intervals between them, and to quantify rates of change such as the motions of objects. […]</p>
+</blockquote>  <p>Now we have something interesting : Time is what happens between events.</p>
+<p>But what is this thing between events. </p>
+<p>The definition of the measure unit surely can give us further insight.</p>
+<p>Lest have a look at <a href="http://en.wikipedia.org/wiki/Second" target="_blank">Wikipedia’s definition of the second</a> :</p>
+<blockquote>
+<p>[…] Since 1967, the second has been defined to be</p>
+<blockquote>
+<p>the duration of 9,192,631,770 periods of the radiation corresponding to the transition between the two hyperfine levels of the ground state of the caesium-133 atom.</p>
+</blockquote>
+</blockquote>  <p>The second is defined as a count of transitions between states of an atom of cesium.</p>
+<p>We measure time by considering that the ~time~ between those state transitions is constant.</p>
+<p>What if it’s not ?</p>
+<p>…</p>
+<p>It’s not that important if other events seem synchronized with those events. Will come back to this later.</p>
+<p>&nbsp;</p>
+<h3>Events</h3>
+<p>Let’s step back a bit.</p>
+<p>&nbsp;</p>
+<p>How do you feel time passing ?</p>
+<p>By looking at your watch ?</p>
+<p>&nbsp;</p>
+<p>Maybe, but how could you explain that an hour sometimes seems so long, and sometimes passes in a flash ?</p>
+<p>&nbsp;</p>
+<p>Time seems slow and empty when you’re bored.</p>
+<p>Times seems fast and full when you’re busy with interesting things.</p>
+<p>When you’re bored, it’s because few interesting things happen.</p>
+<p>&nbsp;</p>
+<p>You can deduce from this that your personal state transitions are those interesting things that happen.</p>
+<p>These are <strong>meaningful events</strong>. Things that happens and change you deeply.</p>
+<p>&nbsp;</p>
+<p>Of course a lot of things happen between those meaningful events, you’re moving, thinking. Your blood flows through your body, but it is just maintenance move. You don’t change deeply.</p>
+<p>Maybe some things happen between state transition of a cesium atom, but since we cannot notice it and give it a meaning for now, it has no influence.</p>
+<p>&nbsp;</p>
+<p>But when when a meaningful event happens, you change. You’re not the same before and after.</p>
+<p>This is what time is about, and this is why it’s one way.</p>
+<p><strong>Before –&gt; Event –&gt; After</strong></p>
+<blockquote>
+<p>Events define time by causality</p>
+</blockquote>  <p>This perception of meaningful events is surely a reason why people say the time pass faster when old. In your 6 first years any event around you is meaningful. Any event make you change since you have no previous knowledge. Then has time goes by, you integrate knowledge and filter things you already know, you’ve already seen. When old, a year can more easily seem the same than the year before.</p>
+<p>But some people continue to enjoy and learn as much as they can to still have a <em>long now</em>.</p>
+<p>&nbsp;</p>
+<h3>When do your system change ?</h3>
+<p>Your system never change for no reason. </p>
+<p><strong>It’s always because a meaningful event happened.</strong></p>
+<p>This event can be a user interaction, a call from an external system, a sensor trigger…</p>
+<p>And when things change because it’s midnight ?</p>
+<p>It simply means that midnight is a meaningful event in your system.</p>
+<p>&nbsp;</p>
+<p>Where are those meaningful events in your code ? Hidden in infrastructure code ?</p>
+<p>&nbsp;</p>
+<p>I hear Greg Young say :</p>
+<blockquote>
+<p>Make the implicit explicit !</p>
+</blockquote>  <p>And it’s simple :</p>
+<p><strong>Use Domain Events</strong>.</p>
+<p>&nbsp;</p>
+<p>Once you’ve introduced Domain Events in your domain model, you have made Events and so Time explicit in your domain.</p>
+<p>There is no change in the domain that is not due to an Event.</p>
+<p>The events appear everywhere in the Ubiquitous Language :</p>
+<ul>   <li>When the client HasMoved to a new location, send him a welcome kit.</li>
+<li>When a RoomHasBeenOverbooked try to relocate the customer</li>
+<li>Every day at midnight = MidnightOccured, change last minute prices.</li>
+</ul>
+<p>I’m sure you can find examples in your own domain. If your domain is business related, it has to deal with time because business is about time and money.</p>
+<p>&nbsp;</p>
+<p>Time is now part of your Ubiquitous language and you have an implementation for it.</p>
+<p>And that’s huge.</p>

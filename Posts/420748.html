@@ -1,0 +1,66 @@
+<p>I read several discussions against Code ReUse and layered architectures recently :<a href="http://thinkbeforecoding.com/public/WindowsLiveWriter_DDDandCodeReuse_E89E_recycle-logo_2.jpg"><img style="BORDER-BOTTOM: 0; BORDER-LEFT: 0; DISPLAY: inline; MARGIN-LEFT: 0; BORDER-TOP: 0; MARGIN-RIGHT: 0; BORDER-RIGHT: 0" title="recycle-logo" border="0" alt="recycle-logo" align="right" src="http://thinkbeforecoding.com/public/WindowsLiveWriter_DDDandCodeReuse_E89E_recycle-logo_thumb.jpg" width="195" height="253" /></a></p>
+<ul>
+<li><a href="http://www.udidahan.com/2009/06/07/the-fallacy-of-reuse/" target="_blank">The Fallacy Of ReUse</a> (Udi Dahan)&nbsp; </li>
+<li><a href="http://www.vimeo.com/5022174" target="_blank">WebCast on SOA in the E-VAN</a> (Udi Dahan) </li>
+<li><a title="http://ayende.com/Blog/archive/2009/07/23/feature-by-feature.aspx" href="http://ayende.com/Blog/archive/2009/07/23/feature-by-feature.aspx" target="_blank">Feature by Feature</a> (Oren Eini) </li>
+</ul>
+<h3>Different kinds of Code ReUse</h3>
+<p>You can split your code with different concern :</p>
+<ul>
+<li>Object model extensions </li>
+<li>Technical Infrastructure </li>
+<li>Application code </li>
+</ul>
+<p>The first two are good candidates for Code ReUse.</p>
+<p>By Object model extensions I’m talking about things that make your code writing less tedious at language level or object model level.</p>
+<p>Example of such code are :</p>
+<ul>
+<li>IEnumerable and Enumerable </li>
+<li>Collections </li>
+<li>Reflection helpers </li>
+<li>Dependency Injection framework </li>
+</ul>
+<p>By Technical Infrastructure I mean things that make your code run in its environment :</p>
+<ul>
+<li>Generic Service Host, </li>
+<li>ORM, Data Layer </li>
+<li>Format serializers / deserializers </li>
+<li>Configuration helpers </li>
+<li>Communication frameworks (WCF, Service Buses) </li>
+<li>UI frameworks (MVC, WPF) </li>
+</ul>
+<p>The last part is Application code, and here, things are really different.</p>
+<h3>Application Code ReUse</h3>
+<p>For long I’ve been writing business code in libraries. I began then to notice problems concerning code and data locality.</p>
+<p>When you have a single application (process), no problem.</p>
+<p>But if two applications need to modify the same entities, the solution would be to use the same library in both applications so that there is no code duplication. It seems good practice but you quickly stumble on several problems – I’m sure you already experienced it :</p>
+<ul>
+<li>Synchronization : the same data will be accessed in the same db from two application, how do you manage conflicts</li>
+<li>Deployment : when you fix bugs or add features, you must redeploy every application that has a dependency on the library. It slows down the release cycle and make it more risky, changes have more impact.</li>
+<li>Code locality : when a problem arises, you have to find which application it comes from.</li>
+</ul>
+<p>Let’s examine DDD patterns to see how they fit with reuse :</p>
+<h4>Services</h4>
+<p>Let’s start easy. Services are stateless, they should deliver simple action. But to preserve encapsulation the better is to put services as true services in their own process (web service, windows service, service on a service bus..).</p>
+<p>This way, synchronization is managed in process, deployment is a breeze, and no problem with code locality – code executes in one place.</p>
+<h4>Entities</h4>
+<p>Entities are retrieved through a Repository Service, hence, they should follow the same rules as Services.</p>
+<p>This way, the implementation of a repository that access the database is truly an implementation details. Anyone who wants to talk to an entity sends a command to it, a handler service get the entity from the repository, and pass the command to the entity. The configuration to access the database is local the to the process.</p>
+<p>Here again, same benefits.</p>
+<p>Moreover entities should always have different meanings in different bounded contexts, the should have different implementations, so there is no real reason for reuse.</p>
+<h4>Value Objects</h4>
+<p>Value objects are a bit different.</p>
+<p>Some object are very specific to a bounded context and don’t need to be reuse outside.</p>
+<p>Some other can be a good way to encapsulate some shared concepts. Money is usually a good example, but there can also be concepts more specific to the domain (you will find them as words that come in the Ubiquitous Language of different Bounded Contexts).</p>
+<p>They can be shared among different contexts, but rarely between different domains. There are exceptions for very very generic concept like money, but even money often needs to be tweaked a bit for each domain…</p>
+<p>&nbsp;</p>
+<h3>Service Bus to the rescue</h3>
+<p>Once each bounded context is split, you need to organize communications between parts. Here comes the Service Bus and Messages, but now, the only shared parts in the application are :</p>
+<ul>
+<li>Object model extensions (to code faster and cleaner)</li>
+<li>Technical infrastructure (so that each process is fully equipped, and there’s not much technical fuss in the application code)</li>
+<li>General use Value Objects (to manipulate domain concepts instead of int and decimal)</li>
+<li>Messages (to communicate between contexts)</li>
+</ul>
+<p>You could also use web services, but it makes the overall structure less fault tolerant, harder to deploy, and more tightly coupled.</p>
+<p>Once you’ve decoupled bounded context using messages, the rest is just an internal implementation detail, why would you want to reuse it !</p>

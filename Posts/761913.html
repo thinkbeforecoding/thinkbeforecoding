@@ -1,0 +1,52 @@
+<p>Disclaimer: This article is not just about Conway's lay which I'd call Classical Conway's law, it's already on Wikipedia. You'll find its Generalized form at the en of the post..</p>
+<p>BuildStuff 2013 has been really inspiring. Talking with all those people from different CS culture always raise the level of the conversation.</p>
+<p>&nbsp;</p>
+<p>Several times came Conway's law into the discussion, as <a href="http://hintjens.com/blog:73" target="_blank">Pieter Hintjens noticed in his blog post yesterday</a>.</p>
+<h2>&nbsp;Classical Conway's law</h2>
+<p>Conway's law is quite simple. It states that:</p>
+<blockquote>
+<p>organizations which design systems ... are constrained to produce designs which are copies of the communication structures of these organizations</p>
+<p>&nbsp;</p>
+<p align="right">À partir de l’adresse &lt;<a href="http://en.wikipedia.org/wiki/Conway%27s_Law">http://en.wikipedia.org/wiki/Conway%27s_Law</a>&gt; </p>
+</blockquote>  <p>&nbsp;</p>
+<p>It's often seen as a joke to mock companies organization, like this famous drawing:</p>
+<p>&nbsp;</p>
+<p><a href="http://www.bonkersworld.net/organizational-charts/" target="_blank"><img width="585" height="570" src="http://www.bonkersworld.net/images/2011.06.27_organizational_charts.png" /></a></p>
+<p>&nbsp;</p>
+<h2>But it is more than that.</h2>
+<p>First, it can be a force to drive a change in the system.</p>
+<p>&nbsp;</p>
+<p>When two parts are too strongly tied and mangled together, it's a good idea to move teams apart. Communication friction will increase, and eventually, teams will find way to decouple parts so that friction can be reduced.</p>
+<p>&nbsp;</p>
+<p>Pieter's example of LSHS vs LSNS is totally an example of this.</p>
+<p>&nbsp;</p>
+<p>Second, it is both ways.</p>
+<p>A messy system structure reflects a messy team organization.</p>
+<p>But we can go far beyond.</p>
+<p>&nbsp;</p>
+<h2>Generalized Conway's law</h2>
+<blockquote>
+<p>System should match the structure of any external concern it interacts with</p>
+</blockquote>  <p>&nbsp;</p>
+<p>Of course, the Conway's law is included here. There's a match between people building the system and it's structure.</p>
+<p>&nbsp;</p>
+<p>But we can here also include design methods like Domain Driven Design which address a different concern the same way: </p>
+<p>Align the system structure with the structure of the Domain you're working in/for</p>
+<p>&nbsp;</p>
+<p>Using Domain Events and Event Sourcing is a way to make explicit something that is usually implicit in most systems: <a href="http://thinkbeforecoding.com/post/2011/06/09/Time" target="_blank">Time</a></p>
+<p>&nbsp;</p>
+<p>CQRS will reflect the fact that outside the system, getting information and acting on it are two totally different things.</p>
+<p>&nbsp;</p>
+<p>Architecture in general is also included: find the match between your system and non functional requirements.</p>
+<ul>   <li>Deployment </li>
+<li>Security </li>
+<li>Performance </li>
+<li>Maintainability </li>
+<li>… </li>
+</ul>
+<p>At a lower level, it is also known that code clarity reflects the level of the developers understanding.</p>
+<p>&nbsp;</p>
+<p>All those external forces will shape the system, and any mismatch in structure will create friction.</p>
+<p>And any smell in the system is a sign that something is not understood or working well outside of the system.</p>
+<p>&nbsp;</p>
+<p>Generalized Conway's law gives a higher frame of thought to find what's ok and what's wrong in all the dimensions of building systems in interaction with their environment.</p>

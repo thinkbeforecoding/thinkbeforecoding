@@ -1,0 +1,19 @@
+<p>So we have our events serialized in our event store. Deserializing events is not an issue, until we start to make them evolve and need to manage several versions.</p>
+<p>Since we never modify what has been log, we’ll have to deal with old versions anyway.</p>
+<p>A simple way to do it is to <strong>maintain every versions of the events</strong> in the projects, and make the aggregate root accept all of them. But it will soon charge the aggregate root with a lot of code and will make it bloated rapidly.</p>
+<p>This is why you can usually introduce a <strong>converter</strong> that will convert any version of the event to the last one (usually you provide methods to update to next version, and iterate until last version so that this part of the code is incremental). This is a convenient way to address the problem, but you still have classes v1, v2 … vn that you keep in your project only for versioning purpose even if you don’t use it anymore in your production code.</p>
+<h3>Events as documents</h3>
+<p><a href="http://www.flickr.com/photos/serkel/519485340"><img style="border-bottom: 0; border-left: 0; margin: 0 0 0 25px; border-top: 0; border-right: 0" title="519485340_1a83117720_o[1]" border="0" alt="519485340_1a83117720_o[1]" align="right" src="http://thinkbeforecoding.com/public/WindowsLiveWriter/EventSourcingandCQRSEventsDeserializatio_13AEE/519485340_1a83117720_o_1__3.jpg" width="184" height="244" /></a>It is easy do deserialize an event as an object <strong>or</strong> a document, you only need to split two responsibilities in you deserialization process :</p>
+<ul>   <li>Stream reading</li>
+<li>Object building</li>
+</ul>
+<p>The deserializer will be in charge of reading the data, it reads the bits, and get the meaning from context, it will tell the Object Builder about objects types, fields names and value.</p>
+<p>On its side, the ob ject builder will instantiate the objects, set fields values depending on names.</p>
+<p>You can provides two distinct Object Builders. The strongly typed one will instantiate concrete .net types and set fields using reflection. The document builder one, will instantiate objects that will only be property bags.</p>
+<p>When deserializing an event in its last version, you can use directly the strongly typed one, but when reading an previous version of the event, you can deserialize it as a document and give it to the converter.</p>
+<p>The converter will then add/remove properties from the document to make it up to date, and the document will be used to create a concrete .net type of the last event version.</p>
+<p>Here the process is quite the same, you should provide a document reader that will use the strongly typed object builder to instantiate the event.</p>
+<p>There’s no need to keep every version of you Event Classes now since you can manipulate old versions as documents.</p>
+<h3>Using dynamic in C#4</h3>
+<p>Document manipulation can make things a bit messy since it can be hard to understand the original structure of the object. This is where you can use the DLR DynamicObject class to make the property bag (the document) a dynamic object that you’ll be able to use as any standard .net object.</p>
+<p>This way, in the converter you can manipulate old versions of the events as .net objects without having to keep all those old classes that won’t be used anymore.</p>

@@ -1,0 +1,11 @@
+<p>I found through <a href="http://www.alvinashcraft.com/2008/11/24/dew-drop-november-24-2008/">Alvin Ashcraft's Morning Dew</a> a post about CSS tricks <a href="http://blog.reindel.com/2008/11/23/six-indispensable-css-tips-and-tricks-i-use-on-every-project/">Six indispensable CSS tips and tricks I use on every project</a>. Very interesting since it gives some ways to make cleaner CSS integration (I really like the Overclear one, don't need the clear both anymore !!).</p>
+<p>But while reading this question came to my mind:</p>
+<p><em>Why do we need to find crazy tricks like this for any single thing we want to do with HTML + CSS ?</em></p>
+<p>This is the sign that <strong>HTML + CSS is a complete design failure</strong> !</p>
+<p>When you want to make something as simple as putting several blocks on the same line... you must use float left, but it does not behave exactly has you expect it to do... When using Silvelight and WPF I had none of these problems. There are surely other problems with theses technologies but I have found an important difference :</p>
+<ul>
+<li>In CSS, the elements decide how the fit in their parent</li>
+<li>In Silverlight, parents decide the layout of their children</li>
+</ul>
+<p>And it makes a huge difference. Because in CSS, the interactions between sibling children using very different placement models make it <strong>a n*n combination problem</strong>. For sure it's not manageable and no browser can handle every case gracefully.</p>
+<p>In Silverlight, you obtain the layout you want by composition, and each rule remains simple. No need to use Jedi tricks to obtain what you want.</p>

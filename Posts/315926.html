@@ -1,0 +1,7 @@
+<p>There’s a post on <a href="http://www.codethinked.com/">CodeThinked</a> about a <a href="http://www.codethinked.com/post/2009/01/08/ASPNET-MVC-Think-Before-You-Bind.aspx">serious potential security issue</a>.</p>
+<p>The problem comes from an MVC convenience that when using an object as a controller action parameter, Asp.net MVC will bind the form fields to object properties auto-magically. Read the full post for a complete description.</p>
+<p>I would recommend a solution using a presentation only model. There is a good reason for this.</p>
+<p>The model object passed to the view should not be directly the domain/business object. I always create a thin adaptation layer for presentation, even when it doesn’t add much value. I lets me decouple presentation concerns from domain concerns.</p>
+<p>The object coming back from the form should follow the same rule as part of this presentation concerns. There is no problem if those presentation objects provide only non sensitive fields.</p>
+<p>&nbsp;</p>
+<p>But it’s sure that not anyone will know about the risks.</p>

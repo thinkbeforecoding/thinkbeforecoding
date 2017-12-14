@@ -1,0 +1,241 @@
+<p>As seen in <a href="http://thinkbeforecoding.com/post/2009/11/02/Event-Sourcing-and-CQRS%2C-Letrsquo%3Bs-use-it." target="_blank">previous post</a>, I used dynamic to replay events.</p>
+<p>The main reason to use it was to avoid long code using reflection in the infrastructure that would have made it hard to read.</p>
+<p>I’ll show several ways to do this dispatch with pros and cons in each cases.</p>
+<h2>Dynamic</h2>
+<p>The proposed solution was using dynamic.</p>
+<p>+ Pros : there is no reflection code involved, code is very simple. <br />- Cons : all state change (Apply) methods must have the same name.</p>
+<p>I made no performance test, so I cannot judge if perf is better or not. It seems that the DLR has a rather good cache when the same type is encountered several time, but only measures can tell.</p>
+<h2>Handlers registration</h2>
+<p>This is the current implementation in <a href="http://github.com/MarkNijhof/Fohjin/blob/9ae1f925c4a71aaaa7d2f1a5c24dcb63aabe7b54/Fohjin.DDD/Fohjin.DDD.Domain/BaseAggregateRoot.cs" target="_blank">Mark Nijhof’s sample</a>.</p>
+<p>The base class maintains a dictionary of Type/Action&lt;T&gt; association to dispatch events based on type.</p>
+<p>Since an Action&lt;T&gt; delegate must have a target instance, the delegate must be constructed from within the instance, in the .ctor.</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">AggregateRoot</span>&lt;TId&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">Dictionary</span>&lt;<span style="COLOR: #2b91af">Type</span>, <span style="COLOR: #2b91af">Action</span>&lt;<span style="COLOR: blue">object</span>&gt;&gt; handlers = </p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">Dictionary</span>&lt;<span style="COLOR: #2b91af">Type</span>, <span style="COLOR: #2b91af">Action</span>&lt;<span style="COLOR: blue">object</span>&gt;&gt;();</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">protected</span> <span style="COLOR: blue">void</span> Register&lt;T&gt;(<span style="COLOR: #2b91af">Action</span>&lt;T&gt; handler)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handlers.Add(<span style="COLOR: blue">typeof</span>(T),e =&gt; handler((T)e));</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">protected</span> <span style="COLOR: blue">void</span> Replay(<span style="COLOR: #2b91af">IEnumerable</span>&lt;<span style="COLOR: blue">object</span>&gt; events)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">foreach</span> (<span style="COLOR: blue">var</span> @event <span style="COLOR: blue">in</span> events)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handlers[@event.GetType()](@event);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: green">// rest of the aggregate root class</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>Here is code that use it :</p>
+<p>&nbsp;</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">Book</span> : <span style="COLOR: #2b91af">AggregateRoot</span>&lt;<span style="COLOR: #2b91af">BookId</span>&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">BookId</span> id;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> Book(<span style="COLOR: #2b91af">BookId</span> id,<span style="COLOR: #2b91af">IEnumerable</span>&lt;<span style="COLOR: blue">object</span>&gt; events) : <span style="COLOR: blue">this</span>(id)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Replay(events);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> Book(<span style="COLOR: #2b91af">BookId</span> id,<span style="COLOR: blue">string</span> title, <span style="COLOR: blue">string</span> isbn) : <span style="COLOR: blue">this</span>(id)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">var</span> @event = <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">BookRegistered</span>(id, title, isbn);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; OnBookRegistered(@event);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Append(@event);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> Book(<span style="COLOR: #2b91af">BookId</span> id)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">this</span>.id = id;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Register&lt;<span style="COLOR: #2b91af">BookRegistered</span>&gt;(OnBookRegistered);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Register&lt;<span style="COLOR: #2b91af">BookLent</span>&gt;(OnBookLent);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Register&lt;<span style="COLOR: #2b91af">BookReturned</span>&gt;(OnBookReturned);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">void</span> OnBookRegistered(<span style="COLOR: #2b91af">BookRegistered</span> @event) { <span style="COLOR: green">/**/</span> }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">void</span> OnBookLent(<span style="COLOR: #2b91af">BookLent</span> @event) { <span style="COLOR: green">/**/</span> }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">void</span> OnBookReturned(<span style="COLOR: #2b91af">BookReturned</span> @event) { <span style="COLOR: green">/**/</span> }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>+Pros : Still no reflection, <br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Meaningful method names <br />-Cons : Additional plumbing code,&nbsp; <br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Private constructor to avoid repetition <br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Registration occurs at each instantiation</p>
+<h2>Convention Based Method Naming</h2>
+<p>This is the way <a href="http://tech.groups.yahoo.com/group/domaindrivendesign/message/15743" target="_blank">advocated by Greg Young</a>.</p>
+<p>If your event is called BookRegistered, assume the method will be called OnBookRegistered, and find it by reflection. You can implement a cache at class level to avoid reflection on each dispatch.</p>
+<p>&nbsp;</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">abstract</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">AggregateRoot</span>&lt;TId&gt; : <span style="COLOR: #2b91af">IAggregateRoot</span>&lt;TId&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">Dictionary</span>&lt;<span style="COLOR: #2b91af">Type</span>, <span style="COLOR: #2b91af">IEventDispatcher</span>&gt; Handlers = </p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">Dictionary</span>&lt;<span style="COLOR: #2b91af">Type</span>, <span style="COLOR: #2b91af">IEventDispatcher</span>&gt;();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: blue">object</span> HandlersLock = <span style="COLOR: blue">new</span> <span style="COLOR: blue">object</span>();</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">protected</span> <span style="COLOR: blue">void</span> Replay(<span style="COLOR: #2b91af">IEnumerable</span>&lt;<span style="COLOR: blue">object</span>&gt; events)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">var</span> dispatcher = GetDispatcher();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dispatcher.Dispatch(<span style="COLOR: blue">this</span>, @events);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: #2b91af">IEventDispatcher</span> GetDispatcher()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">IEventDispatcher</span> handlers;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">var</span> type = GetType();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">lock</span> (HandlersLock)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">if</span> (!Handlers.TryGetValue(type, <span style="COLOR: blue">out</span> handlers))</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handlers = <span style="COLOR: #2b91af">EventDispatcher</span>.Create(type);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Handlers.Add(type, handlers);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> handlers;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ... rest of the code here</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>The dispatcher code :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">internal</span> <span style="COLOR: blue">interface</span> <span style="COLOR: #2b91af">IEventDispatcher</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">void</span> Dispatch(<span style="COLOR: blue">object</span> target, <span style="COLOR: #2b91af">IEnumerable</span>&lt;<span style="COLOR: blue">object</span>&gt;events);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">internal</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">EventDispatcher</span>&lt;T&gt; : <span style="COLOR: #2b91af">IEventDispatcher</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">Dictionary</span>&lt;<span style="COLOR: #2b91af">Type</span>, <span style="COLOR: #2b91af">IEventHandler</span>&lt;T&gt;&gt; handlers;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> EventDispatcher()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">var</span> h = <span style="COLOR: blue">from</span> m <span style="COLOR: blue">in</span> <span style="COLOR: blue">typeof</span>(T)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .GetMethods(<span style="COLOR: #2b91af">BindingFlags</span>.Instance | <span style="COLOR: #2b91af">BindingFlags</span>.NonPublic)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">let</span> parameters = m.GetParameters()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">where</span> parameters.Length ==1 </p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &amp;&amp; m.Name == <span style="COLOR: #a31515">"On"</span> + parameters[0].ParameterType.Name</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">select</span> <span style="COLOR: #2b91af">EventHandler</span>.Create&lt;T&gt;(m);</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handlers = h.ToDictionary(i =&gt; i.EventType);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">void</span> Dispatch(<span style="COLOR: blue">object</span> target, <span style="COLOR: #2b91af">IEnumerable</span>&lt;<span style="COLOR: blue">object</span>&gt; events)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">var</span> typedTarget = (T)target;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">foreach</span> (<span style="COLOR: blue">var</span> @event <span style="COLOR: blue">in</span> events)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">var</span> handler = handlers[@event.GetType()];</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handler.Call(typedTarget, @event);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">internal</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">EventDispatcher</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: #2b91af">IEventDispatcher</span> Create(<span style="COLOR: #2b91af">Type</span> type)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> (<span style="COLOR: #2b91af">IEventDispatcher</span>)<span style="COLOR: #2b91af">Activator</span>.CreateInstance(</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">typeof</span>(<span style="COLOR: #2b91af">EventDispatcher</span>&lt;&gt;).MakeGenericType(type));</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>and the event handler :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">internal</span> <span style="COLOR: blue">interface</span> <span style="COLOR: #2b91af">IEventHandler</span>&lt;T&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">void</span> Call(T target, <span style="COLOR: blue">object</span> argument);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">Type</span> EventType { <span style="COLOR: blue">get</span>; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">internal</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">EventHandler</span>&lt;TEntity, TEvent&gt; : <span style="COLOR: #2b91af">IEventHandler</span>&lt;TEntity&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">Action</span>&lt;TEntity, TEvent&gt; handler;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> EventHandler(<span style="COLOR: #2b91af">MethodInfo</span> methodInfo)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handler = (<span style="COLOR: #2b91af">Action</span>&lt;TEntity, TEvent&gt;)<span style="COLOR: #2b91af">Delegate</span>.CreateDelegate(</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">typeof</span>(<span style="COLOR: #2b91af">Action</span>&lt;TEntity, TEvent&gt;), methodInfo, <span style="COLOR: blue">true</span>);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">void</span> Call(TEntity target, <span style="COLOR: blue">object</span> argument)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handler(target, (TEvent)argument);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: #2b91af">Type</span> EventType</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">get</span> { <span style="COLOR: blue">return</span> <span style="COLOR: blue">typeof</span>(TEvent); }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">internal</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">EventHandler</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: #2b91af">IEventHandler</span>&lt;T&gt; Create&lt;T&gt;(<span style="COLOR: #2b91af">MethodInfo</span> methodInfo)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">var</span> eventType = methodInfo.GetParameters()[0].ParameterType;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> (<span style="COLOR: #2b91af">IEventHandler</span>&lt;T&gt;)<span style="COLOR: #2b91af">Activator</span>.CreateInstance(</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">typeof</span>(<span style="COLOR: #2b91af">EventHandler</span>&lt;,&gt;)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .MakeGenericType(<span style="COLOR: blue">typeof</span>(T), eventType),</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; methodInfo</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; );</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>The trick here is to create a static delegate with two parameters from an instance method info that take one parameter (and one implicit this target).</p>
+<p>This way, the delegate is not tied to a specific instance and can be used on any target.</p>
+<p>As you can see, this option requires more code ! I did not want to start with that.</p>
+<p>+Pros : Convention base names mean no manual mapping, mapping is implicit <br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Binding is made a class level instead of instance level</p>
+<p>-Cons : Only unit tests can tell when you mess with names <br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Not immune to event name change, should have good unit tests ! </p>
+<h2>Apply then Append</h2>
+<p>I also had a remark that if I forget Append after Apply, I’ll get in trouble.</p>
+<p>In Handler Registration option and Convention base method naming, the dispatch can be done by the base class, so I could tell the base class to dispatch then Append then event to UncommittedEvents.</p>
+<p>This way you end with something like :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">var</span> @event = <span style="COLOR: blue">new</span> BookLent(<span style="COLOR: green">/**/</span>);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Play(@event);</p>
+</div>
+<p>where play dispatches the event to the right method and appends.</p>
+<p>This way you cannot forget.</p>
+<p>My problem with this, especially in the Convention base method naming scenario is that nobody references the event application methods anymore. Resharper will report them as unused methods, and you won’t know unless you run unit tests.</p>
+<p>Moreover, you pay the cost of a dynamic dispatch when you know your event type.</p>
+<p>Perhaps something like this could be better :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">var</span> @event = <span style="COLOR: blue">new</span> BookLent(<span style="COLOR: green">/**/</span>);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Play(@event).With(OnBookLent);</p>
+</div>
+<p>the implementation is not very complicated :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">AggregateRoot</span>&lt;TId&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">UncommittedEvents</span> uncommittedEents;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">protected</span> <span style="COLOR: #2b91af">EventPlayer</span>&lt;TEvent&gt; Play&lt;TEvent&gt;(TEvent @event)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">EventPlayer</span>&lt;TEvent&gt;(@event, uncommitedEvents);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ... rest of the code here</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">struct</span> <span style="COLOR: #2b91af">EventPlayer</span>&lt;TEvent&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> TEvent @event;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">UncommittedEvents</span> uncommittedEvents;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">internal</span> EventPlayer(TEvent @event, <span style="COLOR: #2b91af">UncommittedEvents</span> uncommittedEvents)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">this</span>.@event = @event;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">this</span>.uncommittedEvents = uncommittedEvents;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">void</span> With(<span style="COLOR: #2b91af">Action</span>&lt;TEvent&gt; handler)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handler(@event);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; uncommittedEvents.Append(@event);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>This way, methods are referenced at least once with type check.</p>
+<p>My mind is still not set… What do you prefer ?</p>

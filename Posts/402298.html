@@ -1,0 +1,139 @@
+<p><a href="http://thinkbeforecoding.com/public/WindowsLiveWriter_IOCcontainershouldIknowyou_8FB7_558287_49024807_1__2.jpg"><img style="border-right-width: 0px; margin: 0px 0px 0px 10px; display: inline; border-top-width: 0px; border-bottom-width: 0px; border-left-width: 0px" title="558287_49024807" border="0" alt="558287_49024807" align="right" src="http://thinkbeforecoding.com/public/WindowsLiveWriter_IOCcontainershouldIknowyou_8FB7_558287_49024807_1__thumb.jpg" width="244" height="175" /></a>While testing <a href="http://www.nservicebus.com/" target="_blank">NServiceBus</a> and <a href="http://code.google.com/p/masstransit/" target="_blank">MassTransit</a> – yes I need a service bus framework for my current project – I’ve seen that both library where relying on an IOC container, in two different ways.</p>  <p><em>Warning: This article is not to flame these two frameworks that seems of great quality. There are still few guidance on using IOC containers in libraries. This is the topic of this post.</em></p>  <h2>The NServiceBus way</h2>  <p>NServiceBus relies on <a href="http://www.springframework.net/" target="_blank">Spring</a> or <a href="http://www.castleproject.org/container/index.html" target="_blank">Castle Windsor</a>.</p>  <p>You can notice it when instantiating the Bus :</p>  <div style="padding-bottom: 0px; margin: 0px; padding-left: 0px; padding-right: 0px; display: inline; float: none; padding-top: 0px" id="scid:DFDE9937-D816-47f4-A306-7B60D5CE5AC0:af7e6cb5-1ac7-4cb7-9b47-7cad7beb05e8" class="wlWriterEditableSmartContent"><pre class="brush: csharp; gutter: true; first-line: 1; tab-size: 4;  toolbar: true;  highlight: 2 ;">var bus = NServiceBus.Configure.With()
+                .SpringBuilder() // or .CastleWindsorBuilder()
+                .MsmqSubscriptionStorage()
+                .XmlSerializer()
+                .MsmqTransport()
+                    .IsTransactional(true)
+                    .PurgeOnStartup(false)
+                .UnicastBus()
+                    .ImpersonateSender(false)
+                .CreateBus()
+                .Start();</pre><!-- Code inserted with Steve Dunn's Windows Live Writer Code Formatter Plugin.  http://dunnhq.com --></div>
+
+<p>And when looking at the library with <a href="http://www.red-gate.com/products/reflector/" target="_blank">Reflector</a> :</p>
+
+<p><a href="http://thinkbeforecoding.com/public/WindowsLiveWriter_IOCcontainershouldIknowyou_8FB7_image_2.png"><img style="border-right-width: 0px; display: inline; border-top-width: 0px; border-bottom-width: 0px; border-left-width: 0px" title="image" border="0" alt="image" src="http://thinkbeforecoding.com/public/WindowsLiveWriter_IOCcontainershouldIknowyou_8FB7_image_thumb.png" width="598" height="701" /></a></p>
+
+<p>and</p>
+
+<p><a href="http://thinkbeforecoding.com/public/WindowsLiveWriter_IOCcontainershouldIknowyou_8FB7_image_4.png"><img style="border-right-width: 0px; display: inline; border-top-width: 0px; border-bottom-width: 0px; border-left-width: 0px" title="image" border="0" alt="image" src="http://thinkbeforecoding.com/public/WindowsLiveWriter_IOCcontainershouldIknowyou_8FB7_image_thumb_1.png" width="581" height="399" /></a></p>
+
+<p>Yes, the Spring framework and the Castle.Windsor are <a href="http://research.microsoft.com/en-us/people/mbarnett/ilmerge.aspx" target="_blank">ILMerged</a> in the NServiceBus assembly.</p>
+
+<p>NServiceBus abstracts the container with the NServiceBus.ObjectBuilder.IBuilder interface :</p>
+
+<div style="padding-bottom: 0px; margin: 0px; padding-left: 0px; padding-right: 0px; display: inline; float: none; padding-top: 0px" id="scid:DFDE9937-D816-47f4-A306-7B60D5CE5AC0:5e322a55-a9c5-4d91-8917-4c1fa6f16614" class="wlWriterEditableSmartContent"><pre class="brush: csharp; gutter: false; first-line: 1; tab-size: 4;  toolbar: true; ">public interface IBuilder
+{
+    // Methods
+    T Build&lt;T&gt;();
+    object Build(Type typeToBuild);
+    IEnumerable&lt;T&gt; BuildAll&lt;T&gt;();
+    IEnumerable&lt;object&gt; BuildAll(Type typeToBuild);
+    void BuildAndDispatch(Type typeToBuild, Action&lt;object&gt; action);
+}
+
+</pre><!-- Code inserted with Steve Dunn's Windows Live Writer Code Formatter Plugin.  http://dunnhq.com --></div>
+
+<p>&#160;</p>
+
+<h2>The MassTransit way</h2>
+
+<p>MassTransit adopts a slightly different strategy.</p>
+
+<p>The base is still the same.</p>
+
+<p>It uses the <a title="http://www.codeplex.com/CommonServiceLocator" href="http://www.codeplex.com/CommonServiceLocator" target="_blank">CommonServiceLocator</a> to have a ‘standard’ interface to hide the actual IOC container implementation.</p>
+
+<p>It provides implementations for the most common IOC frameworks (<a href="http://www.castleproject.org/container/index.html" target="_blank">Castle.Windsor</a>, <a href="http://ninject.org/" target="_blank">NInject</a>, <a href="http://structuremap.sourceforge.net/Default.htm" target="_blank">StructureMap</a> and <a href="http://www.codeplex.com/unity" target="_blank">Unity</a> – but it doesn’t work so well…) through additional dlls.</p>
+
+<p>The big difference is in the library configuration. You configure the container (through code or configuration). Then encapsulate the container in a Common Service Locator implementation that acts as an adapter. Finally give it to the library.</p>
+
+<p>&#160;</p>
+
+<h2>What’s the problem</h2>
+
+<p>In both case, the intent is good, but hell is paved with good intentions.</p>
+
+<p>In Mass Transit, the design is clearly made so that you can choose your container and integrate the library seamlessly with it. You can manage the configuration in your container the way you do it in your application.</p>
+
+<p><em>But wait ! What if I don’t need an IOC container in my application ?</em></p>
+
+<p>The other problem is that Mass Transit relies on some advanced IOC capabilities like contextual configuration. The object instantiated for IEndPoint should not be the same depending on the parent object. This scenario is not handled by Unity for instance.</p>
+
+<p><em>Maybe Unity is not good enough, but how can I know which other specific feature Mass Transit relies on ? No clue.</em></p>
+
+<p>And providing a library configuration through a container doesn’t seem a best practice to me. The API gives no clues of what I should provide to the library in order to run it.</p>
+
+<p><strong>The only way to know is to launch it, see where it throws an unresolved dependency exception, add the dependency and retry !</strong></p>
+
+<p>And I’ll probably never know about optional dependencies.</p>
+
+<p>On the other side, NServiceBus works with a NServiceBus specific configuration (code and app.config) that indicates&#160; clearly what I must provide to the library.</p>
+
+<p>But <a href="http://devlicio.us/blogs/casey/default.aspx" target="_blank">Jak Charlton</a> had a serious problem with NServiceBus. <strong>He’s not using the same version of Castle.Windsor that the one merged in the NSB assembly</strong> ! And the assembly load fails.</p>
+
+<p>&#160;</p>
+
+<h2>What’s the solution then ?</h2>
+
+<p>I clearly prefer the specific configuration scheme of NServiceBus, but how can we solve the version problem ?</p>
+
+<p>I will answer with another question :</p>
+
+<p>Why does NServiceBus need <strong>two</strong> IOC container implementations ?</p>
+
+<p>For library creators, I will propose this way to go :</p>
+
+<ul>
+  <li>Choose the container that provides the features you need </li>
+
+  <li>Use it in your infrastructure </li>
+
+  <li>Create a clear configuration model that exposes the required and optional dependencies that should be provided by the library user </li>
+
+  <li>Consider creating a app.config specific configuration (there are good tools in the framework for that) </li>
+
+  <li><a href="http://www.clariusconsulting.net/blogs/kzu/archive/2009/02/23/LeveragingILMergetosimplifydeploymentandyourusersexperience.aspx" target="_blank">ILMerge your container framework as internal in your assembly</a>. </li>
+</ul>
+
+<p>The alternative to ILMerge is to fork your framework (if it’s open source) and put it as internal directly in your code.</p>
+
+<h2>The advantages</h2>
+
+<ul>
+  <li>No conflict with potential other versions of the container framework </li>
+
+  <li>A clear discoverable configuration </li>
+
+  <li>No need to use a IOC container to use the library. </li>
+</ul>
+
+<h2>What if the container needs to inject dependencies in the user objects ?</h2>
+
+<p>Both NServiceBus and MassTransit instantiate user’s objects on the fly.</p>
+
+<p>How can the user add it’s own dependencies if he has no access to the container ?</p>
+
+<p>Let’s step back a little and consider what we would do if there was no container…</p>
+
+<ul>
+  <li>We would use Activator.CreateInstance to create the object. </li>
+
+  <li>Then we would consider it would not let the library user enough options, so we would propose a hook so that the user can manage the instantiation himself. It could be a callback or an interface. </li>
+</ul>
+
+<p><strong>When instantiating user objects with the internal framework IOC container, you remove to your users the right to manage the instantiation themselves.</strong></p>
+
+<p>So come back to this good practice. If the user wants to use a IOC container to instantiate his objects with dependencies, let him do this his own way. And his container will not be loaded with all the framework internal dependencies, this will avoid other conflicts.</p>
+
+<h2>Conclusion</h2>
+
+<p>Hide your IOC container framework inside your library, it’s a private implementation detail of your framework and we don’t wanna know !</p>
+
+<p>Choose the framework you like, hide it so that it cannot conflict with the one I want to use and we will be friends !</p>
+
+<p>It surely advocates for frameworks with a small footprint, but once again, it’s a private detail.</p>
+
+<p>&#160;</p>
+
+<p>Continued on <a href="http://thinkbeforecoding.com/post/2009/05/19/IOC-Container-Go-Hide-part-2" target="_blank">IOC Container, Go Hide (part 2)</a></p>

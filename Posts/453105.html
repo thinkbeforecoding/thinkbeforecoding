@@ -1,0 +1,138 @@
+<p>Read the latest post on the subject:</p>
+<p><a href="/post/2013/04/04/C-Static-interfaces-Take-3">C# Static Interfaces - Take 3</a></p>
+<p>No DDD today, let’s talk a bit about our favorite language after a short night (I should really tell my neighbors that 3am is not the good time to move their furniture all around the flat).</p>
+<p>You can find requests for static methods in interfaces <a href="http://dotnet.org.za/codingsanity/archive/2007/02/11/static-methods-on-interfaces.aspx" target="_blank">all</a> <a href="http://discuss.joelonsoftware.com/default.asp?dotnet.12.305680.12" target="_blank">over</a> <a href="http://social.msdn.microsoft.com/Forums/en-US/csharplanguage/thread/1942d6ac-045f-42fc-8840-d83ef5d65bc7" target="_blank">the</a> <a href="http://p2p.wrox.com/c/18454-how-achieve-static-method-interface.html" target="_blank">internet</a>..</p>
+<p>But there are good <a href="http://blogs.msdn.com/ericlippert/archive/2007/06/14/calling-static-methods-on-type-variables-is-illegal-part-one.aspx" target="_blank">reasons</a> <a href="http://blogs.msdn.com/ericlippert/archive/2007/06/18/calling-static-methods-on-type-variables-is-illegal-part-two.aspx" target="_blank">not</a> <a href="http://blogs.msdn.com/ericlippert/archive/2007/06/21/calling-static-methods-on-type-variables-is-illegal-part-three.aspx" target="_blank">to</a>.</p>
+<p>According to <a href="http://blogs.msdn.com/ericlippert" target="_blank">Eric Lippert</a>, the main reasons is the difference in inheritance between static methods and instance method du to the absence of shared slots between static methods.</p>
+<p>Mixing both static methods and instance methods in interfaces would lead to a real nightmare when you try to understand what really happens.</p>
+<p>But why does this question arise so often then ? What’s really needed ?</p>
+<h2>Static classes as type instances</h2>
+<p>Let’s take a simple class with both static and instance members :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">Sample</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: green">// static part</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">int</span> count;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">int</span> Count { <span style="COLOR: blue">get</span> { <span style="COLOR: blue">return</span> count; } }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: green">// instance part</span></p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: blue">string</span> name;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> Sample(<span style="COLOR: blue">string</span> name) { <span style="COLOR: blue">this</span>.name = name; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">void</span> Method()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; count++;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">Console</span>.WriteLine(<span style="COLOR: #a31515">"Total count {0} incremented by {1}"</span>, count, name);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>Here, Count is a static Property. Static part is different from instance part in that static part exist only once per type.</p>
+<p>But we could see static part as being an object with reference is type name.</p>
+<p>Why would these object not have interfaces ?</p>
+<p>Let refactor this a bit :</p>
+<p>&nbsp;</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">Sample2</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">sealed</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">Sample2Class</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">internal</span> <span style="COLOR: blue">int</span> count;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">int</span> Count { <span style="COLOR: blue">get</span> { <span style="COLOR: blue">return</span> count; } }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">Sample2Class</span> Class = <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">Sample2Class</span>();</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: blue">string</span> name;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> Sample2(<span style="COLOR: blue">string</span> name)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">this</span>.name = name;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">void</span> Method()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Class.count++;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">Console</span>.WriteLine(<span style="COLOR: #a31515">"Total count {0} incremented by {1}"</span>, Class.count, name);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>Here, the only static member is Class, that acts as a singleton for the type. Note that I had to change the count modifier to internal. The behavior is <strong>not</strong> the same, but it’s conceptually equivalent.</p>
+<p>We can make something less extreme :</p>
+<p>&nbsp;</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">Sample3</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">int</span> count;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">int</span> Count { <span style="COLOR: blue">get</span> { <span style="COLOR: blue">return</span> count; } }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: blue">string</span> name;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">Sample3Class</span> Class = <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">Sample3Class</span>();</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">sealed</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">Sample3Class</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">int</span> Count { <span style="COLOR: blue">get</span> { <span style="COLOR: blue">return</span> <span style="COLOR: #2b91af">Sample3</span>.Count; } }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> Sample3(<span style="COLOR: blue">string</span> name) { <span style="COLOR: blue">this</span>.name = name; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">void</span> Method()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; count++;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">Console</span>.WriteLine(<span style="COLOR: #a31515">"Total count {0} incremented by {1}"</span>, count, name);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>&nbsp;</p>
+<p>Here, we added only a proxy of public methods and properties on the singleton class.</p>
+<p>We could define an interface that would be implemented by Sample3Class that would provide the missing <em>slot</em> concept that Eric Lipperts talk about.</p>
+<p>We can also see here that there is no point mixing static and instance method in interface since inheritance rules differs.</p>
+<h2>Static Interface</h2>
+<p>Imagination at work. Let’s define static interface as we can define static classes :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">interface</span> <span style="COLOR: #2b91af">ICountable</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">static</span> <span style="COLOR: blue">int</span> Count { <span style="COLOR: blue">get</span>; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>and implement it on our sample :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">Sample4</span> : ICountable</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">int</span> count;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">int</span> Count { <span style="COLOR: blue">get</span> { <span style="COLOR: blue">return</span> count; } }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: blue">string</span> name;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> Sample4(<span style="COLOR: blue">string</span> name) { <span style="COLOR: blue">this</span>.name = name; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">void</span> Method()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; count++;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">Console</span>.WriteLine(<span style="COLOR: #a31515">"Total count {0} incremented by {1}"</span>, count, name);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>The C# compiler would be responsible for creating a singleton stub in the class. Since the goal is to provide a function table, this could also be handled at a lower level by the CLI.</p>
+<p>Now, we can have interesting language extensions.</p>
+<h2>Static member access in generics</h2>
+<p>Let see it in action :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span>&nbsp;<span style="COLOR: blue">bool</span> IsInstanciated&lt;T&gt;() <span style="COLOR: blue">where</span> T: ICountable</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> T.Count != 0;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>There is no ambiguity when using this method since values of parameter T are known at compilation time. The C# compiler could replace the static call with a interface call on the proxy. On a CLI version, the JIT compiler could resolve it once and for all and emit a static call. Use of a child type whose parent type implements the interface should not be allowed, the compiler could report this.</p>
+<p>This could be combined with an extension method syntax to provide extension methods on types :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span>&nbsp;<span style="COLOR: blue">bool</span> IsInstanciated(<span style="COLOR: blue">static</span> <span style="COLOR: #2b91af">ICountable</span> type)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> type.Count != <span style="COLOR: blue">0</span>;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>This one is a bit twisted, and I would gracefully admit changes in the syntax, but the point is that it would enable on type/classes the same kind of thing that Linq offers with interfaces : put the minimum set of methods in interface, then add lots of features around interface with extension methods.</p>
+<h2>Back to reality</h2>
+<p>Ok, I should sleep at night, but who knows, it’s perhaps useful.</p>
+<p>If anyone sees other applications… just drop a comment.</p>

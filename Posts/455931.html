@@ -1,0 +1,36 @@
+<p>This is a short follow up on <a href="http://bjarte.com/post/224749430/set-based-validation-in-the-cqrs-architecture" target="_blank">Bjarte’s Post</a>.</p>
+<p>There’s an important thing to consider when needing set validation : <strong>why</strong> ?</p>
+<p>Why do these things need to be considered together and cannot just be handled separately ?</p>
+<p>We can distinct two different parameters in uniqueness, Cardinality and Scope.</p>
+<h2>Cardinality</h2>
+<p>There are mainly two types of cardinality :</p>
+<h3>1 Cardinality</h3>
+<blockquote>
+<p>Only one employee can be the boss.</p>
+</blockquote>
+<p>The model could provide a IsBoss property on every employee… But constancy would be very hard to achieve, especially in a CQRS architecture. </p>
+<p>We should read the preceding rule as :</p>
+<blockquote>
+<p>The company has only one boss. The boss is an employee.</p>
+</blockquote>
+<p>Now, we can model a Boss property on the Company Aggregate Root that will reference the employee that is the boss. Changing the boss can now be an atomic and consistent operation.</p>
+<p>We can see that we had to introduce a upper level to manage it (we’ll se it in the Scope section).</p>
+<h3>n Cardinality</h3>
+<blockquote>
+<p>Employee should have different user names.</p>
+</blockquote>
+<p>We can clearly see here that user names must be different because they’ll act as identifiers. This is the goal of almost any uniqueness constraint. The property will be used as a key in a lookup. </p>
+<p>The 1 (or 2 or 3) cardinality also act this way. It’s a way to tag an entity. You can ask “who is the boss ?” and get the answer by a simple lookup at the Boss property that acts like a bucket in a hash table.</p>
+<h3>Scope</h3>
+<h3>There is no such thing as global scope</h3>
+<p>Even when we say, “Employee should have different user names”, there is a implicit scope, the Company.</p>
+<p>Even when we say, “You Id Card number should be unique”, understand, “at the Country scope”.</p>
+<p>Even when we say, “Your DNA should be unique”, understand, “At our life understanding scope”.</p>
+<p>Find the scope and see the volume of data whose uniqueness should be enforced. </p>
+<p>As we said, properties that have a uniqueness constraint are usually used as lookup values to find those entities. As such they rarely take part in the child entity domain logic.</p>
+<p>Instead of having a UserName property on the Employee entity, why not have a UserNames key/value collection on the Company that will give the Employee for a given user name ?</p>
+<p>If the expected Employee count is expected to be in a limited range, this is the most appropriate solution.</p>
+<p>If the number can grow, loading it in memory on each Company hydratation is a bit heavy, so keep the directory on disk (using a table with a unique key in a RDBMS as suggested by Bjarte) or any other way that provide the expected performance.</p>
+<h2>Conclusion</h2>
+<p>In every case, when a uniqueness constraint appear on a property, the property does not belong the the entity itself but should be viewed as a key to access the entity from the upper level scope.</p>
+<p>Do you have examples that cannot be solved this way ?</p>

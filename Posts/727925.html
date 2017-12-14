@@ -1,0 +1,72 @@
+<p>You may believe it or not, but the post that drains most of the traffic of this blog, is <a href="http://thinkbeforecoding.com/post/2009/10/21/CSharp-Static-interfaces" target="_blank">the one about C# static interfaces</a> !</p>
+<p>&nbsp;</p>
+<p>In october 2009, I simply tried to imagine where the idea of C# static interfaces could lead us, and, since then, I have more viewed pages (&gt; 15%) on this post than on my home page !</p>
+<p>&nbsp;</p>
+<p>And since then, nothing moved in this area in the C# langage, and I don’t expect it to happen soon.</p>
+<p>&nbsp;</p>
+<p>But some other thing happened…</p>
+<p>&nbsp;</p>
+<h2>F#</h2>
+<p>&nbsp;</p>
+<p>Yes F# is out and running on <a href="http://fsharp.github.com/fsharpbinding/" target="_blank">almost</a> <a href="http://stackoverflow.com/questions/13429603/f-on-mono-for-android" target="_blank">all</a> <a href="https://github.com/ZachBray/FunScript" target="_blank">platforms</a>, and it can do what I described in the previous post.</p>
+<p>&nbsp;</p>
+<p>The thing is called <a href="http://msdn.microsoft.com/en-us/library/dd548046(VS.100).aspx" target="_blank">Statically Resolved Type Parameters</a> and is closer to C++ templates than from C# generics.</p>
+<p>&nbsp;</p>
+<p>The trick is that you can define an inline function with statically resolved types, denoted by a ^ prefix. The usage of defined methods on the type is not given here by an interface, but by a constraint on the resolved type :</p>
+<pre style="font-family:Consolas;font-size:13;color:#dadada;background:#1e1e1e;"><span style="color:#569cd6;">let</span>&nbsp;<span style="color:#569cd6;">inline</span>&nbsp;<span style="color:white;">count</span>&nbsp;(<span style="color:white;">counter</span><span style="color:#b4b4b4;">:</span>&nbsp;<span style="color:#b4b4b4;">^</span><span style="color:white;">T</span>)&nbsp;<span style="color:#b4b4b4;">=</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#569cd6;">let</span>&nbsp;<span style="color:white;">value</span>&nbsp;<span style="color:#b4b4b4;">=</span>&nbsp;(<span style="color:#b4b4b4;">^</span><span style="color:white;">T</span><span style="color:#b4b4b4;">:</span>&nbsp;(<span style="color:#569cd6;">member</span>&nbsp;<span style="color:white;">Count</span>&nbsp;<span style="color:#b4b4b4;">:</span>&nbsp;<span style="color:white;">int</span>)&nbsp;<span style="color:white;">counter</span>)&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:white;">value</span></pre>
+<p>here , the count function takes a counter of type ^T (statically resolved).</p>
+<p>The second line express that ^T actually should have a member Count of type int, and that it will call it on counter to get the result value !</p>
+<p>&nbsp;</p>
+<p>Magic !</p>
+<p>&nbsp;</p>
+<p>Now, we can call count on various types that have a Count member property like :</p>
+<pre style="font-family:Consolas;font-size:13;color:#dadada;background:#1e1e1e;"><span style="color:#569cd6;">type</span>&nbsp;<span style="color:white;">FakeCounter</span>()&nbsp;<span style="color:#b4b4b4;">=</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#569cd6;">member</span>&nbsp;<span style="color:white;">this</span><span style="color:#b4b4b4;">.</span><span style="color:white;">Count</span>&nbsp;<span style="color:#b4b4b4;">=</span>&nbsp;<span style="color:#b5cea8;">42</span>;</pre>
+<p>or</p>
+<pre style="font-family:Consolas;font-size:13;color:#dadada;background:#1e1e1e;"><span style="color:#569cd6;">type</span>&nbsp;<span style="color:white;">ImmutableCounter</span>(<span style="color:white;">count</span><span style="color:#b4b4b4;">:</span>&nbsp;<span style="color:white;">int</span>)&nbsp;<span style="color:#b4b4b4;">=</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#569cd6;">member</span>&nbsp;<span style="color:white;">this</span><span style="color:#b4b4b4;">.</span><span style="color:white;">Count</span>&nbsp;<span style="color:#b4b4b4;">=</span>&nbsp;<span style="color:white;">count</span>;
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#569cd6;">member</span>&nbsp;<span style="color:white;">this</span><span style="color:#b4b4b4;">.</span><span style="color:white;">Next</span>()&nbsp;<span style="color:#b4b4b4;">=</span>&nbsp;<span style="color:white;">ImmutableCounter</span>(<span style="color:white;">count</span>&nbsp;<span style="color:#b4b4b4;">+</span>&nbsp;<span style="color:#b5cea8;">1</span>)
+</pre>
+<p>or</p>
+<pre style="font-family:Consolas;font-size:13;color:#dadada;background:#1e1e1e;"><span style="color:#569cd6;">type</span>&nbsp;<span style="color:white;">MutableCounter</span>(<span style="color:white;">count</span><span style="color:#b4b4b4;">:</span>&nbsp;<span style="color:white;">int</span>)&nbsp;<span style="color:#b4b4b4;">=</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#569cd6;">let</span>&nbsp;<span style="color:#569cd6;">mutable</span>&nbsp;<span style="color:white;">count</span>&nbsp;<span style="color:#b4b4b4;">=</span>&nbsp;<span style="color:#b5cea8;">0</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#569cd6;">member</span>&nbsp;<span style="color:white;">this</span><span style="color:#b4b4b4;">.</span><span style="color:white;">Count</span>&nbsp;<span style="color:#b4b4b4;">=</span>&nbsp;<span style="color:white;">count</span>;
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#569cd6;">member</span>&nbsp;<span style="color:white;">this</span><span style="color:#b4b4b4;">.</span><span style="color:white;">Next</span>()&nbsp;<span style="color:#b4b4b4;">=</span>&nbsp;<span style="color:white;">count</span>&nbsp;<span style="color:#b4b4b4;">&lt;-</span>&nbsp;<span style="color:white;">count</span>&nbsp;<span style="color:#b4b4b4;">+</span>&nbsp;<span style="color:#b5cea8;">1</span>
+</pre>
+<p><span style="color: ">without needing an interface !</span></p>
+<p><span style="color: ">For instance :</span></p>
+<pre style="font-family:Consolas;font-size:13;color:#dadada;background:#1e1e1e;"><span style="color:#569cd6;">let</span>&nbsp;<span style="color:white;">c</span>&nbsp;<span style="color:#b4b4b4;">=</span>&nbsp;<span style="color:white;">count</span>&nbsp;(<span style="color:#569cd6;">new</span>&nbsp;<span style="color:white;">FakeCounter</span>())
+</pre>
+<p>True, this is <strong>compile time duck typing</strong> !</p>
+<p>&nbsp;</p>
+<p>And it works with methods :</p>
+<pre style="font-family:Consolas;font-size:13;color:#dadada;background:#1e1e1e;"><span style="color:#569cd6;">let</span>&nbsp;<span style="color:#569cd6;">inline</span>&nbsp;<span style="color:white;">quack</span>&nbsp;(<span style="color:white;">duck</span><span style="color:#b4b4b4;">:</span>&nbsp;<span style="color:#b4b4b4;">^</span><span style="color:white;">T</span>)&nbsp;<span style="color:#b4b4b4;">=</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#569cd6;">let</span>&nbsp;<span style="color:white;">value</span>&nbsp;<span style="color:#b4b4b4;">=</span>&nbsp;(<span style="color:#b4b4b4;">^</span><span style="color:white;">T</span><span style="color:#b4b4b4;">:</span>&nbsp;(<span style="color:#569cd6;">member</span>&nbsp;<span style="color:white;">Quack</span>&nbsp;<span style="color:#b4b4b4;">:</span>&nbsp;<span style="color:white;">int</span>&nbsp;<span style="color:#569cd6;">-&gt;</span>&nbsp;<span style="color:white;">string</span>)&nbsp;(<span style="color:white;">duck</span>,&nbsp;<span style="color:#b5cea8;">3</span>))&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:white;">value</span></pre>
+<p><span style="color: ">This will call a Quack method that takes int and returns string with the value 3 on any object passed to it that has a method corresponding to the constraint.</span></p>
+<p><span style="color: ">And magically enough, you can do it with static methods :</span></p>
+<pre style="font-family:Consolas;font-size:13;color:#dadada;background:#1e1e1e;"><span style="color:#569cd6;">let</span>&nbsp;<span style="color:#569cd6;">inline</span>&nbsp;<span style="color:white;">nextThenstaticCount</span>&nbsp;(<span style="color:white;">counter</span><span style="color:#b4b4b4;">:</span>&nbsp;<span style="color:#b4b4b4;">^</span><span style="color:white;">T</span>)&nbsp;<span style="color:#b4b4b4;">=</span>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span style="color:#b4b4b4;">^</span><span style="color:white;">T</span><span style="color:#b4b4b4;">:</span>&nbsp;(<span style="color:#569cd6;">member</span>&nbsp;<span style="color:white;">Next</span>&nbsp;<span style="color:#b4b4b4;">:</span>&nbsp;<span style="color:white;">unit</span>&nbsp;<span style="color:#569cd6;">-&gt;</span>&nbsp;<span style="color:white;">unit</span>)&nbsp;<span style="color:white;">counter</span>)
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#569cd6;">let</span>&nbsp;<span style="color:white;">value</span>&nbsp;<span style="color:#b4b4b4;">=</span>&nbsp;(<span style="color:#b4b4b4;">^</span><span style="color:white;">T</span><span style="color:#b4b4b4;">:</span>&nbsp;(<span style="color:#569cd6;">static</span>&nbsp;<span style="color:#569cd6;">member</span>&nbsp;<span style="color:white;">Count</span>&nbsp;<span style="color:#b4b4b4;">:</span>&nbsp;<span style="color:white;">int</span>)&nbsp;())&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:white;">value</span>
+</pre>
+<p><span style="color: ">this function calls an instance method called Next, then gets the value of a static property called Count and returns the value !</span></p>
+<p><span style="color: ">It also works with operators :</span></p>
+<pre style="font-family:Consolas;font-size:13;color:#dadada;background:#1e1e1e;"><span style="color:#569cd6;">let</span>&nbsp;<span style="color:#569cd6;">inline</span>&nbsp;<span style="color:white;">mac</span>&nbsp;<span style="color:white;">acc</span>&nbsp;<span style="color:white;">x</span>&nbsp;<span style="color:white;">y</span>&nbsp;<span style="color:#b4b4b4;">=</span>&nbsp;<span style="color:white;">acc</span>&nbsp;<span style="color:#b4b4b4;">+</span>&nbsp;<span style="color:white;">x</span>&nbsp;<span style="color:#b4b4b4;">*</span>&nbsp;<span style="color:white;">y</span>
+</pre>
+<p><span style="color: ">notice the signature of this function :</span></p>
+<pre style="font-family:Consolas;font-size:13;color:#dadada;background:#1e1e1e;"><span style="color:white;">acc</span><span style="color:#b4b4b4;">:</span>&nbsp;<span style="color:#b4b4b4;">^</span><span style="color:white;">a</span>&nbsp;<span style="color:#569cd6;">-&gt;</span>&nbsp;<span style="color:white;">x</span><span style="color:#b4b4b4;">:</span>&nbsp;<span style="color:#b4b4b4;">^</span><span style="color:white;">c</span>&nbsp;<span style="color:#569cd6;">-&gt;</span>&nbsp;<span style="color:white;">y</span><span style="color:#b4b4b4;">:</span>&nbsp;<span style="color:#b4b4b4;">^</span><span style="color:white;">d</span>&nbsp;<span style="color:#569cd6;">-&gt;</span>&nbsp;&nbsp;<span style="color:#b4b4b4;">^</span><span style="color:white;">e</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#569cd6;">when</span>&nbsp;(&nbsp;<span style="color:#b4b4b4;">^</span><span style="color:white;">a</span>&nbsp;<span style="color:#569cd6;">or</span>&nbsp;&nbsp;<span style="color:#b4b4b4;">^</span><span style="color:white;">b</span>)&nbsp;<span style="color:#b4b4b4;">:</span>&nbsp;(<span style="color:#569cd6;">static</span>&nbsp;<span style="color:#569cd6;">member</span>&nbsp;(&nbsp;<span style="color:#b4b4b4;">+</span>&nbsp;)&nbsp;<span style="color:#b4b4b4;">:</span>&nbsp;&nbsp;<span style="color:#b4b4b4;">^</span><span style="color:white;">a</span>&nbsp;<span style="color:#b4b4b4;">*</span>&nbsp;&nbsp;<span style="color:#b4b4b4;">^</span><span style="color:white;">b</span>&nbsp;<span style="color:#569cd6;">-&gt;</span>&nbsp;&nbsp;<span style="color:#b4b4b4;">^</span><span style="color:white;">e</span>)&nbsp;<span style="color:#569cd6;">and</span>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(&nbsp;<span style="color:#b4b4b4;">^</span><span style="color:white;">c</span>&nbsp;<span style="color:#569cd6;">or</span>&nbsp;&nbsp;<span style="color:#b4b4b4;">^</span><span style="color:white;">d</span>)&nbsp;<span style="color:#b4b4b4;">:</span>&nbsp;(<span style="color:#569cd6;">static</span>&nbsp;<span style="color:#569cd6;">member</span>&nbsp;(&nbsp;<span style="color:#b4b4b4;">*</span>&nbsp;)&nbsp;<span style="color:#b4b4b4;">:</span>&nbsp;&nbsp;<span style="color:#b4b4b4;">^</span><span style="color:white;">c</span>&nbsp;<span style="color:#b4b4b4;">*</span>&nbsp;&nbsp;<span style="color:#b4b4b4;">^</span><span style="color:white;">d</span>&nbsp;<span style="color:#569cd6;">-&gt;</span>&nbsp;&nbsp;<span style="color:#b4b4b4;">^</span><span style="color:white;">b</span>)</pre>
+<p>It accepts any types as long as they provide expected + and * operators.</p>
+<p>&nbsp;</p>
+<p>The only thing is that a specific implementation of the function will be compiled for each type on which it’s called. That’s why it called statically resolved.</p>
+<p>&nbsp;</p>
+<p>You can use this kind of method from F# code but not from C#.</p>
+<p>&nbsp;</p>
+<p>Anyway…</p>
+<blockquote>
+<p>No need for static interfaces in C#, use F# !</p>
+</blockquote>

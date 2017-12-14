@@ -1,0 +1,41 @@
+<p>As <a title="Codingly.com" href="http://codingly.com/" target="_blank">Romain</a> was pointing in the comments, I totally missed to tell where I wanted to go <a href="http://thinkbeforecoding.com/post/2009/10/21/C-Static-interfaces" target="_blank">with this static interface things</a>. Need more sleep these days…</p>
+<p>So here it is.</p>
+<h2>No I don’t want to do this</h2>
+<p>The point was not to enable something like this :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0"><span style="COLOR: blue">&nbsp;&nbsp; int</span> value = <span style="COLOR: #2b91af">ICountable</span>.Count;</p>
+</div>
+<p>Static interfaces have no implementation exactly like interfaces.</p>
+<p>With interfaces, you need an instance (usually in a variable or member) to find the actual implementation and call it. With static interfaces, you need a type.</p>
+<p>There are two ways to specify a type:</p>
+<ul>
+<li>with its type name (Sample4.Count)</li>
+<li>with a generic type parameter (T.Count)</li>
+</ul>
+<p>I was also proposing a way to specify a type for extension methods.</p>
+<h2>Where it would be useful - operators</h2>
+<p>The reason why everybody is asking for static members in interfaces is ultimately to have <strong>operators</strong> in interfaces.</p>
+<p>Imagine :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">interface</span> <span style="COLOR: #2b91af">IArithmetic</span>&lt;T&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">static</span> T <span style="COLOR: blue">operator</span> +(T x, T y);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">static</span> T <span style="COLOR: blue">operator</span> -(T x, T y);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">static</span> T <span style="COLOR: blue">operator</span> *(T x, T y);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">static</span> T <span style="COLOR: blue">operator</span> /(T x, T y);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>Now you can write generic code like :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> T Power&lt;T&gt;(<span style="COLOR: blue">this</span> T value, <span style="COLOR: blue">int</span> count) <span style="COLOR: blue">where</span> T : IArithmetic&lt;T&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">var</span> result = T.Identity;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">for</span> (<span style="COLOR: blue">int</span> i=0;i&lt;count;i++)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; result = result*value;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> result;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>Cool !</p>
+<p>This way, no need for the 20 overloads of Enumerable.Sum, it would work for any type presenting the expected static interface.</p>

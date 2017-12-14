@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- 
+      The Ukulele
+ parameters will be replaced with the 
+      document title extracted from the <h1> element or
+      file name, if there is no <h1> heading
+    -->
+    <title>Ukulele
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="http://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="http://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="content/style.css" />
+    <script src="content/tips.js" type="text/javascript"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="row" style="margin-top:30px">
+        <div class="span1"></div>
+        <div class="span10" id="main">
+          <h1>Ukulele</h1>
+
+<p><em>This post is part of the <a href="https://sergeytihon.wordpress.com/2015/10/25/f-advent-calendar-in-english-2015/">F# Advent Calendar in English 2015</a> project.</em>
+<em>Check out all the other great posts there! And special thanks to Sergey Tihon for organizing this.</em></p>
+
+<p>Hi something fun and not too technical for end the year !</p>
+
+<p>As everyone knows, the <a href="https://www.google.fr/search?q=santa+claus+ukulele&amp;biw=1024&amp;bih=677&amp;tbm=isch&amp;source=lnms&amp;sa=X&amp;ved=0ahUKEwiHw5H8p-HJAhVE0xQKHZTdDuEQ_AUIBigB">favorite instrument of Santa Claus is Ukulele</a> !
+So let's play some music, and especialy some Ukulele !</p>
+
+<p>First thing first, let's create functions for notes. We start with C at octave 0, 
+and have a progression by half tones.</p>
+
+<p>So C is 0, D is 2, E is 4.</p>
+
+<p>Since there is only a half tone between E and F, F is 5.</p>
+
+<p>F is 7, A is 9, B is 11, and we reach next octave at 12, which is C 1 :</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">open</span> <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="i">System</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="f">C</span> <span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="i">n</span> <span class="o">=</span> <span class="n">12</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fs3', 4)" onmouseover="showTip(event, 'fs3', 4)" class="i">n</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs4', 5)" onmouseover="showTip(event, 'fs4', 5)" class="f">D</span> <span onmouseout="hideTip(event, 'fs3', 6)" onmouseover="showTip(event, 'fs3', 6)" class="i">n</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs2', 7)" onmouseover="showTip(event, 'fs2', 7)" class="f">C</span> <span onmouseout="hideTip(event, 'fs3', 8)" onmouseover="showTip(event, 'fs3', 8)" class="i">n</span> <span class="o">+</span> <span class="n">2</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs5', 9)" onmouseover="showTip(event, 'fs5', 9)" class="f">E</span> <span onmouseout="hideTip(event, 'fs3', 10)" onmouseover="showTip(event, 'fs3', 10)" class="i">n</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs2', 11)" onmouseover="showTip(event, 'fs2', 11)" class="f">C</span> <span onmouseout="hideTip(event, 'fs3', 12)" onmouseover="showTip(event, 'fs3', 12)" class="i">n</span> <span class="o">+</span> <span class="n">4</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs6', 13)" onmouseover="showTip(event, 'fs6', 13)" class="f">F</span> <span onmouseout="hideTip(event, 'fs3', 14)" onmouseover="showTip(event, 'fs3', 14)" class="i">n</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs2', 15)" onmouseover="showTip(event, 'fs2', 15)" class="f">C</span> <span onmouseout="hideTip(event, 'fs3', 16)" onmouseover="showTip(event, 'fs3', 16)" class="i">n</span> <span class="o">+</span> <span class="n">5</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs7', 17)" onmouseover="showTip(event, 'fs7', 17)" class="f">G</span> <span onmouseout="hideTip(event, 'fs3', 18)" onmouseover="showTip(event, 'fs3', 18)" class="i">n</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs2', 19)" onmouseover="showTip(event, 'fs2', 19)" class="f">C</span> <span onmouseout="hideTip(event, 'fs3', 20)" onmouseover="showTip(event, 'fs3', 20)" class="i">n</span> <span class="o">+</span> <span class="n">7</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs8', 21)" onmouseover="showTip(event, 'fs8', 21)" class="f">A</span> <span onmouseout="hideTip(event, 'fs3', 22)" onmouseover="showTip(event, 'fs3', 22)" class="i">n</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs2', 23)" onmouseover="showTip(event, 'fs2', 23)" class="f">C</span> <span onmouseout="hideTip(event, 'fs3', 24)" onmouseover="showTip(event, 'fs3', 24)" class="i">n</span> <span class="o">+</span> <span class="n">9</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs9', 25)" onmouseover="showTip(event, 'fs9', 25)" class="f">B</span> <span onmouseout="hideTip(event, 'fs3', 26)" onmouseover="showTip(event, 'fs3', 26)" class="i">n</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs2', 27)" onmouseover="showTip(event, 'fs2', 27)" class="f">C</span> <span onmouseout="hideTip(event, 'fs3', 28)" onmouseover="showTip(event, 'fs3', 28)" class="i">n</span> <span class="o">+</span> <span class="n">11</span> 
+</code></pre></td>
+</tr>
+</table>
+
+<p>For sharps and flat, lets define two functions that had and remove a half tone</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs10', 29)" onmouseover="showTip(event, 'fs10', 29)" class="f">sharp</span> <span onmouseout="hideTip(event, 'fs3', 30)" onmouseover="showTip(event, 'fs3', 30)" class="i">n</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs3', 31)" onmouseover="showTip(event, 'fs3', 31)" class="i">n</span> <span class="o">+</span> <span class="n">1</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs11', 32)" onmouseover="showTip(event, 'fs11', 32)" class="f">flat</span> <span onmouseout="hideTip(event, 'fs3', 33)" onmouseover="showTip(event, 'fs3', 33)" class="i">n</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs3', 34)" onmouseover="showTip(event, 'fs3', 34)" class="i">n</span> <span class="o">-</span> <span class="n">1</span>
+</code></pre></td>
+</tr>
+</table>
+
+<p>We can now create names for each note :</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs12', 35)" onmouseover="showTip(event, 'fs12', 35)" class="f">Cd</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs2', 36)" onmouseover="showTip(event, 'fs2', 36)" class="f">C</span> <span class="o">&gt;</span><span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs10', 37)" onmouseover="showTip(event, 'fs10', 37)" class="f">sharp</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs13', 38)" onmouseover="showTip(event, 'fs13', 38)" class="f">Db</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs4', 39)" onmouseover="showTip(event, 'fs4', 39)" class="f">D</span> <span class="o">&gt;</span><span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs11', 40)" onmouseover="showTip(event, 'fs11', 40)" class="f">flat</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs14', 41)" onmouseover="showTip(event, 'fs14', 41)" class="f">Dd</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs4', 42)" onmouseover="showTip(event, 'fs4', 42)" class="f">D</span> <span class="o">&gt;</span><span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs10', 43)" onmouseover="showTip(event, 'fs10', 43)" class="f">sharp</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs15', 44)" onmouseover="showTip(event, 'fs15', 44)" class="f">Eb</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 45)" onmouseover="showTip(event, 'fs5', 45)" class="f">E</span> <span class="o">&gt;</span><span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs11', 46)" onmouseover="showTip(event, 'fs11', 46)" class="f">flat</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs16', 47)" onmouseover="showTip(event, 'fs16', 47)" class="f">Fd</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs6', 48)" onmouseover="showTip(event, 'fs6', 48)" class="f">F</span> <span class="o">&gt;</span><span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs10', 49)" onmouseover="showTip(event, 'fs10', 49)" class="f">sharp</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs17', 50)" onmouseover="showTip(event, 'fs17', 50)" class="f">Gb</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs7', 51)" onmouseover="showTip(event, 'fs7', 51)" class="f">G</span> <span class="o">&gt;</span><span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs11', 52)" onmouseover="showTip(event, 'fs11', 52)" class="f">flat</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs18', 53)" onmouseover="showTip(event, 'fs18', 53)" class="f">Gd</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs7', 54)" onmouseover="showTip(event, 'fs7', 54)" class="f">G</span> <span class="o">&gt;</span><span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs10', 55)" onmouseover="showTip(event, 'fs10', 55)" class="f">sharp</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs19', 56)" onmouseover="showTip(event, 'fs19', 56)" class="f">Ab</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs8', 57)" onmouseover="showTip(event, 'fs8', 57)" class="f">A</span> <span class="o">&gt;</span><span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs11', 58)" onmouseover="showTip(event, 'fs11', 58)" class="f">flat</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs20', 59)" onmouseover="showTip(event, 'fs20', 59)" class="f">Ad</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs8', 60)" onmouseover="showTip(event, 'fs8', 60)" class="f">A</span> <span class="o">&gt;</span><span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs10', 61)" onmouseover="showTip(event, 'fs10', 61)" class="f">sharp</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs21', 62)" onmouseover="showTip(event, 'fs21', 62)" class="f">Bb</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs9', 63)" onmouseover="showTip(event, 'fs9', 63)" class="f">B</span> <span class="o">&gt;</span><span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs11', 64)" onmouseover="showTip(event, 'fs11', 64)" class="f">flat</span>
+</code></pre></td>
+</tr>
+</table>
+
+<p>There is no E sharp or F flat because it is F and E respectively, same thing for B and C...</p>
+
+<p>Will create a structure with a custome comparison/equality that doesn't
+take the octave into account by using a 12 modulus, this will prove usefull to work with chords:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+<span class="l">20: </span>
+<span class="l">21: </span>
+<span class="l">22: </span>
+<span class="l">23: </span>
+<span class="l">24: </span>
+<span class="l">25: </span>
+<span class="l">26: </span>
+<span class="l">27: </span>
+<span class="l">28: </span>
+<span class="l">29: </span>
+<span class="l">30: </span>
+<span class="l">31: </span>
+<span class="l">32: </span>
+<span class="l">33: </span>
+<span class="l">34: </span>
+<span class="l">35: </span>
+<span class="l">36: </span>
+<span class="l">37: </span>
+<span class="l">38: </span>
+<span class="l">39: </span>
+<span class="l">40: </span>
+<span class="l">41: </span>
+<span class="l">42: </span>
+<span class="l">43: </span>
+<span class="l">44: </span>
+<span class="l">45: </span>
+<span class="l">46: </span>
+<span class="l">47: </span>
+<span class="l">48: </span>
+<span class="l">49: </span>
+<span class="l">50: </span>
+<span class="l">51: </span>
+<span class="l">52: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp">[&lt;<span onmouseout="hideTip(event, 'fs22', 65)" onmouseover="showTip(event, 'fs22', 65)" class="t">Struct</span>&gt;]
+[&lt;<span onmouseout="hideTip(event, 'fs23', 66)" onmouseover="showTip(event, 'fs23', 66)" class="t">CustomComparison</span>&gt;]
+[&lt;<span onmouseout="hideTip(event, 'fs24', 67)" onmouseover="showTip(event, 'fs24', 67)" class="t">CustomEquality</span>&gt;]
+[&lt;<span onmouseout="hideTip(event, 'fs25', 68)" onmouseover="showTip(event, 'fs25', 68)" class="t">StructuredFormatDisplay</span>(<span class="s">&quot;{Display}&quot;</span>)&gt;]
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs26', 69)" onmouseover="showTip(event, 'fs26', 69)" class="t">Note</span>(<span onmouseout="hideTip(event, 'fs27', 70)" onmouseover="showTip(event, 'fs27', 70)" class="i">note</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs28', 71)" onmouseover="showTip(event, 'fs28', 71)" class="t">int</span>) <span class="o">=</span>
+    <span class="k">member</span> <span class="i">__</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs29', 72)" onmouseover="showTip(event, 'fs29', 72)" class="i">Note</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs27', 73)" onmouseover="showTip(event, 'fs27', 73)" class="i">note</span>
+    
+    <span class="k">override</span> <span onmouseout="hideTip(event, 'fs30', 74)" onmouseover="showTip(event, 'fs30', 74)" class="i">__</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs31', 75)" onmouseover="showTip(event, 'fs31', 75)" class="f">GetHashCode</span>() <span class="o">=</span> <span onmouseout="hideTip(event, 'fs27', 76)" onmouseover="showTip(event, 'fs27', 76)" class="i">note</span> <span class="o">%</span> <span class="n">12</span> 
+
+    <span class="k">override</span> <span onmouseout="hideTip(event, 'fs30', 77)" onmouseover="showTip(event, 'fs30', 77)" class="i">__</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs32', 78)" onmouseover="showTip(event, 'fs32', 78)" class="f">Equals</span> <span onmouseout="hideTip(event, 'fs33', 79)" onmouseover="showTip(event, 'fs33', 79)" class="i">other</span> <span class="o">=</span>
+        <span class="k">match</span> <span onmouseout="hideTip(event, 'fs33', 80)" onmouseover="showTip(event, 'fs33', 80)" class="i">other</span> <span class="k">with</span>
+        | <span class="o">:?</span> <span onmouseout="hideTip(event, 'fs26', 81)" onmouseover="showTip(event, 'fs26', 81)" class="t">Note</span> <span class="k">as</span> <span onmouseout="hideTip(event, 'fs34', 82)" onmouseover="showTip(event, 'fs34', 82)" class="i">other</span> <span class="k">-&gt;</span>
+            <span onmouseout="hideTip(event, 'fs27', 83)" onmouseover="showTip(event, 'fs27', 83)" class="i">note</span> <span class="o">%</span> <span class="n">12</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs34', 84)" onmouseover="showTip(event, 'fs34', 84)" class="i">other</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs35', 85)" onmouseover="showTip(event, 'fs35', 85)" class="i">Note</span> <span class="o">%</span> <span class="n">12</span>
+        | _ <span class="k">-&gt;</span> <span class="k">false</span>
+
+    <span class="k">static</span> <span class="k">member</span> <span onmouseout="hideTip(event, 'fs36', 86)" onmouseover="showTip(event, 'fs36', 86)" class="i">names</span> <span class="o">=</span> 
+        [| <span class="s">&quot;C&quot;</span>
+           <span class="s">&quot;C#&quot;</span>
+           <span class="s">&quot;D&quot;</span>
+           <span class="s">&quot;D#&quot;</span>
+           <span class="s">&quot;E&quot;</span>
+           <span class="s">&quot;F&quot;</span>
+           <span class="s">&quot;F#&quot;</span>
+           <span class="s">&quot;G&quot;</span>
+           <span class="s">&quot;G#&quot;</span>
+           <span class="s">&quot;A&quot;</span>
+           <span class="s">&quot;A#&quot;</span>
+           <span class="s">&quot;B&quot;</span> |]
+    <span class="k">member</span> <span class="i">__</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs37', 87)" onmouseover="showTip(event, 'fs37', 87)" class="i">Display</span> <span class="o">=</span> 
+        <span class="k">let</span> <span onmouseout="hideTip(event, 'fs38', 88)" onmouseover="showTip(event, 'fs38', 88)" class="i">name</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs26', 89)" onmouseover="showTip(event, 'fs26', 89)" class="t">Note</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs39', 90)" onmouseover="showTip(event, 'fs39', 90)" class="i">names</span><span class="o">.</span>[<span onmouseout="hideTip(event, 'fs27', 91)" onmouseover="showTip(event, 'fs27', 91)" class="i">note</span> <span class="o">%</span> <span class="n">12</span>]
+        <span class="k">let</span> <span onmouseout="hideTip(event, 'fs40', 92)" onmouseover="showTip(event, 'fs40', 92)" class="i">octave</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs27', 93)" onmouseover="showTip(event, 'fs27', 93)" class="i">note</span> <span class="o">/</span> <span class="n">12</span>
+        <span onmouseout="hideTip(event, 'fs41', 94)" onmouseover="showTip(event, 'fs41', 94)" class="f">sprintf</span> <span class="s">&quot;</span><span class="pf">%s</span><span class="s"> </span><span class="pf">%d</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs38', 95)" onmouseover="showTip(event, 'fs38', 95)" class="i">name</span> <span onmouseout="hideTip(event, 'fs40', 96)" onmouseover="showTip(event, 'fs40', 96)" class="i">octave</span>
+
+    <span class="k">override</span> <span onmouseout="hideTip(event, 'fs42', 97)" onmouseover="showTip(event, 'fs42', 97)" class="i">this</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs43', 98)" onmouseover="showTip(event, 'fs43', 98)" class="f">ToString</span>() <span class="o">=</span> <span onmouseout="hideTip(event, 'fs42', 99)" onmouseover="showTip(event, 'fs42', 99)" class="i">this</span><span class="o">.</span><span class="i">Display</span>
+        
+    <span class="k">interface</span> <span onmouseout="hideTip(event, 'fs44', 100)" onmouseover="showTip(event, 'fs44', 100)" class="t">IEquatable</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs26', 101)" onmouseover="showTip(event, 'fs26', 101)" class="t">Note</span><span class="o">&gt;</span> <span class="k">with</span>
+        <span class="k">member</span> <span class="i">__</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs45', 102)" onmouseover="showTip(event, 'fs45', 102)" class="f">Equals</span> <span onmouseout="hideTip(event, 'fs34', 103)" onmouseover="showTip(event, 'fs34', 103)" class="i">other</span> <span class="o">=</span>
+            <span onmouseout="hideTip(event, 'fs27', 104)" onmouseover="showTip(event, 'fs27', 104)" class="i">note</span> <span class="o">%</span> <span class="n">12</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs34', 105)" onmouseover="showTip(event, 'fs34', 105)" class="i">other</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs35', 106)" onmouseover="showTip(event, 'fs35', 106)" class="i">Note</span> <span class="o">%</span> <span class="n">12</span>
+    <span class="k">interface</span> <span onmouseout="hideTip(event, 'fs46', 107)" onmouseover="showTip(event, 'fs46', 107)" class="t">IComparable</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs26', 108)" onmouseover="showTip(event, 'fs26', 108)" class="t">Note</span><span class="o">&gt;</span> <span class="k">with</span>
+        <span class="k">member</span> <span onmouseout="hideTip(event, 'fs30', 109)" onmouseover="showTip(event, 'fs30', 109)" class="i">__</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs47', 110)" onmouseover="showTip(event, 'fs47', 110)" class="f">CompareTo</span> <span onmouseout="hideTip(event, 'fs34', 111)" onmouseover="showTip(event, 'fs34', 111)" class="i">other</span> <span class="o">=</span>
+            <span onmouseout="hideTip(event, 'fs48', 112)" onmouseover="showTip(event, 'fs48', 112)" class="f">compare</span> (<span onmouseout="hideTip(event, 'fs27', 113)" onmouseover="showTip(event, 'fs27', 113)" class="i">note</span> <span class="o">%</span> <span class="n">12</span>) (<span onmouseout="hideTip(event, 'fs34', 114)" onmouseover="showTip(event, 'fs34', 114)" class="i">other</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs35', 115)" onmouseover="showTip(event, 'fs35', 115)" class="i">Note</span> <span class="o">%</span> <span class="n">12</span>) 
+    <span class="k">interface</span> <span onmouseout="hideTip(event, 'fs46', 116)" onmouseover="showTip(event, 'fs46', 116)" class="t">IComparable</span> <span class="k">with</span>
+        <span class="k">member</span> <span onmouseout="hideTip(event, 'fs30', 117)" onmouseover="showTip(event, 'fs30', 117)" class="i">__</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs49', 118)" onmouseover="showTip(event, 'fs49', 118)" class="f">CompareTo</span> <span onmouseout="hideTip(event, 'fs33', 119)" onmouseover="showTip(event, 'fs33', 119)" class="i">other</span> <span class="o">=</span>
+            <span class="k">match</span> <span onmouseout="hideTip(event, 'fs33', 120)" onmouseover="showTip(event, 'fs33', 120)" class="i">other</span> <span class="k">with</span>
+            | <span class="o">:?</span> <span onmouseout="hideTip(event, 'fs26', 121)" onmouseover="showTip(event, 'fs26', 121)" class="t">Note</span> <span class="k">as</span> <span onmouseout="hideTip(event, 'fs34', 122)" onmouseover="showTip(event, 'fs34', 122)" class="i">other</span> <span class="k">-&gt;</span> 
+                <span onmouseout="hideTip(event, 'fs48', 123)" onmouseover="showTip(event, 'fs48', 123)" class="f">compare</span> (<span onmouseout="hideTip(event, 'fs27', 124)" onmouseover="showTip(event, 'fs27', 124)" class="i">note</span> <span class="o">%</span> <span class="n">12</span>) (<span onmouseout="hideTip(event, 'fs34', 125)" onmouseover="showTip(event, 'fs34', 125)" class="i">other</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs35', 126)" onmouseover="showTip(event, 'fs35', 126)" class="i">Note</span> <span class="o">%</span> <span class="n">12</span>)
+            | _ <span class="k">-&gt;</span> <span class="n">1</span> 
+
+    <span class="k">static</span> <span class="k">member</span> (<span class="o">+</span>) (<span onmouseout="hideTip(event, 'fs50', 127)" onmouseover="showTip(event, 'fs50', 127)" class="i">string</span><span class="o">:</span> <span onmouseout="hideTip(event, 'fs26', 128)" onmouseover="showTip(event, 'fs26', 128)" class="t">Note</span>, <span onmouseout="hideTip(event, 'fs51', 129)" onmouseover="showTip(event, 'fs51', 129)" class="i">fret</span><span class="o">:</span> <span onmouseout="hideTip(event, 'fs28', 130)" onmouseover="showTip(event, 'fs28', 130)" class="t">int</span>) <span class="o">=</span>
+        <span onmouseout="hideTip(event, 'fs26', 131)" onmouseover="showTip(event, 'fs26', 131)" class="t">Note</span> (<span onmouseout="hideTip(event, 'fs50', 132)" onmouseover="showTip(event, 'fs50', 132)" class="i">string</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs35', 133)" onmouseover="showTip(event, 'fs35', 133)" class="i">Note</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fs51', 134)" onmouseover="showTip(event, 'fs51', 134)" class="i">fret</span>)
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs52', 135)" onmouseover="showTip(event, 'fs52', 135)" class="f">notes</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs53', 136)" onmouseover="showTip(event, 'fs53', 136)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs54', 137)" onmouseover="showTip(event, 'fs54', 137)" class="f">map</span> <span onmouseout="hideTip(event, 'fs26', 138)" onmouseover="showTip(event, 'fs26', 138)" class="t">Note</span>
+</code></pre></td>
+</tr>
+</table>
+
+<h2>Ukulele Strings</h2>
+
+<p>A Ukulele has 4 strings.</p>
+
+<p>The funy thing is that the 1st one is higher than the second one, where on most string instruments
+strings are in progressive order.</p>
+
+<p>This is simply due to the limited size of the Ukulele, a low first string would not sound good, so
+it is adjusted to the next octave.</p>
+
+<p>This gives use the following:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs55', 139)" onmouseover="showTip(event, 'fs55', 139)" class="i">strings</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs52', 140)" onmouseover="showTip(event, 'fs52', 140)" class="f">notes</span> [<span onmouseout="hideTip(event, 'fs7', 141)" onmouseover="showTip(event, 'fs7', 141)" class="f">G</span> <span class="n">4</span>;<span onmouseout="hideTip(event, 'fs2', 142)" onmouseover="showTip(event, 'fs2', 142)" class="f">C</span> <span class="n">4</span>;<span onmouseout="hideTip(event, 'fs5', 143)" onmouseover="showTip(event, 'fs5', 143)" class="f">E</span> <span class="n">4</span>; <span onmouseout="hideTip(event, 'fs8', 144)" onmouseover="showTip(event, 'fs8', 144)" class="f">A</span> <span class="n">4</span>]
+</code></pre></td>
+</tr>
+</table>
+
+<h2>Chords</h2>
+
+<p>Instead of hard-encoding ukulele chords, we will compute them !</p>
+
+<p>So a bit of theory about chords.</p>
+
+<p>Chords are defined by their root note and the chord quality (major, minor).</p>
+
+<p>The chords start on the root note, and the chord quality indicates the distance to other notes
+to include in the chord.</p>
+
+<p>On string instrument, the order and the height of the actual notes are not really important for
+the chord to be ok. So we can use a note at any octave.</p>
+
+<p>Now, let's define the chord qualities.</p>
+
+<p>First, Major, uses the root note, 3rd and 5th,
+for instance for C, it will be C, E, G, which gives intervals of 0, 4 and 7 half tones from root.</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs56', 145)" onmouseover="showTip(event, 'fs56', 145)" class="f">quality</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs52', 146)" onmouseover="showTip(event, 'fs52', 146)" class="f">notes</span> <span class="o">&gt;</span><span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs57', 147)" onmouseover="showTip(event, 'fs57', 147)" class="t">Set</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs58', 148)" onmouseover="showTip(event, 'fs58', 148)" class="f">ofList</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs59', 149)" onmouseover="showTip(event, 'fs59', 149)" class="f">M</span> <span onmouseout="hideTip(event, 'fs3', 150)" onmouseover="showTip(event, 'fs3', 150)" class="i">n</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs56', 151)" onmouseover="showTip(event, 'fs56', 151)" class="f">quality</span> [<span onmouseout="hideTip(event, 'fs3', 152)" onmouseover="showTip(event, 'fs3', 152)" class="i">n</span> ; <span onmouseout="hideTip(event, 'fs3', 153)" onmouseover="showTip(event, 'fs3', 153)" class="i">n</span> <span class="o">+</span> <span class="n">4</span>; <span onmouseout="hideTip(event, 'fs3', 154)" onmouseover="showTip(event, 'fs3', 154)" class="i">n</span><span class="o">+</span><span class="n">7</span>] 
+</code></pre></td>
+</tr>
+</table>
+
+<p>Then, Minor, uses the root note, the lower 3rd and 5th.
+For C it will be C, E flat, G, so intervals of 0, 3 and 7 half tones for root.</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs60', 155)" onmouseover="showTip(event, 'fs60', 155)" class="f">m</span> <span onmouseout="hideTip(event, 'fs3', 156)" onmouseover="showTip(event, 'fs3', 156)" class="i">n</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs56', 157)" onmouseover="showTip(event, 'fs56', 157)" class="f">quality</span> [<span onmouseout="hideTip(event, 'fs3', 158)" onmouseover="showTip(event, 'fs3', 158)" class="i">n</span>; <span onmouseout="hideTip(event, 'fs3', 159)" onmouseover="showTip(event, 'fs3', 159)" class="i">n</span> <span class="o">+</span> <span class="n">3</span>; <span onmouseout="hideTip(event, 'fs3', 160)" onmouseover="showTip(event, 'fs3', 160)" class="i">n</span><span class="o">+</span><span class="n">7</span>] 
+</code></pre></td>
+</tr>
+</table>
+
+<p>The 7th adds a 4th note on the Major:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs61', 161)" onmouseover="showTip(event, 'fs61', 161)" class="f">M7</span> <span onmouseout="hideTip(event, 'fs3', 162)" onmouseover="showTip(event, 'fs3', 162)" class="i">n</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs56', 163)" onmouseover="showTip(event, 'fs56', 163)" class="f">quality</span> [<span onmouseout="hideTip(event, 'fs3', 164)" onmouseover="showTip(event, 'fs3', 164)" class="i">n</span>; <span onmouseout="hideTip(event, 'fs3', 165)" onmouseover="showTip(event, 'fs3', 165)" class="i">n</span> <span class="o">+</span> <span class="n">4</span>; <span onmouseout="hideTip(event, 'fs3', 166)" onmouseover="showTip(event, 'fs3', 166)" class="i">n</span><span class="o">+</span><span class="n">7</span>; <span onmouseout="hideTip(event, 'fs3', 167)" onmouseover="showTip(event, 'fs3', 167)" class="i">n</span><span class="o">+</span><span class="n">11</span> ]
+</code></pre></td>
+</tr>
+</table>
+
+<h2>Frets</h2>
+
+<p>As on a gitare, a ukulele has frets, places where you press the string with your finger
+to change the tone of a string.</p>
+
+<p>0 usually represent when you don't press a string at all, and pinching the string will play
+the string note.</p>
+
+<p>When pressing fret 1, the note is one half tone higher, fret 2, two half tone (or one tone) higher.</p>
+
+<p>So pressing the second fret on the C 4 string give a D 4.</p>
+
+<p>Our first function will try pressing on frets to find frets for notes that belong to the chord</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs62', 168)" onmouseover="showTip(event, 'fs62', 168)" class="f">findFrets</span> <span onmouseout="hideTip(event, 'fs63', 169)" onmouseover="showTip(event, 'fs63', 169)" class="i">chord</span> (<span onmouseout="hideTip(event, 'fs50', 170)" onmouseover="showTip(event, 'fs50', 170)" class="i">string</span><span class="o">:</span> <span onmouseout="hideTip(event, 'fs26', 171)" onmouseover="showTip(event, 'fs26', 171)" class="t">Note</span>) <span class="o">=</span>
+    [<span class="n">0..</span><span class="n">10</span>]
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs53', 172)" onmouseover="showTip(event, 'fs53', 172)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs64', 173)" onmouseover="showTip(event, 'fs64', 173)" class="f">filter</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs51', 174)" onmouseover="showTip(event, 'fs51', 174)" class="i">fret</span> <span class="k">-&gt;</span> 
+        <span onmouseout="hideTip(event, 'fs57', 175)" onmouseover="showTip(event, 'fs57', 175)" class="t">Set</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs65', 176)" onmouseover="showTip(event, 'fs65', 176)" class="f">contains</span> (<span onmouseout="hideTip(event, 'fs50', 177)" onmouseover="showTip(event, 'fs50', 177)" class="i">string</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fs51', 178)" onmouseover="showTip(event, 'fs51', 178)" class="i">fret</span>) <span onmouseout="hideTip(event, 'fs63', 179)" onmouseover="showTip(event, 'fs63', 179)" class="i">chord</span>)
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs53', 180)" onmouseover="showTip(event, 'fs53', 180)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs54', 181)" onmouseover="showTip(event, 'fs54', 181)" class="f">map</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs51', 182)" onmouseover="showTip(event, 'fs51', 182)" class="i">fret</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs51', 183)" onmouseover="showTip(event, 'fs51', 183)" class="i">fret</span>, <span onmouseout="hideTip(event, 'fs50', 184)" onmouseover="showTip(event, 'fs50', 184)" class="i">string</span> <span class="o">+</span> <span onmouseout="hideTip(event, 'fs51', 185)" onmouseover="showTip(event, 'fs51', 185)" class="i">fret</span>)
+</code></pre></td>
+</tr>
+</table>
+
+<p>The result is list of pair, (fret, note) that can be used on the strnig</p>
+
+<p>The second function will explore the combinaison of frets/note and keep only those
+that contains all notes of the chords.</p>
+
+<p>Ex: for a C Major chord, we need at least a C, a E and a G.</p>
+
+<p>using frets 0 on string G, 0 on string C, 3 on string E, and 3 on string A, we get G, C, G, C.</p>
+
+<p>All notes are part of the chord, but there is no E... not enough. 0,0,0,3 is a better solution.</p>
+
+<p>The function explore all possible solution by checking notes on string that belong to the chord,
+and each time remove a note from the chord. At the end, there should be no missing note.</p>
+
+<p>At each level sub solutions are sorted by a cost. Standard Ukulele chords try to place fingers
+as close to the top as possible. So lewer frets are better.</p>
+
+<p>The cost function for a chords is to sum square of frets.
+If there is any solution, we keep the one with the lowest cost.</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs66', 186)" onmouseover="showTip(event, 'fs66', 186)" class="f">filterChord</span> <span onmouseout="hideTip(event, 'fs67', 187)" onmouseover="showTip(event, 'fs67', 187)" class="i">chord</span> <span onmouseout="hideTip(event, 'fs68', 188)" onmouseover="showTip(event, 'fs68', 188)" class="i">missingNotes</span> <span onmouseout="hideTip(event, 'fs69', 189)" onmouseover="showTip(event, 'fs69', 189)" class="i">solution</span> <span onmouseout="hideTip(event, 'fs70', 190)" onmouseover="showTip(event, 'fs70', 190)" class="i">stringFrets</span>  <span class="o">=</span>
+    <span class="k">match</span> <span onmouseout="hideTip(event, 'fs70', 191)" onmouseover="showTip(event, 'fs70', 191)" class="i">stringFrets</span> <span class="k">with</span>
+    | [] <span class="k">-&gt;</span> 
+        <span class="k">if</span> <span onmouseout="hideTip(event, 'fs57', 192)" onmouseover="showTip(event, 'fs57', 192)" class="t">Set</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs71', 193)" onmouseover="showTip(event, 'fs71', 193)" class="f">isEmpty</span> <span onmouseout="hideTip(event, 'fs68', 194)" onmouseover="showTip(event, 'fs68', 194)" class="i">missingNotes</span> <span class="k">then</span> 
+            <span onmouseout="hideTip(event, 'fs72', 195)" onmouseover="showTip(event, 'fs72', 195)" class="p">Some</span> (<span onmouseout="hideTip(event, 'fs53', 196)" onmouseover="showTip(event, 'fs53', 196)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs73', 197)" onmouseover="showTip(event, 'fs73', 197)" class="f">rev</span> <span onmouseout="hideTip(event, 'fs69', 198)" onmouseover="showTip(event, 'fs69', 198)" class="i">solution</span>)
+        <span class="k">else</span>
+            <span onmouseout="hideTip(event, 'fs74', 199)" onmouseover="showTip(event, 'fs74', 199)" class="p">None</span>
+    | <span onmouseout="hideTip(event, 'fs75', 200)" onmouseover="showTip(event, 'fs75', 200)" class="i">string</span> <span class="o">::</span> <span onmouseout="hideTip(event, 'fs76', 201)" onmouseover="showTip(event, 'fs76', 201)" class="i">tail</span> <span class="k">-&gt;</span> 
+        <span onmouseout="hideTip(event, 'fs77', 202)" onmouseover="showTip(event, 'fs77', 202)" class="i">string</span>
+        <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs53', 203)" onmouseover="showTip(event, 'fs53', 203)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs64', 204)" onmouseover="showTip(event, 'fs64', 204)" class="f">filter</span> (<span class="k">fun</span> (_,<span onmouseout="hideTip(event, 'fs78', 205)" onmouseover="showTip(event, 'fs78', 205)" class="i">note</span>) <span class="k">-&gt;</span> 
+            <span onmouseout="hideTip(event, 'fs67', 206)" onmouseover="showTip(event, 'fs67', 206)" class="i">chord</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs57', 207)" onmouseover="showTip(event, 'fs57', 207)" class="t">Set</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs65', 208)" onmouseover="showTip(event, 'fs65', 208)" class="f">contains</span> <span onmouseout="hideTip(event, 'fs78', 209)" onmouseover="showTip(event, 'fs78', 209)" class="i">note</span>)
+        <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs53', 210)" onmouseover="showTip(event, 'fs53', 210)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs79', 211)" onmouseover="showTip(event, 'fs79', 211)" class="f">choose</span> (<span class="k">fun</span> (<span onmouseout="hideTip(event, 'fs51', 212)" onmouseover="showTip(event, 'fs51', 212)" class="i">fret</span>,<span onmouseout="hideTip(event, 'fs78', 213)" onmouseover="showTip(event, 'fs78', 213)" class="i">note</span>) <span class="k">-&gt;</span> 
+            <span onmouseout="hideTip(event, 'fs66', 214)" onmouseover="showTip(event, 'fs66', 214)" class="f">filterChord</span> <span onmouseout="hideTip(event, 'fs67', 215)" onmouseover="showTip(event, 'fs67', 215)" class="i">chord</span> (<span onmouseout="hideTip(event, 'fs57', 216)" onmouseover="showTip(event, 'fs57', 216)" class="t">Set</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs80', 217)" onmouseover="showTip(event, 'fs80', 217)" class="f">remove</span> <span onmouseout="hideTip(event, 'fs78', 218)" onmouseover="showTip(event, 'fs78', 218)" class="i">note</span> <span onmouseout="hideTip(event, 'fs68', 219)" onmouseover="showTip(event, 'fs68', 219)" class="i">missingNotes</span>) ((<span onmouseout="hideTip(event, 'fs51', 220)" onmouseover="showTip(event, 'fs51', 220)" class="i">fret</span>,<span onmouseout="hideTip(event, 'fs78', 221)" onmouseover="showTip(event, 'fs78', 221)" class="i">note</span>) <span class="o">::</span> <span onmouseout="hideTip(event, 'fs69', 222)" onmouseover="showTip(event, 'fs69', 222)" class="i">solution</span>) <span onmouseout="hideTip(event, 'fs76', 223)" onmouseover="showTip(event, 'fs76', 223)" class="i">tail</span>)
+        <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs53', 224)" onmouseover="showTip(event, 'fs53', 224)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs81', 225)" onmouseover="showTip(event, 'fs81', 225)" class="f">sortBy</span>(<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs82', 226)" onmouseover="showTip(event, 'fs82', 226)" class="i">s</span> <span class="k">-&gt;</span> 
+            <span onmouseout="hideTip(event, 'fs53', 227)" onmouseover="showTip(event, 'fs53', 227)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs83', 228)" onmouseover="showTip(event, 'fs83', 228)" class="f">sumBy</span> (<span class="k">fun</span> (<span onmouseout="hideTip(event, 'fs51', 229)" onmouseover="showTip(event, 'fs51', 229)" class="i">fret</span>,_) <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs51', 230)" onmouseover="showTip(event, 'fs51', 230)" class="i">fret</span><span class="o">*</span><span onmouseout="hideTip(event, 'fs51', 231)" onmouseover="showTip(event, 'fs51', 231)" class="i">fret</span>) <span onmouseout="hideTip(event, 'fs82', 232)" onmouseover="showTip(event, 'fs82', 232)" class="i">s</span>)
+        <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs53', 233)" onmouseover="showTip(event, 'fs53', 233)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs84', 234)" onmouseover="showTip(event, 'fs84', 234)" class="f">tryHead</span>
+       
+</code></pre></td>
+</tr>
+</table>
+
+<p>making a cord is now simple.</p>
+
+<p>Compute the note in the chord using quality and root.</p>
+
+<p>For each string, map possible frets the belong to the chord, then filter it.</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs85', 235)" onmouseover="showTip(event, 'fs85', 235)" class="f">chord</span> <span onmouseout="hideTip(event, 'fs86', 236)" onmouseover="showTip(event, 'fs86', 236)" class="f">root</span> <span onmouseout="hideTip(event, 'fs87', 237)" onmouseover="showTip(event, 'fs87', 237)" class="f">quality</span> <span class="o">=</span>    
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs63', 238)" onmouseover="showTip(event, 'fs63', 238)" class="i">chord</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs87', 239)" onmouseover="showTip(event, 'fs87', 239)" class="f">quality</span> (<span onmouseout="hideTip(event, 'fs86', 240)" onmouseover="showTip(event, 'fs86', 240)" class="f">root</span> <span class="n">4</span>)
+    <span onmouseout="hideTip(event, 'fs55', 241)" onmouseover="showTip(event, 'fs55', 241)" class="i">strings</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs53', 242)" onmouseover="showTip(event, 'fs53', 242)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs54', 243)" onmouseover="showTip(event, 'fs54', 243)" class="f">map</span> (<span onmouseout="hideTip(event, 'fs62', 244)" onmouseover="showTip(event, 'fs62', 244)" class="f">findFrets</span> <span onmouseout="hideTip(event, 'fs63', 245)" onmouseover="showTip(event, 'fs63', 245)" class="i">chord</span>)
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs66', 246)" onmouseover="showTip(event, 'fs66', 246)" class="f">filterChord</span> <span onmouseout="hideTip(event, 'fs63', 247)" onmouseover="showTip(event, 'fs63', 247)" class="i">chord</span> <span onmouseout="hideTip(event, 'fs63', 248)" onmouseover="showTip(event, 'fs63', 248)" class="i">chord</span> []
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs88', 249)" onmouseover="showTip(event, 'fs88', 249)" class="t">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs89', 250)" onmouseover="showTip(event, 'fs89', 250)" class="f">get</span>
+    
+</code></pre></td>
+</tr>
+</table>
+
+<p>We can now try with classic chords:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs90', 251)" onmouseover="showTip(event, 'fs90', 251)" class="i">CM</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs85', 252)" onmouseover="showTip(event, 'fs85', 252)" class="f">chord</span> <span onmouseout="hideTip(event, 'fs2', 253)" onmouseover="showTip(event, 'fs2', 253)" class="f">C</span> <span onmouseout="hideTip(event, 'fs59', 254)" onmouseover="showTip(event, 'fs59', 254)" class="f">M</span>
+</code></pre></td>
+</tr>
+</table>
+
+<p>and the result is:</p>
+
+<table class="pre"><tr><td><pre><code>[(0, G 4); (0, C 4); (0, E 4); (3, C 5)]</code></pre></td></tr></table>
+
+<p>Now C minor:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs91', 255)" onmouseover="showTip(event, 'fs91', 255)" class="i">Cm</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs85', 256)" onmouseover="showTip(event, 'fs85', 256)" class="f">chord</span> <span onmouseout="hideTip(event, 'fs2', 257)" onmouseover="showTip(event, 'fs2', 257)" class="f">C</span> <span onmouseout="hideTip(event, 'fs60', 258)" onmouseover="showTip(event, 'fs60', 258)" class="f">m</span>
+</code></pre></td>
+</tr>
+</table>
+
+<p>which is exactly what you can find on a tab sheet:</p>
+
+<table class="pre"><tr><td><pre><code>[(0, G 4); (3, D# 4); (3, G 4); (3, C 5)]</code></pre></td></tr></table>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs85', 259)" onmouseover="showTip(event, 'fs85', 259)" class="f">chord</span> <span onmouseout="hideTip(event, 'fs4', 260)" onmouseover="showTip(event, 'fs4', 260)" class="f">D</span> <span onmouseout="hideTip(event, 'fs60', 261)" onmouseover="showTip(event, 'fs60', 261)" class="f">m</span>
+    
+<span onmouseout="hideTip(event, 'fs85', 262)" onmouseover="showTip(event, 'fs85', 262)" class="f">chord</span> <span onmouseout="hideTip(event, 'fs8', 263)" onmouseover="showTip(event, 'fs8', 263)" class="f">A</span> <span onmouseout="hideTip(event, 'fs59', 264)" onmouseover="showTip(event, 'fs59', 264)" class="f">M</span>
+<span onmouseout="hideTip(event, 'fs85', 265)" onmouseover="showTip(event, 'fs85', 265)" class="f">chord</span> <span onmouseout="hideTip(event, 'fs8', 266)" onmouseover="showTip(event, 'fs8', 266)" class="f">A</span> <span onmouseout="hideTip(event, 'fs60', 267)" onmouseover="showTip(event, 'fs60', 267)" class="f">m</span>
+
+<span onmouseout="hideTip(event, 'fs85', 268)" onmouseover="showTip(event, 'fs85', 268)" class="f">chord</span> <span onmouseout="hideTip(event, 'fs7', 269)" onmouseover="showTip(event, 'fs7', 269)" class="f">G</span> <span onmouseout="hideTip(event, 'fs60', 270)" onmouseover="showTip(event, 'fs60', 270)" class="f">m</span>
+<span onmouseout="hideTip(event, 'fs85', 271)" onmouseover="showTip(event, 'fs85', 271)" class="f">chord</span> <span onmouseout="hideTip(event, 'fs5', 272)" onmouseover="showTip(event, 'fs5', 272)" class="f">E</span> <span onmouseout="hideTip(event, 'fs59', 273)" onmouseover="showTip(event, 'fs59', 273)" class="f">M</span>
+</code></pre></td>
+</tr>
+</table>
+
+<h2>Printing chords</h2>
+
+<p>To print chords, we will simply use pretty unicode chars, and place a small 'o'
+on the fret where we should place fingers:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs92', 274)" onmouseover="showTip(event, 'fs92', 274)" class="f">print</span> <span onmouseout="hideTip(event, 'fs93', 275)" onmouseover="showTip(event, 'fs93', 275)" class="i">chord</span>  <span class="o">=</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs94', 276)" onmouseover="showTip(event, 'fs94', 276)" class="f">fret</span> <span onmouseout="hideTip(event, 'fs95', 277)" onmouseover="showTip(event, 'fs95', 277)" class="i">n</span> <span onmouseout="hideTip(event, 'fs96', 278)" onmouseover="showTip(event, 'fs96', 278)" class="i">frt</span> <span class="o">=</span> 
+        <span class="k">if</span> <span onmouseout="hideTip(event, 'fs95', 279)" onmouseover="showTip(event, 'fs95', 279)" class="i">n</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs96', 280)" onmouseover="showTip(event, 'fs96', 280)" class="i">frt</span> <span class="k">then</span> 
+            <span class="s">&quot;o&quot;</span> 
+        <span class="k">else</span> 
+            <span class="s">&quot;│&quot;</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs97', 281)" onmouseover="showTip(event, 'fs97', 281)" class="f">line</span> <span onmouseout="hideTip(event, 'fs98', 282)" onmouseover="showTip(event, 'fs98', 282)" class="i">chord</span> <span onmouseout="hideTip(event, 'fs95', 283)" onmouseover="showTip(event, 'fs95', 283)" class="i">n</span>  <span class="o">=</span>
+            <span onmouseout="hideTip(event, 'fs98', 284)" onmouseover="showTip(event, 'fs98', 284)" class="i">chord</span> 
+            <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs53', 285)" onmouseover="showTip(event, 'fs53', 285)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs54', 286)" onmouseover="showTip(event, 'fs54', 286)" class="f">map</span> (<span onmouseout="hideTip(event, 'fs99', 287)" onmouseover="showTip(event, 'fs99', 287)" class="f">fst</span> <span class="o">&gt;</span><span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs94', 288)" onmouseover="showTip(event, 'fs94', 288)" class="f">fret</span> <span onmouseout="hideTip(event, 'fs95', 289)" onmouseover="showTip(event, 'fs95', 289)" class="i">n</span>)
+            <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs100', 290)" onmouseover="showTip(event, 'fs100', 290)" class="t">String</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs101', 291)" onmouseover="showTip(event, 'fs101', 291)" class="f">concat</span> <span class="s">&quot;&quot;</span>       
+    <span onmouseout="hideTip(event, 'fs102', 292)" onmouseover="showTip(event, 'fs102', 292)" class="f">printfn</span> <span class="s">&quot;┬┬┬┬&quot;</span>
+    [<span class="n">1..</span><span class="n">4</span>] 
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs53', 293)" onmouseover="showTip(event, 'fs53', 293)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs54', 294)" onmouseover="showTip(event, 'fs54', 294)" class="f">map</span> (<span onmouseout="hideTip(event, 'fs97', 295)" onmouseover="showTip(event, 'fs97', 295)" class="f">line</span> <span onmouseout="hideTip(event, 'fs93', 296)" onmouseover="showTip(event, 'fs93', 296)" class="i">chord</span>)
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs100', 297)" onmouseover="showTip(event, 'fs100', 297)" class="t">String</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs101', 298)" onmouseover="showTip(event, 'fs101', 298)" class="f">concat</span> <span class="s">&quot;</span><span class="e">
+</span><span class="s">┼┼┼┼</span><span class="e">
+</span><span class="s">&quot;</span> 
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs102', 299)" onmouseover="showTip(event, 'fs102', 299)" class="f">printfn</span> <span class="s">&quot;</span><span class="pf">%s</span><span class="s">&quot;</span>
+</code></pre></td>
+</tr>
+</table>
+
+<p>Let's try it</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs85', 300)" onmouseover="showTip(event, 'fs85', 300)" class="f">chord</span> <span onmouseout="hideTip(event, 'fs2', 301)" onmouseover="showTip(event, 'fs2', 301)" class="f">C</span> <span onmouseout="hideTip(event, 'fs59', 302)" onmouseover="showTip(event, 'fs59', 302)" class="f">M</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs92', 303)" onmouseover="showTip(event, 'fs92', 303)" class="f">print</span>
+</code></pre></td>
+</tr>
+</table>
+
+<p>It prints</p>
+
+<table class="pre"><tr><td><pre><code>┬┬┬┬
+││││
+┼┼┼┼
+││││
+┼┼┼┼
+│││o
+┼┼┼┼
+││││</code></pre></td></tr></table>
+
+<p>Another one</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs85', 304)" onmouseover="showTip(event, 'fs85', 304)" class="f">chord</span> <span onmouseout="hideTip(event, 'fs7', 305)" onmouseover="showTip(event, 'fs7', 305)" class="f">G</span> <span onmouseout="hideTip(event, 'fs59', 306)" onmouseover="showTip(event, 'fs59', 306)" class="f">M</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs92', 307)" onmouseover="showTip(event, 'fs92', 307)" class="f">print</span>
+</code></pre></td>
+</tr>
+</table>
+
+<p>and we get</p>
+
+<table class="pre"><tr><td><pre><code>┬┬┬┬
+││││
+┼┼┼┼
+│o│o
+┼┼┼┼
+││o│
+┼┼┼┼
+││││</code></pre></td></tr></table>
+
+<h2>Playing chords</h2>
+
+<p>We can also play chords using NAudio.</p>
+
+<p>You can find NAudio on nuget.org</p>
+
+<p>For simplicity I will use the midi synthetizer:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="prep">#r</span> <span class="s">@&quot;packages\NAudio\lib
+et35\NAudio.dll&quot;</span>
+
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs103', 308)" onmouseover="showTip(event, 'fs103', 308)" class="i">NAudio</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs104', 309)" onmouseover="showTip(event, 'fs104', 309)" class="i">Midi</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs105', 310)" onmouseover="showTip(event, 'fs105', 310)" class="i">device</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'fs106', 311)" onmouseover="showTip(event, 'fs106', 311)" class="t">MidiOut</span>(<span class="n">0</span>)
+<span onmouseout="hideTip(event, 'fs106', 312)" onmouseover="showTip(event, 'fs106', 312)" class="t">MidiOut</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs107', 313)" onmouseover="showTip(event, 'fs107', 313)" class="f">DeviceInfo</span> <span class="n">0</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs108', 314)" onmouseover="showTip(event, 'fs108', 314)" class="f">midi</span> (<span onmouseout="hideTip(event, 'fs109', 315)" onmouseover="showTip(event, 'fs109', 315)" class="i">m</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs110', 316)" onmouseover="showTip(event, 'fs110', 316)" class="t">MidiMessage</span>) <span class="o">=</span>  <span onmouseout="hideTip(event, 'fs105', 317)" onmouseover="showTip(event, 'fs105', 317)" class="i">device</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs111', 318)" onmouseover="showTip(event, 'fs111', 318)" class="f">Send</span> <span onmouseout="hideTip(event, 'fs109', 319)" onmouseover="showTip(event, 'fs109', 319)" class="i">m</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs112', 320)" onmouseover="showTip(event, 'fs112', 320)" class="i">RawData</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs113', 321)" onmouseover="showTip(event, 'fs113', 321)" class="f">startNote</span> <span onmouseout="hideTip(event, 'fs27', 322)" onmouseover="showTip(event, 'fs27', 322)" class="i">note</span> <span onmouseout="hideTip(event, 'fs114', 323)" onmouseover="showTip(event, 'fs114', 323)" class="i">volume</span> <span class="o">=</span> 
+    <span onmouseout="hideTip(event, 'fs110', 324)" onmouseover="showTip(event, 'fs110', 324)" class="t">MidiMessage</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs115', 325)" onmouseover="showTip(event, 'fs115', 325)" class="f">StartNote</span>(<span onmouseout="hideTip(event, 'fs27', 326)" onmouseover="showTip(event, 'fs27', 326)" class="i">note</span>, <span onmouseout="hideTip(event, 'fs114', 327)" onmouseover="showTip(event, 'fs114', 327)" class="i">volume</span>, <span class="n">2</span>) <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs108', 328)" onmouseover="showTip(event, 'fs108', 328)" class="f">midi</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs116', 329)" onmouseover="showTip(event, 'fs116', 329)" class="f">stopNote</span> <span onmouseout="hideTip(event, 'fs27', 330)" onmouseover="showTip(event, 'fs27', 330)" class="i">note</span> <span onmouseout="hideTip(event, 'fs114', 331)" onmouseover="showTip(event, 'fs114', 331)" class="i">volume</span> <span class="o">=</span> 
+    <span onmouseout="hideTip(event, 'fs110', 332)" onmouseover="showTip(event, 'fs110', 332)" class="t">MidiMessage</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs117', 333)" onmouseover="showTip(event, 'fs117', 333)" class="f">StopNote</span>(<span onmouseout="hideTip(event, 'fs27', 334)" onmouseover="showTip(event, 'fs27', 334)" class="i">note</span>, <span onmouseout="hideTip(event, 'fs114', 335)" onmouseover="showTip(event, 'fs114', 335)" class="i">volume</span>, <span class="n">2</span>) <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs108', 336)" onmouseover="showTip(event, 'fs108', 336)" class="f">midi</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs118', 337)" onmouseover="showTip(event, 'fs118', 337)" class="f">sleep</span> <span onmouseout="hideTip(event, 'fs3', 338)" onmouseover="showTip(event, 'fs3', 338)" class="i">n</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs1', 339)" onmouseover="showTip(event, 'fs1', 339)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs119', 340)" onmouseover="showTip(event, 'fs119', 340)" class="i">Threading</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs120', 341)" onmouseover="showTip(event, 'fs120', 341)" class="t">Thread</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs121', 342)" onmouseover="showTip(event, 'fs121', 342)" class="f">Sleep</span>(<span onmouseout="hideTip(event, 'fs3', 343)" onmouseover="showTip(event, 'fs3', 343)" class="i">n</span><span class="o">:</span> <span onmouseout="hideTip(event, 'fs28', 344)" onmouseover="showTip(event, 'fs28', 344)" class="t">int</span>)
+</code></pre></td>
+</tr>
+</table>
+
+<p>Now we can define a function that will play a chord.</p>
+
+<p>The tempo is used as a multiplicator for a the chord length.</p>
+
+<p>Longer tempo means slower.</p>
+
+<p>For better result we introduce an arpegio, a small delay between each note.
+Don't forget to remove this time from the waiting length...</p>
+
+<p>The direction indicate if the cords are strumed Up, or Down.
+In the Up case we reverse the chord.</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+<span class="l">20: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs122', 345)" onmouseover="showTip(event, 'fs122', 345)" class="t">Direction</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs123', 346)" onmouseover="showTip(event, 'fs123', 346)" class="p">Dn</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs28', 347)" onmouseover="showTip(event, 'fs28', 347)" class="t">int</span> | <span onmouseout="hideTip(event, 'fs124', 348)" onmouseover="showTip(event, 'fs124', 348)" class="p">Up</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs28', 349)" onmouseover="showTip(event, 'fs28', 349)" class="t">int</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs125', 350)" onmouseover="showTip(event, 'fs125', 350)" class="f">play</span> <span onmouseout="hideTip(event, 'fs126', 351)" onmouseover="showTip(event, 'fs126', 351)" class="i">tempo</span> <span onmouseout="hideTip(event, 'fs127', 352)" onmouseover="showTip(event, 'fs127', 352)" class="i">arpegio</span> (<span onmouseout="hideTip(event, 'fs128', 353)" onmouseover="showTip(event, 'fs128', 353)" class="i">chord</span>, <span onmouseout="hideTip(event, 'fs129', 354)" onmouseover="showTip(event, 'fs129', 354)" class="i">strum</span>)  <span class="o">=</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs130', 355)" onmouseover="showTip(event, 'fs130', 355)" class="i">strings</span>, <span onmouseout="hideTip(event, 'fs131', 356)" onmouseover="showTip(event, 'fs131', 356)" class="i">length</span> <span class="o">=</span> 
+        <span class="k">match</span> <span onmouseout="hideTip(event, 'fs129', 357)" onmouseover="showTip(event, 'fs129', 357)" class="i">strum</span> <span class="k">with</span> 
+        | <span onmouseout="hideTip(event, 'fs123', 358)" onmouseover="showTip(event, 'fs123', 358)" class="p">Dn</span> <span onmouseout="hideTip(event, 'fs131', 359)" onmouseover="showTip(event, 'fs131', 359)" class="i">length</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs128', 360)" onmouseover="showTip(event, 'fs128', 360)" class="i">chord</span>, <span onmouseout="hideTip(event, 'fs131', 361)" onmouseover="showTip(event, 'fs131', 361)" class="i">length</span>
+        | <span onmouseout="hideTip(event, 'fs124', 362)" onmouseover="showTip(event, 'fs124', 362)" class="p">Up</span> <span onmouseout="hideTip(event, 'fs131', 363)" onmouseover="showTip(event, 'fs131', 363)" class="i">length</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs53', 364)" onmouseover="showTip(event, 'fs53', 364)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs73', 365)" onmouseover="showTip(event, 'fs73', 365)" class="f">rev</span> <span onmouseout="hideTip(event, 'fs128', 366)" onmouseover="showTip(event, 'fs128', 366)" class="i">chord</span>, <span onmouseout="hideTip(event, 'fs131', 367)" onmouseover="showTip(event, 'fs131', 367)" class="i">length</span> 
+
+    <span onmouseout="hideTip(event, 'fs130', 368)" onmouseover="showTip(event, 'fs130', 368)" class="i">strings</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs53', 369)" onmouseover="showTip(event, 'fs53', 369)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs132', 370)" onmouseover="showTip(event, 'fs132', 370)" class="f">iter</span> (<span class="k">fun</span> (_,(<span onmouseout="hideTip(event, 'fs133', 371)" onmouseover="showTip(event, 'fs133', 371)" class="i">n</span><span class="o">:</span> <span onmouseout="hideTip(event, 'fs26', 372)" onmouseover="showTip(event, 'fs26', 372)" class="t">Note</span>)) <span class="k">-&gt;</span> 
+        <span onmouseout="hideTip(event, 'fs113', 373)" onmouseover="showTip(event, 'fs113', 373)" class="f">startNote</span> <span onmouseout="hideTip(event, 'fs133', 374)" onmouseover="showTip(event, 'fs133', 374)" class="i">n</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs35', 375)" onmouseover="showTip(event, 'fs35', 375)" class="i">Note</span> <span class="n">100</span> ; <span onmouseout="hideTip(event, 'fs118', 376)" onmouseover="showTip(event, 'fs118', 376)" class="f">sleep</span> <span onmouseout="hideTip(event, 'fs127', 377)" onmouseover="showTip(event, 'fs127', 377)" class="i">arpegio</span> )
+
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs134', 378)" onmouseover="showTip(event, 'fs134', 378)" class="i">arpegioLength</span> <span class="o">=</span> 
+        <span onmouseout="hideTip(event, 'fs53', 379)" onmouseover="showTip(event, 'fs53', 379)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs135', 380)" onmouseover="showTip(event, 'fs135', 380)" class="f">length</span> <span onmouseout="hideTip(event, 'fs128', 381)" onmouseover="showTip(event, 'fs128', 381)" class="i">chord</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fs127', 382)" onmouseover="showTip(event, 'fs127', 382)" class="i">arpegio</span>
+
+    <span onmouseout="hideTip(event, 'fs118', 383)" onmouseover="showTip(event, 'fs118', 383)" class="f">sleep</span> (<span onmouseout="hideTip(event, 'fs131', 384)" onmouseover="showTip(event, 'fs131', 384)" class="i">length</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fs126', 385)" onmouseover="showTip(event, 'fs126', 385)" class="i">tempo</span> <span class="o">-</span> <span onmouseout="hideTip(event, 'fs134', 386)" onmouseover="showTip(event, 'fs134', 386)" class="i">arpegioLength</span>)
+
+    <span onmouseout="hideTip(event, 'fs130', 387)" onmouseover="showTip(event, 'fs130', 387)" class="i">strings</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs53', 388)" onmouseover="showTip(event, 'fs53', 388)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs132', 389)" onmouseover="showTip(event, 'fs132', 389)" class="f">iter</span> (<span class="k">fun</span> (_,(<span onmouseout="hideTip(event, 'fs133', 390)" onmouseover="showTip(event, 'fs133', 390)" class="i">n</span><span class="o">:</span> <span onmouseout="hideTip(event, 'fs26', 391)" onmouseover="showTip(event, 'fs26', 391)" class="t">Note</span>)) <span class="k">-&gt;</span> 
+        <span onmouseout="hideTip(event, 'fs116', 392)" onmouseover="showTip(event, 'fs116', 392)" class="f">stopNote</span> <span onmouseout="hideTip(event, 'fs133', 393)" onmouseover="showTip(event, 'fs133', 393)" class="i">n</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs35', 394)" onmouseover="showTip(event, 'fs35', 394)" class="i">Note</span> <span class="n">100</span> )
+</code></pre></td>
+</tr>
+</table>
+
+<p>To strum a chord, we give a list of length, and a chord, and it will apply the cord to each length:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs136', 395)" onmouseover="showTip(event, 'fs136', 395)" class="f">strum</span> <span onmouseout="hideTip(event, 'fs137', 396)" onmouseover="showTip(event, 'fs137', 396)" class="i">strm</span> <span onmouseout="hideTip(event, 'fs138', 397)" onmouseover="showTip(event, 'fs138', 397)" class="i">chord</span> <span class="o">=</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs139', 398)" onmouseover="showTip(event, 'fs139', 398)" class="i">repeatedChord</span> <span class="o">=</span> 
+        <span onmouseout="hideTip(event, 'fs137', 399)" onmouseover="showTip(event, 'fs137', 399)" class="i">strm</span> 
+        <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs53', 400)" onmouseover="showTip(event, 'fs53', 400)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs54', 401)" onmouseover="showTip(event, 'fs54', 401)" class="f">map</span> (<span class="k">fun</span> _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs138', 402)" onmouseover="showTip(event, 'fs138', 402)" class="i">chord</span>)
+    
+    <span onmouseout="hideTip(event, 'fs53', 403)" onmouseover="showTip(event, 'fs53', 403)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs140', 404)" onmouseover="showTip(event, 'fs140', 404)" class="f">zip</span> <span onmouseout="hideTip(event, 'fs139', 405)" onmouseover="showTip(event, 'fs139', 405)" class="i">repeatedChord</span> <span onmouseout="hideTip(event, 'fs137', 406)" onmouseover="showTip(event, 'fs137', 406)" class="i">strm</span>
+</code></pre></td>
+</tr>
+</table>
+
+<p>Now here is Santa Clause favorite song, Get Lucky by Daft Punk.</p>
+
+<p>First the chords :</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs141', 407)" onmouseover="showTip(event, 'fs141', 407)" class="i">luckyChords</span> <span class="o">=</span> 
+    [ <span class="c">//Like the legend of the Phoenix,</span>
+      <span onmouseout="hideTip(event, 'fs85', 408)" onmouseover="showTip(event, 'fs85', 408)" class="f">chord</span> <span onmouseout="hideTip(event, 'fs9', 409)" onmouseover="showTip(event, 'fs9', 409)" class="f">B</span> <span onmouseout="hideTip(event, 'fs60', 410)" onmouseover="showTip(event, 'fs60', 410)" class="f">m</span>
+      <span class="c">// All ends with beginnings.</span>
+      <span onmouseout="hideTip(event, 'fs85', 411)" onmouseover="showTip(event, 'fs85', 411)" class="f">chord</span> <span onmouseout="hideTip(event, 'fs4', 412)" onmouseover="showTip(event, 'fs4', 412)" class="f">D</span> <span onmouseout="hideTip(event, 'fs59', 413)" onmouseover="showTip(event, 'fs59', 413)" class="f">M</span>
+      <span class="c">// What keeps the planets spinning,</span>
+      <span onmouseout="hideTip(event, 'fs85', 414)" onmouseover="showTip(event, 'fs85', 414)" class="f">chord</span> (<span onmouseout="hideTip(event, 'fs16', 415)" onmouseover="showTip(event, 'fs16', 415)" class="f">Fd</span>) <span onmouseout="hideTip(event, 'fs60', 416)" onmouseover="showTip(event, 'fs60', 416)" class="f">m</span>
+      <span class="c">// The force from the beginning.</span>
+      <span onmouseout="hideTip(event, 'fs85', 417)" onmouseover="showTip(event, 'fs85', 417)" class="f">chord</span> <span onmouseout="hideTip(event, 'fs5', 418)" onmouseover="showTip(event, 'fs5', 418)" class="f">E</span> <span onmouseout="hideTip(event, 'fs59', 419)" onmouseover="showTip(event, 'fs59', 419)" class="f">M</span> ]
+</code></pre></td>
+</tr>
+</table>
+
+<p>Then strum, this is the rythm used to play the same chord,
+it goes like, Dam, Dam, Dam Dala Dam Dam:</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs142', 420)" onmouseover="showTip(event, 'fs142', 420)" class="i">luckyStrum</span> <span class="o">=</span> 
+    [ <span onmouseout="hideTip(event, 'fs123', 421)" onmouseover="showTip(event, 'fs123', 421)" class="p">Dn</span> <span class="n">4</span>; <span onmouseout="hideTip(event, 'fs123', 422)" onmouseover="showTip(event, 'fs123', 422)" class="p">Dn</span> <span class="n">3</span>; <span onmouseout="hideTip(event, 'fs123', 423)" onmouseover="showTip(event, 'fs123', 423)" class="p">Dn</span> <span class="n">2</span>; <span onmouseout="hideTip(event, 'fs123', 424)" onmouseover="showTip(event, 'fs123', 424)" class="p">Dn</span> <span class="n">1</span>; <span onmouseout="hideTip(event, 'fs124', 425)" onmouseover="showTip(event, 'fs124', 425)" class="p">Up</span> <span class="n">2</span>; <span onmouseout="hideTip(event, 'fs123', 426)" onmouseover="showTip(event, 'fs123', 426)" class="p">Dn</span> <span class="n">2</span>; <span onmouseout="hideTip(event, 'fs124', 427)" onmouseover="showTip(event, 'fs124', 427)" class="p">Up</span> <span class="n">2</span>]
+</code></pre></td>
+</tr>
+</table>
+
+<p>and the full song :</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs143', 428)" onmouseover="showTip(event, 'fs143', 428)" class="i">getLucky</span> <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs141', 429)" onmouseover="showTip(event, 'fs141', 429)" class="i">luckyChords</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs53', 430)" onmouseover="showTip(event, 'fs53', 430)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs144', 431)" onmouseover="showTip(event, 'fs144', 431)" class="f">collect</span> (<span onmouseout="hideTip(event, 'fs136', 432)" onmouseover="showTip(event, 'fs136', 432)" class="f">strum</span> <span onmouseout="hideTip(event, 'fs142', 433)" onmouseover="showTip(event, 'fs142', 433)" class="i">luckyStrum</span>)
+</code></pre></td>
+</tr>
+</table>
+
+<p>And now, let's play it :</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs143', 434)" onmouseover="showTip(event, 'fs143', 434)" class="i">getLucky</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs53', 435)" onmouseover="showTip(event, 'fs53', 435)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs145', 436)" onmouseover="showTip(event, 'fs145', 436)" class="f">replicate</span> <span class="n">1</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs53', 437)" onmouseover="showTip(event, 'fs53', 437)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs146', 438)" onmouseover="showTip(event, 'fs146', 438)" class="f">concat</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs53', 439)" onmouseover="showTip(event, 'fs53', 439)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs132', 440)" onmouseover="showTip(event, 'fs132', 440)" class="f">iter</span> (<span onmouseout="hideTip(event, 'fs125', 441)" onmouseover="showTip(event, 'fs125', 441)" class="f">play</span> <span class="n">130</span> <span class="n">30</span>)
+</code></pre></td>
+</tr>
+</table>
+
+<p>And the tab notations for the song !</p>
+
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs141', 442)" onmouseover="showTip(event, 'fs141', 442)" class="i">luckyChords</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs53', 443)" onmouseover="showTip(event, 'fs53', 443)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs132', 444)" onmouseover="showTip(event, 'fs132', 444)" class="f">iter</span> <span onmouseout="hideTip(event, 'fs92', 445)" onmouseover="showTip(event, 'fs92', 445)" class="f">print</span>
+</code></pre></td>
+</tr>
+</table>
+
+<table class="pre"><tr><td><pre><code>┬┬┬┬
+││││
+┼┼┼┼
+│ooo
+┼┼┼┼
+││││
+┼┼┼┼
+o│││
+┬┬┬┬
+││││
+┼┼┼┼
+ooo│
+┼┼┼┼
+││││
+┼┼┼┼
+││││
+┬┬┬┬
+│o││
+┼┼┼┼
+o│o│
+┼┼┼┼
+││││
+┼┼┼┼
+││││
+┬┬┬┬
+o│││
+┼┼┼┼
+│││o
+┼┼┼┼
+││││
+┼┼┼┼
+│o││</code></pre></td></tr></table>
+
+<h1>Conclusion</h1>
+
+<p>I hope this small thing was entertaining and that it'll get you into ukulele !</p>
+
+<p>For excercise you can:</p>
+
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Chord_(music)">implements more chords</a></li>
+<li>Better printing</li>
+<li>add more liveliness and groove by adding some jitter to the strum...</li>
+<li>add the lyrics for Karaoke !</li>
+<li>try with other songs !</li>
+<li>try the same for a <a href="https://en.wikipedia.org/wiki/Guitar">6 string gitar</a> !</li>
+</ul>
+
+<p>Now it's your turn to rock !</p>
+
+          
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

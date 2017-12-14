@@ -1,0 +1,52 @@
+<p><img style="display: inline; margin-left: 0; margin-right: 0" title="Duck sign, Stockbridge High Street" alt="Duck sign, Stockbridge High Street" align="right" src="http://s0.geograph.org.uk/photos/21/35/213574_3470e842.jpg" width="188" height="251" />I recently had a remark from Frederic Fadel from Aspectize, telling me about Event Sourcing something like:</p>
+<p>Why would you like to write SQL to write data to your read model when our product can do it for you ?</p>
+<p>I acknowledge that their product is fancy. You simply declare your <s>db</s>&nbsp;data schema, your UI and services and bind it all together. </p>
+<p>But it doesn’t fit well with CQRS and Event Sourcing. And I want to do Event Sourcing for domain and business reasons, not technical reasons.</p>
+<p>But he was write on this point :</p>
+<p>I don’t want to write SQL to denormalize my events to my queryable storage.</p>
+<p>What are my options ?</p>
+<ul>   <li>Writing SQL by hand, but testability is low, and you’ll get a mix of C# to get data from the events, and SQL for the Update queries. </li>
+<li>Using an ORM. When doing NHibernate you don’t really write SQL. Testability wont be great anyway. </li>
+</ul>
+<h2>The problem with ORMs</h2>
+<p>ORM are usually better at getting data than at changing it. You can do it, but let’s look at what happens.</p>
+<p>The ORM loads data from your Db into entities that will be tracked by an identity tracker. Then you change the values in memory . Then the ORM will find what needs to be sent back to the server and make a query to the Db so that the change happens.</p>
+<p>But what I need to do is a lot simpler. Just emit some INSERT, UPDATE or DELETE based on current table values and event data.</p>
+<p>With an ORM, what happens if the data is changed between loading and saving ? I’ll have to manage some versioning and/or transaction. And I’ll make two roundtrips to the server needlessly.</p>
+<h2>Here comes Duck</h2>
+<p>Duck is a kind of ORM oriented toward Delete Update Create.</p>
+<p>Don’t ask Duck to load data in memory, it simply can’t. </p>
+<p>You simply express how data should change based on current row content and values that you’ll pass.</p>
+<p>It avoids the first roundtrip to the database, and make shorter code to express the change.</p>
+<h2>Let’s see how to use it</h2>
+<p>First, you should declare a class that has the structure of your table with public get/set properties, and marked with a Table attribute :</p>
+<pre style="font-family: consolas">	[<span style="color: #2b91af">Table</span>]<br />	<span style="color: blue">class</span>&nbsp;<span style="color: #2b91af">Species</span><br />	{<br />		<span style="color: blue">public</span>&nbsp;<span style="color: #2b91af">Guid</span> Id { <span style="color: blue">get</span>; <span style="color: blue">set</span>; }<br />		<span style="color: blue">public</span>&nbsp;<span style="color: blue">string</span> Name { <span style="color: blue">get</span>; <span style="color: blue">set</span>; }<br />		<span style="color: blue">public</span>&nbsp;<span style="color: blue">string</span> BinomialName { <span style="color: blue">get</span>; <span style="color: blue">set</span>; }<br />		<span style="color: blue">public</span>&nbsp;<span style="color: blue">bool</span> IsEndangered { <span style="color: blue">get</span>; <span style="color: blue">set</span>; }<br />		<span style="color: blue">public</span>&nbsp;<span style="color: blue">int</span> Population { <span style="color: blue">get</span>; <span style="color: blue">set</span>; }<br />	}</pre>
+<p>It contains current observed species at an observatory.</p>
+<p>Then a simple new statement, let’s say that a new species has be registered at the observatory :</p>
+<pre style="font-family: consolas">	<span style="color: blue">var</span> duck = <span style="color: blue">new</span>&nbsp;<span style="color: #2b91af">DuckContext'(connectionString)</span>;<br />	<span style="color: blue">var</span> speciesId = <span style="color: #2b91af">Guid</span>.NewGuid();<br />	duck.In&lt;<span style="color: #2b91af">Species</span>&gt;()<br />	    .Insert(() =&gt; <br />	       <span style="color: blue">new</span>&nbsp;<span style="color: #2b91af">Species</span><br />	       {<br />		Id = speciesId,<br />	         Name = <span style="color: #a31515">"Mallard"</span>,<br />		BinomialName = <span style="color: #a31515">"Anas platyrhynchos"</span>,<br />		IsEndangered = <span style="color: blue">false</span>,<br />		Population = 50<br />	       });</pre>
+<p>Nothing tricky here..</p>
+<p>The observatory noticed a population decay, the species is endangered :</p>
+<pre style="font-family: consolas">	duck.In&lt;<span style="color: #2b91af">Species</span>&gt;()<br />	    .Where(r =&gt; r.Id == speciesId)<br />	    .Update(r =&gt; <span style="color: blue">new</span>&nbsp;<span style="color: #2b91af">Species</span> {<br />              Population = r.Population - 40,<br />              IsEndangered = <span style="color: blue">true</span>});</pre>
+<p>Here, the use of the current value of Population will not load current value. It will the following statement :</p>
+<p>UPDATE Species
+<br />SET
+<br />&nbsp;&nbsp;&nbsp; Population = Population - 40,
+<br />&nbsp;&nbsp;&nbsp; IsEndangered = 1
+<br />WHERE
+<br />&nbsp;&nbsp;&nbsp; Id = @p0</p>
+<p>I chose&nbsp; to create a new Row from the old one rather than change the original one for two reasons :</p>
+<ul>
+<li>It makes rows immutable and you don’t have to think about execution order between fields assignments. It’s the way SQL works </li>
+<li>Linq Expressions cannot represent statement blocks and assignments in C#3, Duck would have been .Net only… </li>
+</ul>
+<p>The –40 is directly in the query here because we used a constant. I we where using a variable, query would contain a parameter </p>
+<p>Now the species has disappeared, it should be removed from the observed species (though it could be just an update somewhere else) :</p>
+<pre style="font-family: consolas">	duck.In&lt;<span style="color: #2b91af">Species</span>&gt;()<br />	    .Where(r =&gt; r.Id == speciesId)<br />	    .Delete();</pre>
+<h2>Testability</h2>
+<p>To run your test you just have to use the InMemoryDuckContext… you have then access to Table&lt;T&gt;() that’ll enable you to set up your data and verify after execution that things changed as expected. I’ll talk a bit more about it soon.</p>
+<h2>Try it now, it’s OSS</h2>
+<p>You can grab the code at bitbucket and try it now :</p>
+<p><a title="http://bitbucket.org/thinkbeforecoding/duck" href="http://bitbucket.org/thinkbeforecoding/duck" target="_blank">http://bitbucket.org/thinkbeforecoding/duck</a></p>
+<p>It’s in F# ! Writing a AST analyzer in F# is far more easy, concise and expressive than in C#. You’ll just have to reference Duck in you project, there’s no direct F# dependency.</p>
+<p>Next episode will be about how to mix it with Rx (Reactive Framework) to declare your event handling logic.</p>
+<p>Hope you like it, and don’t hesitate to give feedback and suggestions.</p>

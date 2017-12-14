@@ -1,0 +1,124 @@
+<p>In the <a href="http://www.thinkbeforecoding.com/post/2009/02/07/Lazy-load-and-persistence-ignorance">previous post</a>, I introduced a class to manage function injection for lazy loads to enable persistence ignorance.</p>
+<p><a href="http://www.marisic.net/">Chris</a> was asking where the builder I was talking about should be used, and I tumbled on a <a href="http://stackoverflow.com/questions/524075/lazy-loading-whats-the-best-approach/524138#524138">StackOverflow question</a> asking how to make lazy loading without using classes like Lazy&lt;T&gt;...</p>
+<p>I'll discuss the second part first.</p>
+<p>There is a good way to make lazy loading without using classes like that. You can use proxies.</p>
+<p>There are two main ways to make transparent proxies</p>
+<ul>
+<li>by creating dynamically a derived class using Reflection.Emit</li>
+<li>by creating a transparent proxy</li>
+</ul>
+<p>Still there are some drawbacks with both approaches. For the first one, all your members should be made virtual, for the second your class should inherit from MarshalByRefObject. In all case you should then take care not to mess up between proxies and underlying classes.</p>
+<p>The main critic to refuse to use Lazy&lt;T&gt; class is usually that it's not a domain concept, and that it leaks persistence concern in the model.</p>
+<p>I reject those critics.</p>
+<p>Have you ever seen someone criticize List&lt;T&gt; or Dictionary&lt;,&gt; because it was not a domain concept ? <strong>We're writing OO code, and we can use basic tooling to make our models expressive</strong>. IEnumerable&lt;T&gt; and Linq to objects are good examples of these useful tools.</p>
+<p>And I don't consider that Lazy&lt;T&gt; is a persistence concern. <strong>It expresses that the relation between entities is a bit more loose than others</strong>. There is nothing in the Lazy&lt;T&gt; signature that ties your entity to any persistence concept. You just provide a way to give the value of the property when needed rather than at construction, but this choice comes from outside of your entity.</p>
+<p>And at least it becomes clearer than with derived proxies where the C# keyword <strong>virtual</strong> is used to express something but tries to hide it in the same time.</p>
+<p>&nbsp;</p>
+<p>For Chris question, I use the builder in the repository.</p>
+<p>The repository is responsible for retrieving entities from the data store. The reconstruction of objects is a bit different from the construction. This is underlined in Evan's book in the chapter <em>Factories / Reconstituting Stored Objects.</em></p>
+<p>In my data access layer I use a IDataBuilder&lt;T&gt; interface that represents a service that can build an object of type T from a IDataRecord. This is when I work directly with the ADO.Net and stored procedures.</p>
+<div style="BORDER-RIGHT: #aaaaaa 1px solid; BORDER-TOP: #aaaaaa 1px solid; FONT-SIZE: 10pt; BACKGROUND: #f8f8f8; BORDER-LEFT: #aaaaaa 1px solid; COLOR: black; BORDER-BOTTOM: #aaaaaa 1px solid; FONT-FAMILY: courier new">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">interface</span> <span style="COLOR: #2b91af">IDataBuilder</span>&lt;T&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; T Build(IDataRecord record);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>&nbsp;</p>
+<p>I also use a class that encapsulate the access to the stored procedures (or queries if you don't want to use stored procedures).</p>
+<div style="BORDER-RIGHT: #aaaaaa 1px solid; BORDER-TOP: #aaaaaa 1px solid; FONT-SIZE: 10pt; BACKGROUND: #f8f8f8; BORDER-LEFT: #aaaaaa 1px solid; COLOR: black; BORDER-BOTTOM: #aaaaaa 1px solid; FONT-FAMILY: courier new">
+<p style="MARGIN: 0"><span style="COLOR: blue">&nbsp;&nbsp;&nbsp; public</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">DataAccess</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> UniqueResult&lt;<span style="COLOR: #2b91af">Entity</span>&gt; GetEntity(<span style="COLOR: #2b91af">Guid</span> id);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: green">//...</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> MultipleResult&lt;Entity&gt; GetEntities()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: green">//...</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>&nbsp;</p>
+<p>UniqueResult&lt;T&gt; and MultipleResult&lt;T&gt; provides a methods that take a builder to read data records :</p>
+<div style="BORDER-RIGHT: #aaaaaa 1px solid; BORDER-TOP: #aaaaaa 1px solid; FONT-SIZE: 10pt; BACKGROUND: #f8f8f8; BORDER-LEFT: #aaaaaa 1px solid; COLOR: black; BORDER-BOTTOM: #aaaaaa 1px solid; FONT-FAMILY: courier new">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">struct</span> <span style="COLOR: #2b91af">UniqueResult</span>&lt;T&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> T With(IDataBuilder&lt;T&gt; builder)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: green">//...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">struct</span> <span style="COLOR: #2b91af">MultipleResult</span>&lt;T&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: #2b91af">IEnumerable</span>&lt;T&gt; With(IDataBuilder&lt;T&gt; builder)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: green">//...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>&nbsp;</p>
+<p>In your repository implementation you can then use all this :</p>
+<div style="BORDER-RIGHT: #aaaaaa 1px solid; BORDER-TOP: #aaaaaa 1px solid; FONT-SIZE: 10pt; BACKGROUND: #f8f8f8; BORDER-LEFT: #aaaaaa 1px solid; COLOR: black; BORDER-BOTTOM: #aaaaaa 1px solid; FONT-FAMILY: courier new">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: green">// The concrete repository interface that belongs to the domain</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">interface</span> <span style="COLOR: #2b91af">IEntityRepository</span> : <span style="COLOR: #2b91af">IEnumerable</span>&lt;Entity&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Entity <span style="COLOR: blue">this</span>[<span style="COLOR: #2b91af">Guid</span> id] { <span style="COLOR: blue">get</span>;}</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: green">//.. other methods</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: green">// the implementation that is not part of the domain</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: green">// an that is pesistance dependant.</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">internal</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">EntityRepository</span> : <span style="COLOR: #2b91af">IEntityRepository</span></p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> DataAccess dataAccess;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: #2b91af">EntityBuilder</span> builder;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> EntityRepository(DataAccess dataAccess, <span style="COLOR: #2b91af">EntityBuilder</span> builder)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">this</span>.dataAccess = dataAccess;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">this</span>.builder = builder;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: #2b91af">IEnumerator</span>&lt;Entity&gt; GetEnumerator()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> dataAccess.GetEntities().With(builder);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">IEnumerator</span> <span style="COLOR: #2b91af">IEnumerable</span>.GetEnumerator()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> GetEnumerator();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> Entity <span style="COLOR: blue">this</span>[<span style="COLOR: #2b91af">Guid</span> id]</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">get</span> { <span style="COLOR: blue">return</span> dataAccess.GetEntity(id).With(builder); }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>&nbsp;</p>
+<p>The last part is in the implementation of the builder.</p>
+<div style="BORDER-RIGHT: #aaaaaa 1px solid; BORDER-TOP: #aaaaaa 1px solid; FONT-SIZE: 10pt; BACKGROUND: #f8f8f8; BORDER-LEFT: #aaaaaa 1px solid; COLOR: black; BORDER-BOTTOM: #aaaaaa 1px solid; FONT-FAMILY: courier new">
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">internal</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">EntityBuilder</span> : IDataBuilder&lt;Entity&gt;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> DataAccess dataAccess;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> EntityBuilder(DataAccess dataAccess)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">this</span>.dataAccess = dataAccess;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> Entity GetEntity(IDataRecord record)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">var</span> id = (<span style="COLOR: #2b91af">Guid</span>)record[<span style="COLOR: #a31515">"Id"</span>];</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> <span style="COLOR: blue">new</span> Entity(</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; id, </p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">Lazy</span>.From(() =&gt; dataAccess.GetSubEntity(id)));</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+</div>
+<p>&nbsp;</p>
+<p>Of course, the repository implementation, the DataAccess class and the builder are all internal to the data access implementation. It can be in a separate Assembly or internal in a sub namespace of the main assembly depending on you module separation preferences.</p>
+<p>When using linq, you simply don't need the DataAccess class because you can query the DataContext directly. But you can use the same pattern.</p>
+<p><em>The main point is still that your Entity object knows strictly nothing about what's going on there.</em></p>

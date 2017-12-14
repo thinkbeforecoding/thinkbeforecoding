@@ -1,0 +1,112 @@
+<p>Last month, I made a presentation about Event Sourcing - a shorter version of my DevoxxFr talk. After me, Etienne and Maher from Sfeir, did a presentation on the same subject and their architecture inspired by LMAX.</p>
+<p>I immediately noticed their reference to this <a href="http://www.martinfowler.com/eaaDev/EventSourcing.html">Event Sourcing page by Martin Fowler</a>, and started to see several point of pain lurking in their long term maintenance…</p>
+<p>I won’t make a flaming post against Martin Fowler that has written lots of interesting stuff. Even this article says nothing wrong. It just takes a way that can cause long term pains as expressed in the page itself…</p>
+<h3>Sourcing Events, but which Events ?</h3>
+<p>The article starts with a totally valid definition of Event Sourcing:</p>
+<blockquote>
+<p><em>Capture all changes to an application state as a sequence of events.</em></p>
+</blockquote>  <p>The question then is… where do these events come from ?</p>
+<blockquote>
+<p>In this case when the service is called, it finds the relevant ship and updates its location. The ship objects record the current known state of the ships.      <br />Introducing Event Sourcing adds a step to this process. Now the service creates an event object to record the change and processes it to update the ship.</p>
+</blockquote>
+<p> A C# sample a bit further to make it clearer:</p>
+<pre class="code">class EventProcessor...
+IList log = new ArrayList();
+public void Process(DomainEvent e) {
+e.Process();
+log.Add(e);
+}
+</pre>
+<p>As you can notice, the Event is produced before reaching the event processor…</p>
+<p>Constrast this with the following version:</p>
+<pre class="code">class Cargo
+{
+IList log = new List<event>();
+private State currentState;
+public Cargo(IEnumberable<event> events)
+{
+foreach(var @event in events)
+Apply((dynamic) @event);
+}
+public void Arrive(Port port)
+{
+// logic to verify the action can be done
+// based on current state and command parameters
+if (IsAlreadyInPort) throw Exception();
+// create an event of what happened with this action
+// it should not mutate state,
+// but it can capture external state when it arrives
+// it's also based on current state and command parameters
+var @event = new ShipArrived(id, port, DateTime.Now)
+// apply change du to the event
+// it should require only current state and
+Apply(@event);
+log.Add(@event);
+// events will be published to the rest of the system
+// from there.. This is where further side effect will
+// occure
+}
+private void Apply(ShipArrived @event)
+{
+// no decision should happen here !
+currentState.Port = @event.Port;
+currentstate.LastMove = @event.Time;
+}
+}
+</event></event></pre>
+<p>From a functional point of view this pattern can be build from two pure functions:</p>
+<pre class="code">Decide:
+Command -&gt; State -&gt; Event list
+ApplyStateChange:
+State -&gt; Event -&gt; State
+</pre>
+<p>Here, stored event has been produced by the aggregate itself ! The output is stored.</p>
+<h3>Nice, but why should I care ?</h3>
+<p>After all, since Martin says the first version is ok… let’s go !</p>
+<p>This would be without noticing several warnings in the rest of the article.</p>
+<h3>External Systems</h3>
+<p>from the same page:</p>
+<blockquote>
+<p>One of the tricky elements to Event Sourcing is how to deal with external systems that don't follow this approach (and most don't). You get problems when you are sending modifier messages to external systems and when you are receiving queries from other systems.</p>
+<p>Many of the advantages of Event Sourcing stem from the ability to replay events at will, but if these events cause update messages to be sent to external systems, then things will go wrong because those external systems don't know the difference between real processing and replays.</p>
+</blockquote>  <p>The second version doesn’t suffer this problem…</p>
+<p>Because rebuilding the state (like done in the constructor) only use the Apply method (or the ApplyStateChange function in the functional version)..</p>
+<p>This Apply method only works with internal state and produces no external side effects..</p>
+<h3>External Queries</h3>
+<p>Another problem arising with Martin Fowler’s proposal:</p>
+<blockquote>
+<p>The primary problem with external queries is that the data that they return has an effect on the results on handling an event. If I ask for an exchange rate on December 5th and replay that event on December 20th, I will need the exchange rate on Dec 5 not the later one.</p>
+</blockquote>  <p>Here again, the second version doesn’t suffer the problem..</p>
+<p>The data from the external system will be used to build the event. It can be directly stored in it (like the current time in the sample), but can also be used in a computation. For instance, command contains prices in USD, query an current rate from USD to EUR, compute a price in EUR and put it in the event.   <br />The rate at the time of the computation is baked in the event ! No need to remember the rate value afterward, especially no need to complex external system gateway.</p>
+<p>It could still be better for debugging purpose to put the used rate explicitly in the event.</p>
+<p>But the second version intrinsically handles this issue gracefully…</p>
+<p>   <h3>     <p>External Interactions</p>
+</h3>
+<blockquote>
+<p>Both queries and updates to external systems cause a lot of complication with Event Sourcing. You get the worst of both with interactions that involve both. Such an interaction might be a an external call that both returns a result (a query) but also causes a state change to the external system, such as submitting an order for delivery that return delivery information on that order.&nbsp; </p>
+</blockquote>  <p>Problem solved by version 2….</p>
+<h3>Code Changes</h3>
+<blockquote>
+<p>So this discussion has made the assumption that the application processing the events stays the same. Clearly that's not going to be the case. Events handle changes to data, what about changes to code?     <br />[…]      <br />The third case is where the logic itself changes over time, a rule along the lines of "charge $10 before November 18 and $15 afterwords". This kind of stuff needs to actually go into the domain model itself. The domain model should be able to run events at any time with the correct rules for the event processing. You can do this with conditional logic, but this will get messy if you have much temporal logic. The better route is to hook strategy objects into a <a href="http://www.martinfowler.com/eaaDev/TemporalProperty.html">Temporal Property</a>: something like <code>chargingRules.get(aDate).process(anEvent)</code>. Take a look at <a href="http://www.martinfowler.com/eaaDev/AgreementDispatcher.html">Agreement Dispatcher</a> for this kind of style.</p>
+</blockquote>  <p>Wooo… when I read this, it’s a red flag for me ! I never want to deal with this kind of problems !</p>
+<p>Especially if they’re expected to happen for sure !</p>
+<p>How does it go with the second version ?</p>
+<p>Events are produced by the code that contains the logic. Before November 18, the events emitted where based on code that charge $10. After, the code charges $15.</p>
+<p>When using the Apply method, it doesn’t have to know how much to charge, it’s already in saved events !</p>
+<p>There is no need to keep an history of versions of domain logic - except in your source control !</p>
+<p>It can even cop with changes far more complex that the one in this sample. In any case, all data needed to compute current state has been put in the event.</p>
+<h3>Correcting logic bugs</h3>
+<p>One of the advantages advanced by Martin Fowler, is that you can change how you take the decision after the fact.</p>
+<p>But if an event is an event, it already happened, and there’s no way we can go back in time to change it. We wont be able to change external side effects anyway, so just accept it.</p>
+<p>It’s still possible to apply compensations… like accountants. When they charged you to much, they don’t use a time machine to make has if nothing happened.. the just add a chargeback entry at the end of the ledger.</p>
+<h3>Command Sourcing ?</h3>
+<p>I call the pattern proposed by Martin Fowler Command Sourcing. </p>
+<p>A Command is a request made to the system to do something. At this point a lot of thing can still happen. It can fail, it can be influenced by external state..</p>
+<p>An event is something that happen and that cannot be changed.</p>
+<p>You can protest that an Arrival Event is an event, not a command.</p>
+<p>Sure, but for the system it’s an <strong>upstream event</strong>. Not something that happened in the system.</p>
+<p>Where’s the difference in the second verions ?</p>
+<p>The upstream version will go to a reactor that will produce an Arrive command (notice the present tense) inside the system.   <br />The system will then produce a ShipArrived event (notice the passed tense). This event has been emitted by the system itself.</p>
+<p>The Martin Fowler’s version takes a shortcut: bypassing the reactor emitting a command, but it is equivalent to sourcing commands.</p>
+<h3>Martin, this is a call to action !</h3>
+<p>Since a lot of people have read, and will read the entry on your web site, can you add something about the pattern described here to reduce the pain of people that will want to start with Event Sourcing ?</p>

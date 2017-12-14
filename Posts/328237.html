@@ -1,0 +1,184 @@
+<p>I’m still working mainly with Visual Studio 2005 at work, and I was really missing Linq to Objects features. And I’m sure I’m not the only one.</p>
+<p>There are <a href="http://code.google.com/p/backlinq/">workarounds</a> when compiling C#2.0 code using Visual Studio 2008 since it’s using the C#3.0 compiler internally, but it won’t work in VS2005.</p>
+<p>&nbsp;</p>
+<h3>How does linq to objects work ?</h3>
+<p>Linq to Object works by chaining operations on the <strong>IEnumerable&lt;&gt;</strong> interface.</p>
+<p>When writing the following the following linq query statement</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;&nbsp; <span style="COLOR: blue">var</span> paperBackTitles = <span style="COLOR: blue">from</span> book <span style="COLOR: blue">in</span> books</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">where</span> book.PublicationYear == 2009</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">select</span> book.Title;</p>
+</div>
+<p>The compiler translates it to :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp; <span style="COLOR: #2b91af">IEnumerable</span>&lt;<span style="COLOR: blue">string</span>&gt; paperBackTitles = books</p>
+<p style="MARGIN: 0">&nbsp;&nbsp; .Where(book =&gt; book.PublicationYear == 2009)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp; .Select(book =&gt; book.Title);</p>
+</div>
+<p>&nbsp;</p>
+<p>The lambdas are used as simple delegates in Linq to Object using the following definitions :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp;<span style="COLOR: blue">public</span> <span style="COLOR: blue">delegate</span> TResult <span style="COLOR: #2b91af">Func</span>&lt;T,TResult&gt;(T arg);</p>
+<p style="MARGIN: 0">&nbsp;<span style="COLOR: blue">public</span> <span style="COLOR: blue">delegate</span> TResult <span style="COLOR: #2b91af">Func</span>&lt;T1,T2,TResult&gt;(T1 arg1, T2 arg2);</p>
+<p style="MARGIN: 0">&nbsp;<span style="COLOR: green">//...</span></p>
+<p style="MARGIN: 0">&nbsp;<span style="COLOR: blue">public</span> <span style="COLOR: blue">delegate</span> <span style="COLOR: blue">bool</span> <span style="COLOR: #2b91af">Predicate</span>&lt;T&gt;(T arg);</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;<span style="COLOR: blue">public</span> <span style="COLOR: blue">delegate</span> <span style="COLOR: blue">void</span> <span style="COLOR: #2b91af">Action</span>&lt;T&gt;(T arg);</p>
+<p style="MARGIN: 0">&nbsp;<span style="COLOR: blue">public</span> <span style="COLOR: blue">delegate</span> <span style="COLOR: blue">void</span> <span style="COLOR: #2b91af">Action</span>&lt;T1,T2&gt;(T1 arg1, T2 arg2);</p>
+<p style="MARGIN: 0">&nbsp;<span style="COLOR: green">//...</span></p>
+</div>
+<p>So the preceding code is equivalent to :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp; <span style="COLOR: #2b91af">IEnumerable</span>&lt;<span style="COLOR: blue">string</span>&gt; paperBackTitles = books</p>
+<p style="MARGIN: 0">&nbsp;&nbsp; .Where(<span style="COLOR: blue">delegate</span>(<span style="COLOR: #2b91af">Book</span> book){<span style="COLOR: blue">return</span> book.PublicationYear == 2009;})</p>
+<p style="MARGIN: 0">&nbsp;&nbsp; .Select(<span style="COLOR: blue">delegate</span>(<span style="COLOR: #2b91af">Book</span> book){<span style="COLOR: blue">return</span> book.Title;});</p>
+</div>
+<p>But the <strong>IEnumerable&lt;&gt;</strong> interface doesn’t provide those methods. These are actually extension methods defined in the <strong>Enumerable</strong> class.</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">Enumerable</span></p>
+<p style="MARGIN: 0">&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: #2b91af">IEnumerable</span>&lt;T&gt; Where&lt;T&gt;(</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">this</span> <span style="COLOR: #2b91af">IEnumerable</span>&lt;T&gt; source,</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">Predicate</span>&lt;T&gt; predicate);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: #2b91af">IEnumerable</span>&lt;TResult&gt; Select&lt;T, TResult&gt;(</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">this</span> <span style="COLOR: #2b91af">IEnumerable</span>&lt;T&gt; source,</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">Func</span>&lt;T, TResult&gt; projection);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: green">//...</span></p>
+<p style="MARGIN: 0">&nbsp; }</p>
+</div>
+<p>&nbsp;</p>
+<p>The translation is immediate :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp; <span style="COLOR: #2b91af">IEnumerable</span>&lt;<span style="COLOR: blue">string</span>&gt; paperBackTitles = </p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">Enumerable</span>.Select(</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">Enumerable</span>.Where(books,</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">delegate</span>(<span style="COLOR: #2b91af">Book</span> book) </p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; { <span style="COLOR: blue">return</span> book.PublicationYear == 2009; }),</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">delegate</span>(<span style="COLOR: #2b91af">Book</span> book) { <span style="COLOR: blue">return</span> book.Title; });</p>
+</div>
+<p>Once we’re here, there’s nothing that cannot be implemented in C#2.0.</p>
+<p>&nbsp;</p>
+<h3>What do we need ?</h3>
+<p>There is plenty of things in Linq to Object, and I prefer to say right now that we will not have the full integrated query syntax !</p>
+<p>Implementing the static Enumerable class is not very difficult, let’s provide a implementation for Where and Select :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">Enumerable</span></p>
+<p style="MARGIN: 0">&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: #2b91af">IEnumerable</span>&lt;T&gt; Where&lt;T&gt;(</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">IEnumerable</span>&lt;T&gt; source,</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">Predicate</span>&lt;T&gt; predicate)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">if</span> (source == <span style="COLOR: blue">null</span>)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">throw</span> <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">ArgumentNullException</span>(<span style="COLOR: #a31515">"source"</span>);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">if</span> (predicate == <span style="COLOR: blue">null</span>)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">throw</span> <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">ArgumentNullException</span>(<span style="COLOR: #a31515">"predicate"</span>);</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> WhereIterator(source, predicate);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">static</span> <span style="COLOR: #2b91af">IEnumerable</span>&lt;T&gt; WhereIterator&lt;T&gt;(</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">IEnumerable</span>&lt;T&gt; source,</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">Predicate</span>&lt;T&gt; predicate)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">foreach</span> (T item <span style="COLOR: blue">in</span> source)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">if</span> (predicate(item))</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">yield</span> <span style="COLOR: blue">return</span> item;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: #2b91af">IEnumerable</span>&lt;TResult&gt; Select&lt;T, TResult&gt;(</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">IEnumerable</span>&lt;T&gt; source,</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">Func</span>&lt;T, TResult&gt; projection)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">if</span> (source == <span style="COLOR: blue">null</span>)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">throw</span> <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">ArgumentNullException</span>(<span style="COLOR: #a31515">"source"</span>);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">if</span> (projection == <span style="COLOR: blue">null</span>)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">throw</span> <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">ArgumentNullException</span>(<span style="COLOR: #a31515">"projection"</span>);</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> SelectIterator(source, projection);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">static</span> <span style="COLOR: #2b91af">IEnumerable</span>&lt;TResult&gt; SelectIterator&lt;T, TResult&gt;(</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">IEnumerable</span>&lt;T&gt; source,</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">Func</span>&lt;T, TResult&gt; projection)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">foreach</span> (T item <span style="COLOR: blue">in</span> source)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">yield</span> <span style="COLOR: blue">return</span> projection(item);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: green">//...</span></p>
+<p style="MARGIN: 0">}</p>
+</div>
+<p>You can notice that I’m splitting the methods in a part that does argument check and another one that makes the actual iteration process. This is because the iterator code will only get called when actually iterating, and it will be really hard to find out why the code throws an exception at that moment. By performing argument checking in a <em>non-iterator</em> method, the exception is thrown at actual method call.</p>
+<p>&nbsp;</p>
+<p>Since C#2.0 doesn’t support <strong>extension methods</strong> we’ll have to find something so that the code doesn’t look ugly as in the final translation above.</p>
+<p>&nbsp;</p>
+<h3>Simulating extension methods in C#2.0</h3>
+<p>Extension methods are just syntactic sugar and are simply converted to a static method call by the compiler :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp; books.Where(predicate)</p>
+<p style="MARGIN: 0">&nbsp; <span style="COLOR: green">// is translated to</span></p>
+<p style="MARGIN: 0">&nbsp; <span style="COLOR: #2b91af">Enumerable</span>.Where(books, predicate)</p>
+</div>
+<p>If we can wrap the books variable in a kind of C++ smart pointer providing the Where method, the trick is done.</p>
+<p>To do this, we will use a small struct that encapsulate the IEnumerable&lt;&gt; interface :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">struct</span> <span style="COLOR: #2b91af">Enumerable</span>&lt;T&gt; : <span style="COLOR: #2b91af">IEnumerable</span>&lt;T&gt;</p>
+<p style="MARGIN: 0">&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">private</span> <span style="COLOR: blue">readonly</span> <span style="COLOR: #2b91af">IEnumerable</span>&lt;T&gt; source;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> Enumerable(<span style="COLOR: #2b91af">IEnumerable</span>&lt;T&gt; source)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">this</span>.source = source;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: #2b91af">IEnumerator</span>&lt;T&gt; GetEnumerator()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> source.GetEnumerator();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">IEnumerator</span> <span style="COLOR: #2b91af">IEnumerable</span>.GetEnumerator()</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> GetEnumerator();</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: #2b91af">Enumerable</span>&lt;T&gt; Where(<span style="COLOR: #2b91af">Predicate</span>&lt;T&gt; predicate)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">Enumerable</span>&lt;T&gt;(</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">Enumerable</span>.Where(source, predicate)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; );</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: #2b91af">Enumerable</span>&lt;TResult&gt; Select&lt;TResult&gt;(</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">Func</span>&lt;T, TResult&gt; projection)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> <span style="COLOR: blue">new</span> <span style="COLOR: #2b91af">Enumerable</span>&lt;TResult&gt;(</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">Enumerable</span>.Select(source, projection)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; );</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: green">//...</span></p>
+<p style="MARGIN: 0">}</p>
+</div>
+<p>The return type is Enumerable&lt;&gt; so that calls can be chained.</p>
+<p>&nbsp;</p>
+<p>We can had a small helper to make the smart pointer creation shorter :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> <span style="COLOR: blue">class</span> <span style="COLOR: #2b91af">Enumerable</span></p>
+<p style="MARGIN: 0">&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">public</span> <span style="COLOR: blue">static</span> Enumerable&lt;T&gt; From&lt;T&gt;(</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">IEnumerable</span>&lt;T&gt; source)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; {</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="COLOR: blue">return</span> <span style="COLOR: blue">new</span> Enumerable&lt;T&gt;(source);</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; }</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: green">//...</span></p>
+<p style="MARGIN: 0">}</p>
+</div>
+<p>Now we can write :</p>
+<div style="BORDER-BOTTOM: #a0a0a0 1px solid; BORDER-LEFT: #a0a0a0 1px solid; FONT-FAMILY: courier new; BACKGROUND: #f8f8f8; COLOR: black; FONT-SIZE: 10pt; BORDER-TOP: #a0a0a0 1px solid; BORDER-RIGHT: #a0a0a0 1px solid">
+<p style="MARGIN: 0">&nbsp; <span style="COLOR: #2b91af">IEnumerable</span>&lt;<span style="COLOR: blue">string</span>&gt; paperBackTitles = </p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp; <span style="COLOR: #2b91af">Enumerable</span>.From(books)</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; .Where(<span style="COLOR: blue">delegate</span>(<span style="COLOR: #2b91af">Book</span> book){<span style="COLOR: blue">return</span> book.PublicationYear == 2009;})</p>
+<p style="MARGIN: 0">&nbsp;&nbsp;&nbsp;&nbsp; .Select&lt;<span style="COLOR: blue">string</span>&gt;(<span style="COLOR: blue">delegate</span>(<span style="COLOR: #2b91af">Book</span> book){<span style="COLOR: blue">return</span> book.Title;});</p>
+</div>
+<p>We just have to extend the Enumerable class and Enumerable&lt;&gt; struct with more methods to get a full linq to object implementation in C# 2.0.</p>

@@ -1,0 +1,25 @@
+<p>Be sure to read the three preceding parts of the series:</p>
+<p><a href="http://thinkbeforecoding.com/post/2009/10/30/Event-Sourcing-and-CQRS-Now" target="_blank">Event Sourcing and CQRS, Now !</a>&nbsp;&nbsp; <br /><a href="http://thinkbeforecoding.com/post/2009/11/02/Event-Sourcing-and-CQRS-Lets-use-it" target="_blank">Event Sourcing and CQRS, Let’s use it</a> <br /><a href="http://thinkbeforecoding.com/post/2009/11/03/Event-Sourcing-and-CQRS-Dispatch-options" target="_blank">Event Sourcing and CQRS; Dispatch-options</a></p>
+<p>Today, we’ll study to a required part of the event storage : Serialization/Deserialization</p>
+<h2>The easy way</h2>
+<p>The .Net framework as several serialization technologies that can be used here, Binary serialization, XML serialization or even DataContract serialization introduced with WCF.</p>
+<h2>The penalty</h2>
+<p>The particularity of Event Sourcing is that we will never delete or update stored events. They’ll be logged, insert only, once and forever.</p>
+<p>So the log grows. grows. grows.</p>
+<p>Event storage size will influence greatly the growth rate of the log.</p>
+<h3>Xml Serialization</h3>
+<p>If your system processes frequently lots of events, forget about XML. Far to verbose, you’ll pay the <a href="http://www.codinghorror.com/blog/archives/001114.html" target="_blank">Angle Bracket Tax</a>.</p>
+<h3>Binary Serialization</h3>
+<p>But the binary serialization still cost much, even if compact, it will contain type names and field names…</p>
+<h3>Raw Serialization</h3>
+<p>You could write serialization/deserialization code into your type.</p>
+<p>The type can chose a format, so no extra type/field name is needed. This kind of serialization is very compact – it contains only required bits – but you cannot read data back without the deserialization code.</p>
+<p>It can be ok if you plan to have a definite small number of well documented events. Unmanageable if your event type count will grow with time and versions.</p>
+<h2>Avoid it</h2>
+<p>Let’s consider how data are stored in a database.</p>
+<p>A database contains tables. Tables have a schema. When storing a row, no need to repeat column names on each cell. The data layout is defined by the table schema and will be the same on each row.</p>
+<p>We cannot do the same since events have different schemas, but we work with a limited set of events that will occur many times.</p>
+<h2>Split schema and data</h2>
+<p>We can thus store schemas aside, and specify the row data schema on each row. The event data will the be stored as raw bits corresponding to specified schema.</p>
+<p>This way you can design tools to explore your log file with complete event representation without needing the original event class, and you got a very compact serialization. Have your cake and eat it too !</p>
+<p>Stay tuned, the code comes tomorrow…</p>

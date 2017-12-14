@@ -1,0 +1,58 @@
+<p><a href="http://www.udidahan.com/" target="_blank">Udi Dahan</a> gave a very good talk yesterday evening at Zenika, there was only few attendees… perhaps because it was on a Monday evening. Whatever, there was barely not enough place already in the Italian restaurant where we moved after.</p>
+<p>I won’t make a full report, just talk about some interesting points. </p>
+<p>First of all, the session focused mainly on why you should do CQRS and not how. Second point, the talk was not about event sourcing, but you already now that you can do CQRS without event sourcing.</p>
+<h2>Something we should accept : Stale Data</h2>
+<p>The paradigm of usual architecture’s best practice has a serious flow : when you show data to your users, it’s already stale.</p>
+<p>Is it important ? Yes.</p>
+<p>Is it a problem ? Not really.</p>
+<p>The world have worked with stale data for years, and it was handled rather gracefully until now. Computers have reduced the time span, but when the data appear on the screen, it’s stale.</p>
+<p>Tel it to your users, they will accept it. Find with them what is acceptable. 1 second, 10 seconds, 1 minute, 1 hour, 1 day ? The users are used to it in there own business. Do it too.</p>
+<h2>Queries</h2>
+<p>What’s the purpose of queries ? To show data. Not objects.</p>
+<p>So why should the data from the database come across 5 layers through 3 model transformations ? It’s a bit overkill to display data.</p>
+<p>Why not just this : The UI read data from the database and displays it ?</p>
+<p>No DTOs, no ORM, not business rules executed on each query.</p>
+<p>You simply define a <strong>Persistent ViewModel</strong> (thank’s Udi, I like this description of the Q side), and display it directly to screen. It should be as simple as one database table per UI view.</p>
+<p>Of course you need a way to keep the Persistent ViewModel up to date, but we’ll see that later.</p>
+<h2>Commands</h2>
+<p>On the other side, there are commands. </p>
+<p>It should be done in 3 phases :</p>
+<h3>Validation</h3>
+<p>Is the input potentially good ? Structured correctly, no missing field, everything fit in ranges ?</p>
+<p>This can be done without knowing current state, and be done outside of entities command handling.</p>
+<h3>Rules</h3>
+<p>Should we do this ?</p>
+<p>Here, the decision is taken using current state.</p>
+<p>It leads to a discussion about UI design. In order to handle the user command as well as you can, you have to capture the user intent in the command.</p>
+<p>In CRUD applications, the new data is sent by the UI layer. You have to extract the user intent from that data to know if you can process the data.</p>
+<p>There is a huge difference between UserMovesToNewAddress and CorrectTheMisspellingInUserAddress from a business point, but in a CRUD application you would probably end with the same Update data…</p>
+<h3>State change</h3>
+<p>What’s the new state ?</p>
+<p>It’s the easy part once the rules are applied.</p>
+<h2>Domain Model</h2>
+<h3>What aren’t they for ?</h3>
+<p><strong>Validation</strong> : commands are validated before the model is called. Do not bloat your domain model with this.</p>
+<p><strong>Queries</strong> : entity relationships for reading are unnecessary. You can do eager loading on your Aggregate Roots safely, they’ll never be used for queries that need only partial information.</p>
+<h3>What are they for ?</h3>
+<p><strong>Answer to the question</strong> : should we do what this valid command is asking ?</p>
+<p>If the answer is yes, <strong>change the state</strong> !</p>
+<h2>Maintain the query model up to date</h2>
+<p>There are two main ways to maintain query model up to date.</p>
+<p>You can use something like views or ETL to transform data from the domain data to the shape required by the query side.</p>
+<p>If you prefer, or when your domain persistence is not compatible with this option (OODB, Event Storage..), you can publish events from you command side, and provides handler’s on the query side that will maintain the views state in the relational database (or a cube… or whatever). A denormalization will happen here.</p>
+<h2>What do we gain from this ?</h2>
+<h3>Asynchronous model</h3>
+<p>The model is deeply asynchronous, it’s not a matter of tweaking things with threads. It’s asynchronous from the ground up, at domain level.</p>
+<p>Your user sends a command, and your design is good if you can answer : “thank you, we will come back to you soon…”. Take the time needed to fulfill your user wish, he will be happy !</p>
+<h3>Scalability</h3>
+<p>By relaxing the rules, the system becomes more scalable.</p>
+<h3>Domain persistence choice</h3>
+<p>The domain is accessed only to process rules and state changes. There is no need to join tables, filter rows. So you can easily use an non relational database.</p>
+<p>Possible options are a OODB or an Event Storage (for event sourcing).</p>
+<p>You can still use a RDBMS with or without an ORM if you’re more familiar with these technologies.</p>
+<p>But the persistence mechanism becomes an implementation detail from from Command side that will not interfere with your queries.</p>
+<h2>Conclusion</h2>
+<p>Ooops, I said it was not a complete report… but it actually is. Every point was interesting ?</p>
+<p>After the talk we had a discussion about forecasting and other interesting subjects. Perhaps more on this later.</p>
+<p>There was a video camera in the room, so I think the guys from Zenika will try to put it on the internet when they have time. I’ll add the link when available.</p>
+<p>If you was here and have a picture of the event, I would be glad to put it in the blog :D</p>

@@ -1,0 +1,22 @@
+<p>I had a peek through <a href="http://feeds.feedburner.com/~r/JonSkeetCodingBlog/~3/492393350/new-version-of-data-structures-and-algorithms-book-now-online.aspx">Jon Skeet’s blog</a> this morning at a free eBook called <a href="http://dotnetslackers.com/projects/Data-Structures-And-Algorithms/">Data Structures and Algorithms</a> by <a href="http://msmvps.com/blogs/gbarnett/archive/2008/12/22/data-structures-and-algorithms-book-flying-out-again.aspx">Granville Barnett</a> and <a href="http://blogs.ugidotnet.org/WetBlog/archive/2008/12/19/aggiornamento-data-structure-and-algorithms-book.aspx">Luca Del Tongo</a>.</p>
+<p>The book is clear and presents the usual linked lists, trees, sets structures in a concise yet precise way.</p>
+<p>There’s something new I had not seen in other algorithm books before. The algorithms are written in pseudo code, but <em>there is a chapter about unit testing your implementation</em>.</p>
+<p>If the writers read this, I just would like to share a little tricks that make linked list algorithms easier to write..</p>
+<p>Linked list algorithms are always bloated with tests like this :</p>
+<div style="background: white; color: black; font-family: courier new; font-size: 10pt;">
+<p style="margin: 0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: blue;">if</span> (head == <span style="color: blue;">null</span>)</p>
+<p style="margin: 0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; head = ...;</p>
+<p style="margin: 0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: blue;">else</span></p>
+<p style="margin: 0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; node-&gt;Next = ...;</p>
+</div>
+<p>Actually the content of head and then content of node-&gt;Next are both pointers on next node. But the way to reference those two locations is different, ending in a lot of if statements.</p>
+<p>If the language supports reference variables or pointer, you can use a double pointer to hold the current position :</p>
+<div style="background: white; color: black; font-family: courier new; font-size: 10pt;">
+<p style="margin: 0;">Node** next = &amp;head;</p>
+</div>
+<p>This way there is no more difference between the head (*next) and nodes Next pointers. The little tricky thing is to move to next location :</p>
+<div style="background: white; color: black; font-family: courier new; font-size: 10pt;">
+<p style="margin: 0;">next = &amp;((*next)-&gt;Next);</p>
+</div>
+<p>With this you can consider every ‘Next’ pointer including head as equivalent. No more if statement !</p>
+<p>By the way, I was trying to find out how to do this on C#, but is it possible without going <em>unsafe</em> ?</p>

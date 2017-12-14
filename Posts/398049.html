@@ -1,0 +1,19 @@
+<p>I was looking yesterday at <a href="http://www.oredev.org/topmenu/video/ddd/ericevans.4.5a2d30d411ee6ffd28880002256.html" target="_blank">Eric Evans’ talk</a> at the Øredev conference last November.</p>
+<p>You really should see it to understand better <a href="http://gojko.net/2009/03/12/qcon-london-2009-eric-evans-what-ive-learned-about-ddd-since-the-book/" target="_blank">one of the most important part of the DDD book</a> that is difficult to grasp on first reading.</p>
+<p>I’m currently working on a small company that had a problem with scaling their system. The existing system was working correctly but was going to stall in both performance and evolution perspectives.</p>
+<p>When we arrived, the plan of the preceding head of development was :</p>
+<p><em>‘We need to restart from scratch, let’s specify everything, then code a clean version 2.0 in two years, and switch the legacy system off.’</em></p>
+<p>Of course it was expected to fail.</p>
+<p>And even if it succeeded, after two years, they would have got the same software that two years before. </p>
+<p>It could be cleaner, but who cares ?</p>
+<p>When you’ve lost two precious evolution years, for a promising startup, <strong>count it as dog years</strong>.</p>
+<p>When we took control of the situation we planned the following :</p>
+<ul>
+<li>Extract the core business value of the software.</li>
+<li>Spot where you need new features.</li>
+<li>Develop new features as if it was in a clean environment.</li>
+<li>Develop anti corruption layers to hide the legacy system behind clean interfaces.</li>
+</ul>
+<p>This way <strong>you start to work on new business value now</strong>, you make the model cleaner over time, and you have benefits of the working legacy system instantly.</p>
+<p><strong>Don’t waste your time recoding what is already working. </strong></p>
+<p><strong>Act to add value to your business.This is where your craft should go.</strong></p>

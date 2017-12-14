@@ -1,0 +1,9 @@
+<p>Back to low level considerations.</p>
+<p>In order to use a specific and shareable encryption scheme between sites, we had to bypass the <strong>FormsAuthentication.Encrypt</strong> method an write a new one.</p>
+<p>Something strange happened then. When using our implementation, the cookie disappeared ! </p>
+<p><em>The cookie was added to the <strong>Response.Cookies</strong>, but was not present in the <strong>Request.Cookies</strong> of the following request.</em></p>
+<p>After deep search, it appeared that the cookie was actually sent to the browser. Why wouldn’t it be sent back ?</p>
+<p>The really weird thing was that the cookie data was in the <strong>Response.Headers</strong>, but not in <strong>Response.Cookies</strong> !!!</p>
+<p><em>It seems that when parsing the Cookie header, <strong>Asp.net strips off the .ASPXAUTH cookie</strong> if it cannot be decrypted by <strong>FormsAuthentication.Decrypt</strong> !</em></p>
+<p>The solution was to use another cookie name, and everything was working again !</p>
+<p>If it can save 2 hours of your precious time…</p>

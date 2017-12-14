@@ -1,0 +1,44 @@
+<p>When developing a large system, all is not unicorns and rainbows.</p>
+<p>For now, everybody was working on a single SQL dev server and friction is high.</p>
+<p>&nbsp;</p>
+<p>That’s why I’m working on SQL scripts management with mercurial and powershell to the rescue, so that any developer can trash his own SQLExpress instance, and rebuild everything needed in a single command. (I’ll maybe blog about all that later).</p>
+<p>&nbsp;</p>
+<p>We have loads of stored procs.. I know people don’t like it, but it acts as a strong sanity layer when the database schema is so ugly your eyes bleed when you look at it.</p>
+<p>&nbsp;</p>
+<p>Yesterday, I run a stored proc, and I get the following error :</p>
+<p><strong>The conversion of a varchar data type to a datetime data type resulted in an out-of-range value.</strong></p>
+<p>&nbsp;</p>
+<p><em>Why the f**k.</em></p>
+<p>&nbsp;</p>
+<p>The procedures is using a scalar function :</p>
+<pre>ALTER FUNCTION [dbo].[DateMaxValue]()
+RETURNS datetime
+AS
+BEGIN
+RETURN '9999-12-31 23:59:59.998'
+END</pre>
+<p>&nbsp;</p>
+<p>It’s working on other servers.. why doesn’t it work here.</p>
+<p>After several tries, I try with the date ‘9999-12-01’ and I get the following date:</p>
+<p>Year: 9999</p>
+<p>Month: 01</p>
+<p>Day: 12</p>
+<p>&nbsp;</p>
+<p>Yes.. the date is interpreted as YYYY-dd-MM on a French server.</p>
+<p>&nbsp;</p>
+<p><strong>Even when you use the YYYY-??-?? format, SQL Server still try to mess with culture month/day ordering !</strong></p>
+<p>&nbsp;</p>
+<p>You can use the SET DATEFORMAT dmy or SET DATEFORMAT mdy to change this, but it will apply only in current session, and you cannot use it in a stored proc.</p>
+<p>&nbsp;</p>
+<p>You can change the server culture, but it wont change anything. The dmy/mdy setting is ultimately in the Login culture.</p>
+<p>&nbsp;</p>
+<p>You read it right :</p>
+<ul>
+<li>For an English Login the function above works.</li>
+<li>For a French Login the function above fails miserably.</li>
+</ul>
+<p>There is no way to my knowledge to specify a strict date parsing in a stored proc or function.</p>
+<p>&nbsp;</p>
+<p>So generates your logins with scripts, and enforce the same culture for all logins.</p>
+<p>&nbsp;</p>
+<p>It’s just profoundly broken.</p>

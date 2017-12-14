@@ -1,0 +1,26 @@
+<p>Leonardo had a question about reloading huge amounts of events.</p>
+<p>It’s true that some Aggregate Roots have very long lifetimes with lots of events, and it can become a problem.</p>
+<p>&nbsp;</p>
+<p>There are two things involved to resolve this problem :</p>
+<h3>Snapshots</h3>
+<p>Ok, the philosophy of event sourcing is to store changes instead of state, but we’ll still need state in our Aggregate Roots, and getting it from scratch can be long.</p>
+<p>Take a snapshot every n events (you’ll see that n can be quite high), and store it alongside events, with the version of the aggregate root.</p>
+<p>&nbsp;</p>
+<p>To reload the Aggregate Root, simply find the snapshot, give it to the Aggregate root, the replay events that happened after the snapshot.</p>
+<p>&nbsp;</p>
+<p>You only need the last snapshot for each Aggregate Root, no need to log all passed snapshots.</p>
+<p>&nbsp;</p>
+<p>When you want to change stored state in an Aggregate Root, you won’t be able to used last snapshot since it will not contains expected state. But you can still replay events from scratch when it happens, so you have no loss, and simply take a new snapshot with the new state.</p>
+<p>&nbsp;</p>
+<h3>In memory domain</h3>
+<p>Usually with an ORM, you reload entities from the storage on every unit of work.</p>
+<p>&nbsp;</p>
+<p>But in the case of Event Sourcing, your Aggregate Roots only need to retain state that will be used to take business decisions. You’ll never query state from Aggregate Roots. A large part of the entity state and especially the part that has the biggest memory footprint is usually stored only for queries, like names, descriptions and things like that.</p>
+<p>&nbsp;</p>
+<p>In an Aggregate Root in an Event Sourcing environment, a name or description can simply be checked for validity, put in an event, but don’t need to be kipped in the in memory entity state – the Aggregate Root fields.</p>
+<p>&nbsp;</p>
+<p>You’ll notice that your big domain state can fit in memory once you’ve trimmed it this way.</p>
+<p>&nbsp;</p>
+<p>Now that your model is in memory, no need to reload every events on each unit of work. It happens only once when the Aggregate Root is needed the first time.</p>
+<p>&nbsp;</p>
+<p>Well see soon how you can use this to make your event serialization even faster to have very high business peak throughput.</p>

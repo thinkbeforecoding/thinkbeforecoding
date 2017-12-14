@@ -1,0 +1,280 @@
+<p><em>I didn't try it on mono, but it should also work with some tweaking, see details <a href="http://go-mono.com/status/status.aspx?reference=4.0&amp;profile=4.5&amp;assembly=System.Speech">here</a></em></p>
+
+<p>Xmas is a good time to surprise kids, and what's more fun than a talking computer ?!</p>
+
+<h2>Hello world !</h2>
+
+<p>Nothing's easier, and this kind of Hello World will appeal them to programming in a flash :</p>
+
+<pre class="fssnip">
+<span class="prep">#r</span> <span class="s">&quot;</span><span class="s">System</span><span class="s">.</span><span class="s">Speech</span><span class="s">&quot;</span>
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="i">Speech</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="i">Synthesis</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs4', 4)" onmouseover="showTip(event, 'fs4', 4)" class="i">synt</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'fs5', 5)" onmouseover="showTip(event, 'fs5', 5)" class="i">SpeechSynthesizer</span>()
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs6', 6)" onmouseover="showTip(event, 'fs6', 6)" class="i">say</span> <span onmouseout="hideTip(event, 'fs7', 7)" onmouseover="showTip(event, 'fs7', 7)" class="i">s</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs4', 8)" onmouseover="showTip(event, 'fs4', 8)" class="i">synt</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs8', 9)" onmouseover="showTip(event, 'fs8', 9)" class="i">Speak</span>(<span onmouseout="hideTip(event, 'fs7', 10)" onmouseover="showTip(event, 'fs7', 10)" class="i">s</span><span class="o">:</span> <span onmouseout="hideTip(event, 'fs9', 11)" onmouseover="showTip(event, 'fs9', 11)" class="i">string</span>)
+
+<span onmouseout="hideTip(event, 'fs6', 12)" onmouseover="showTip(event, 'fs6', 12)" class="i">say</span> <span class="s">&quot;</span><span class="s">Hello</span><span class="s"> </span><span class="s">world</span><span class="s"> </span><span class="s">!</span><span class="s">&quot;</span> </pre>
+
+
+<p>Of course, if you're french like me, it'll say this with an awful french accent - something
+like <strong>hélo ouorld</strong> !</p>
+
+<p>But you can select a different voice if available by providing hints:</p>
+
+<pre class="fssnip">
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs1', 13)" onmouseover="showTip(event, 'fs1', 13)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs10', 14)" onmouseover="showTip(event, 'fs10', 14)" class="i">Globalization</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs11', 15)" onmouseover="showTip(event, 'fs11', 15)" class="i">english</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs12', 16)" onmouseover="showTip(event, 'fs12', 16)" class="i">CultureInfo</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs13', 17)" onmouseover="showTip(event, 'fs13', 17)" class="i">GetCultureInfo</span>(<span class="s">&quot;</span><span class="s">en</span><span class="s">-</span><span class="s">US</span><span class="s">&quot;</span>)
+
+<span onmouseout="hideTip(event, 'fs4', 18)" onmouseover="showTip(event, 'fs4', 18)" class="i">synt</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs14', 19)" onmouseover="showTip(event, 'fs14', 19)" class="i">SelectVoiceByHints</span>(<span onmouseout="hideTip(event, 'fs15', 20)" onmouseover="showTip(event, 'fs15', 20)" class="i">VoiceGender</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs16', 21)" onmouseover="showTip(event, 'fs16', 21)" class="i">NotSet</span>, <span onmouseout="hideTip(event, 'fs17', 22)" onmouseover="showTip(event, 'fs17', 22)" class="i">VoiceAge</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs18', 23)" onmouseover="showTip(event, 'fs18', 23)" class="i">NotSet</span>, <span class="n">1</span>, <span onmouseout="hideTip(event, 'fs11', 24)" onmouseover="showTip(event, 'fs11', 24)" class="i">english</span>)
+<span onmouseout="hideTip(event, 'fs6', 25)" onmouseover="showTip(event, 'fs6', 25)" class="i">say</span> <span class="s">&quot;</span><span class="s">Hello</span><span class="s"> </span><span class="s">world</span><span class="s"> </span><span class="s">!</span><span class="s">&quot;</span></pre>
+
+
+<p>Far better !</p>
+
+<h2>Can you beat it ?</h2>
+
+<p>Now, a talking fizz buzz, up to 100 ! Can you beat it ?</p>
+
+<pre class="fssnip">
+[<span class="n">1</span> <span class="o">..</span> <span class="n">100</span>]
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 26)" onmouseover="showTip(event, 'fs19', 26)" class="i">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs20', 27)" onmouseover="showTip(event, 'fs20', 27)" class="i">map</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs21', 28)" onmouseover="showTip(event, 'fs21', 28)" class="i">n</span> <span class="k">-&gt;</span> 
+    <span class="k">match</span> <span onmouseout="hideTip(event, 'fs21', 29)" onmouseover="showTip(event, 'fs21', 29)" class="i">n</span><span class="o">%</span><span class="n">3</span>, <span onmouseout="hideTip(event, 'fs21', 30)" onmouseover="showTip(event, 'fs21', 30)" class="i">n</span><span class="o">%</span><span class="n">5</span> <span class="k">with</span>
+    | <span class="n">0</span>, <span class="n">0</span> <span class="k">-&gt;</span> <span class="s">&quot;</span><span class="s">FizzBuzz</span><span class="s">&quot;</span>
+    | <span class="n">0</span>, _ <span class="k">-&gt;</span> <span class="s">&quot;</span><span class="s">Fizz</span><span class="s">&quot;</span>
+    | _, <span class="n">0</span> <span class="k">-&gt;</span> <span class="s">&quot;</span><span class="s">Buzz</span><span class="s">&quot;</span>
+    | _ <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs9', 31)" onmouseover="showTip(event, 'fs9', 31)" class="i">string</span> <span onmouseout="hideTip(event, 'fs21', 32)" onmouseover="showTip(event, 'fs21', 32)" class="i">n</span> )
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 33)" onmouseover="showTip(event, 'fs19', 33)" class="i">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs22', 34)" onmouseover="showTip(event, 'fs22', 34)" class="i">iter</span> <span onmouseout="hideTip(event, 'fs6', 35)" onmouseover="showTip(event, 'fs6', 35)" class="i">say</span></pre>
+
+
+<h2>Even harder !</h2>
+
+<p>Now with a recognizer, we can wait for voice user input.</p>
+
+<p>The problem with the Grammar API is that it's totally mutable and not really DSL oriented.
+Let's correct that :</p>
+
+<pre class="fssnip">
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs1', 36)" onmouseover="showTip(event, 'fs1', 36)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs2', 37)" onmouseover="showTip(event, 'fs2', 37)" class="i">Speech</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs23', 38)" onmouseover="showTip(event, 'fs23', 38)" class="i">Recognition</span>
+
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs24', 39)" onmouseover="showTip(event, 'fs24', 39)" class="i">Grammar</span> <span class="o">=</span>
+    | <span onmouseout="hideTip(event, 'fs25', 40)" onmouseover="showTip(event, 'fs25', 40)" class="i">Phrase</span> <span class="k">of</span> <span class="i">text</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs9', 41)" onmouseover="showTip(event, 'fs9', 41)" class="i">string</span> <span class="o">*</span> <span class="i">result</span><span class="o">:</span> <span onmouseout="hideTip(event, 'fs9', 42)" onmouseover="showTip(event, 'fs9', 42)" class="i">string</span>
+    | <span onmouseout="hideTip(event, 'fs26', 43)" onmouseover="showTip(event, 'fs26', 43)" class="i">Lst</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs24', 44)" onmouseover="showTip(event, 'fs24', 44)" class="i">Grammar</span> <span onmouseout="hideTip(event, 'fs27', 45)" onmouseover="showTip(event, 'fs27', 45)" class="i">list</span>
+    | <span onmouseout="hideTip(event, 'fs28', 46)" onmouseover="showTip(event, 'fs28', 46)" class="i">Alt</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs24', 47)" onmouseover="showTip(event, 'fs24', 47)" class="i">Grammar</span> <span onmouseout="hideTip(event, 'fs27', 48)" onmouseover="showTip(event, 'fs27', 48)" class="i">list</span>
+    | <span onmouseout="hideTip(event, 'fs29', 49)" onmouseover="showTip(event, 'fs29', 49)" class="i">Repeat</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs30', 50)" onmouseover="showTip(event, 'fs30', 50)" class="i">min</span><span class="o">:</span> <span onmouseout="hideTip(event, 'fs31', 51)" onmouseover="showTip(event, 'fs31', 51)" class="i">int</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fs32', 52)" onmouseover="showTip(event, 'fs32', 52)" class="i">max</span><span class="o">:</span> <span onmouseout="hideTip(event, 'fs31', 53)" onmouseover="showTip(event, 'fs31', 53)" class="i">int</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fs24', 54)" onmouseover="showTip(event, 'fs24', 54)" class="i">Grammar</span>
+
+
+<span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs33', 55)" onmouseover="showTip(event, 'fs33', 55)" class="i">build</span> <span class="o">=</span> <span class="k">function</span>
+    | <span onmouseout="hideTip(event, 'fs25', 56)" onmouseover="showTip(event, 'fs25', 56)" class="i">Phrase</span> (<span onmouseout="hideTip(event, 'fs34', 57)" onmouseover="showTip(event, 'fs34', 57)" class="i">text</span>, <span onmouseout="hideTip(event, 'fs35', 58)" onmouseover="showTip(event, 'fs35', 58)" class="i">result</span>) <span class="k">-&gt;</span> 
+        <span class="c">// Just build the a single phrase</span>
+        <span onmouseout="hideTip(event, 'fs36', 59)" onmouseover="showTip(event, 'fs36', 59)" class="i">GrammarBuilder</span>(<span onmouseout="hideTip(event, 'fs37', 60)" onmouseover="showTip(event, 'fs37', 60)" class="i">SemanticResultValue</span>(<span onmouseout="hideTip(event, 'fs34', 61)" onmouseover="showTip(event, 'fs34', 61)" class="i">text</span>,<span onmouseout="hideTip(event, 'fs35', 62)" onmouseover="showTip(event, 'fs35', 62)" class="i">result</span>))
+
+    | <span onmouseout="hideTip(event, 'fs26', 63)" onmouseover="showTip(event, 'fs26', 63)" class="i">Lst</span> <span onmouseout="hideTip(event, 'fs38', 64)" onmouseover="showTip(event, 'fs38', 64)" class="i">grammars</span> <span class="k">-&gt;</span> 
+        <span class="c">// Append parts of grammars one after the other</span>
+        <span class="k">let</span> <span onmouseout="hideTip(event, 'fs39', 65)" onmouseover="showTip(event, 'fs39', 65)" class="i">builder</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs36', 66)" onmouseover="showTip(event, 'fs36', 66)" class="i">GrammarBuilder</span>()
+        <span onmouseout="hideTip(event, 'fs38', 67)" onmouseover="showTip(event, 'fs38', 67)" class="i">grammars</span>
+        <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 68)" onmouseover="showTip(event, 'fs19', 68)" class="i">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs20', 69)" onmouseover="showTip(event, 'fs20', 69)" class="i">map</span> <span onmouseout="hideTip(event, 'fs33', 70)" onmouseover="showTip(event, 'fs33', 70)" class="i">build</span>
+        <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 71)" onmouseover="showTip(event, 'fs19', 71)" class="i">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs22', 72)" onmouseover="showTip(event, 'fs22', 72)" class="i">iter</span> <span onmouseout="hideTip(event, 'fs39', 73)" onmouseover="showTip(event, 'fs39', 73)" class="i">builder</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs40', 74)" onmouseover="showTip(event, 'fs40', 74)" class="i">Append</span>
+        <span onmouseout="hideTip(event, 'fs39', 75)" onmouseover="showTip(event, 'fs39', 75)" class="i">builder</span>
+
+    | <span onmouseout="hideTip(event, 'fs28', 76)" onmouseover="showTip(event, 'fs28', 76)" class="i">Alt</span> <span onmouseout="hideTip(event, 'fs41', 77)" onmouseover="showTip(event, 'fs41', 77)" class="i">alternatives</span> <span class="k">-&gt;</span> 
+        <span class="c">// Create alternatives</span>
+        <span class="k">let</span> <span onmouseout="hideTip(event, 'fs42', 78)" onmouseover="showTip(event, 'fs42', 78)" class="i">choices</span> <span class="o">=</span>
+            <span onmouseout="hideTip(event, 'fs41', 79)" onmouseover="showTip(event, 'fs41', 79)" class="i">alternatives</span>
+            <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 80)" onmouseover="showTip(event, 'fs19', 80)" class="i">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs20', 81)" onmouseover="showTip(event, 'fs20', 81)" class="i">map</span> <span onmouseout="hideTip(event, 'fs33', 82)" onmouseover="showTip(event, 'fs33', 82)" class="i">build</span> 
+            <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 83)" onmouseover="showTip(event, 'fs19', 83)" class="i">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs43', 84)" onmouseover="showTip(event, 'fs43', 84)" class="i">toArray</span>
+        <span onmouseout="hideTip(event, 'fs36', 85)" onmouseover="showTip(event, 'fs36', 85)" class="i">GrammarBuilder</span>(<span onmouseout="hideTip(event, 'fs44', 86)" onmouseover="showTip(event, 'fs44', 86)" class="i">Choices</span>())
+
+    | <span onmouseout="hideTip(event, 'fs29', 87)" onmouseover="showTip(event, 'fs29', 87)" class="i">Repeat</span>(<span onmouseout="hideTip(event, 'fs45', 88)" onmouseover="showTip(event, 'fs45', 88)" class="i">min</span>, <span onmouseout="hideTip(event, 'fs46', 89)" onmouseover="showTip(event, 'fs46', 89)" class="i">max</span>, <span onmouseout="hideTip(event, 'fs47', 90)" onmouseover="showTip(event, 'fs47', 90)" class="i">grammar</span>) <span class="k">-&gt;</span> 
+        <span class="c">// Repeat a part of the grammar</span>
+        <span onmouseout="hideTip(event, 'fs36', 91)" onmouseover="showTip(event, 'fs36', 91)" class="i">GrammarBuilder</span>(<span onmouseout="hideTip(event, 'fs33', 92)" onmouseover="showTip(event, 'fs33', 92)" class="i">build</span> <span onmouseout="hideTip(event, 'fs47', 93)" onmouseover="showTip(event, 'fs47', 93)" class="i">grammar</span>, <span onmouseout="hideTip(event, 'fs45', 94)" onmouseover="showTip(event, 'fs45', 94)" class="i">min</span>, <span onmouseout="hideTip(event, 'fs46', 95)" onmouseover="showTip(event, 'fs46', 95)" class="i">max</span>)</pre>
+
+
+<p>This is not a full DSL for speach recognition, you can look at all the GrammarBuilder methods
+to add more possibilities.. Even here, I'll use only Phrase and Alt.</p>
+
+<p>Now, we need a recognizer and wire the grammar with functions that will be called when a part of
+the grammar is recognized or rejected.
+It is mandatory to set grammar's culture to the recognizer's culture.
+There's usually a single recognizer installed by default on your system and it uses installed system's
+culture. In my case, it'll be french.</p>
+
+<pre class="fssnip">
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs48', 96)" onmouseover="showTip(event, 'fs48', 96)" class="i">recog</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'fs49', 97)" onmouseover="showTip(event, 'fs49', 97)" class="i">SpeechRecognizer</span>()
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs50', 98)" onmouseover="showTip(event, 'fs50', 98)" class="i">recognize</span> <span onmouseout="hideTip(event, 'fs47', 99)" onmouseover="showTip(event, 'fs47', 99)" class="i">grammar</span> <span onmouseout="hideTip(event, 'fs51', 100)" onmouseover="showTip(event, 'fs51', 100)" class="i">recognized</span> <span onmouseout="hideTip(event, 'fs52', 101)" onmouseover="showTip(event, 'fs52', 101)" class="i">rejected</span>  <span class="o">=</span> 
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs39', 102)" onmouseover="showTip(event, 'fs39', 102)" class="i">builder</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs33', 103)" onmouseover="showTip(event, 'fs33', 103)" class="i">build</span> <span onmouseout="hideTip(event, 'fs47', 104)" onmouseover="showTip(event, 'fs47', 104)" class="i">grammar</span>
+    <span onmouseout="hideTip(event, 'fs39', 105)" onmouseover="showTip(event, 'fs39', 105)" class="i">builder</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs53', 106)" onmouseover="showTip(event, 'fs53', 106)" class="i">Culture</span> <span class="o">&lt;-</span> <span onmouseout="hideTip(event, 'fs48', 107)" onmouseover="showTip(event, 'fs48', 107)" class="i">recog</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs54', 108)" onmouseover="showTip(event, 'fs54', 108)" class="i">RecognizerInfo</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs55', 109)" onmouseover="showTip(event, 'fs55', 109)" class="i">Culture</span>
+    <span onmouseout="hideTip(event, 'fs56', 110)" onmouseover="showTip(event, 'fs56', 110)" class="i">printfn</span> <span class="s">&quot;</span><span class="s">%</span><span class="s">A</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs48', 111)" onmouseover="showTip(event, 'fs48', 111)" class="i">recog</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs54', 112)" onmouseover="showTip(event, 'fs54', 112)" class="i">RecognizerInfo</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs55', 113)" onmouseover="showTip(event, 'fs55', 113)" class="i">Culture</span>
+    <span onmouseout="hideTip(event, 'fs48', 114)" onmouseover="showTip(event, 'fs48', 114)" class="i">recog</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs57', 115)" onmouseover="showTip(event, 'fs57', 115)" class="i">LoadGrammar</span>(<span onmouseout="hideTip(event, 'fs24', 116)" onmouseover="showTip(event, 'fs24', 116)" class="i">Grammar</span> <span onmouseout="hideTip(event, 'fs39', 117)" onmouseover="showTip(event, 'fs39', 117)" class="i">builder</span>)
+    
+    <span onmouseout="hideTip(event, 'fs48', 118)" onmouseover="showTip(event, 'fs48', 118)" class="i">recog</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs58', 119)" onmouseover="showTip(event, 'fs58', 119)" class="i">SpeechRecognized</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs59', 120)" onmouseover="showTip(event, 'fs59', 120)" class="i">Event</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs60', 121)" onmouseover="showTip(event, 'fs60', 121)" class="i">add</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs61', 122)" onmouseover="showTip(event, 'fs61', 122)" class="i">e</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs51', 123)" onmouseover="showTip(event, 'fs51', 123)" class="i">recognized</span> <span onmouseout="hideTip(event, 'fs61', 124)" onmouseover="showTip(event, 'fs61', 124)" class="i">e</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs62', 125)" onmouseover="showTip(event, 'fs62', 125)" class="i">Result</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs63', 126)" onmouseover="showTip(event, 'fs63', 126)" class="i">Text</span> (<span onmouseout="hideTip(event, 'fs9', 127)" onmouseover="showTip(event, 'fs9', 127)" class="i">string</span> <span onmouseout="hideTip(event, 'fs61', 128)" onmouseover="showTip(event, 'fs61', 128)" class="i">e</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs62', 129)" onmouseover="showTip(event, 'fs62', 129)" class="i">Result</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs64', 130)" onmouseover="showTip(event, 'fs64', 130)" class="i">Semantics</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs65', 131)" onmouseover="showTip(event, 'fs65', 131)" class="i">Value</span>))
+    <span onmouseout="hideTip(event, 'fs48', 132)" onmouseover="showTip(event, 'fs48', 132)" class="i">recog</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs66', 133)" onmouseover="showTip(event, 'fs66', 133)" class="i">SpeechRecognitionRejected</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs59', 134)" onmouseover="showTip(event, 'fs59', 134)" class="i">Event</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs60', 135)" onmouseover="showTip(event, 'fs60', 135)" class="i">add</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs67', 136)" onmouseover="showTip(event, 'fs67', 136)" class="i">e</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs52', 137)" onmouseover="showTip(event, 'fs52', 137)" class="i">rejected</span> ())
+    <span onmouseout="hideTip(event, 'fs48', 138)" onmouseover="showTip(event, 'fs48', 138)" class="i">recog</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs68', 139)" onmouseover="showTip(event, 'fs68', 139)" class="i">Enabled</span></pre>
+
+
+<p>We can then use this to create a little Christmass quizz thanks to the FSharp.Data FreeBase Type Provider !</p>
+
+<p>We'll use free base to find a list of Actors who plaid Santa in movies.</p>
+
+<p>For this, install the FSharp.Data NuGet:</p>
+
+<p><code>nuget install FSharp.Data -o packages -x</code></p>
+
+<p>The dll should be in .\packages\FSharp.Data\lib
+et40\FSharp.Data.dll</p>
+
+<pre class="fssnip">
+<span class="prep">#r</span> <span class="s">@&quot;</span><span class="s">packages</span><span class="s">\</span><span class="s">FSharp</span><span class="s">.</span><span class="s">Data</span><span class="s">\</span><span class="s">lib</span><span class="s">\</span><span class="s">net40</span><span class="s">\</span><span class="s">FSharp</span><span class="s">.</span><span class="s">Data</span><span class="s">.</span><span class="s">dll</span><span class="s">&quot;</span>
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs69', 140)" onmouseover="showTip(event, 'fs69', 140)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs70', 141)" onmouseover="showTip(event, 'fs70', 141)" class="i">Data</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs71', 142)" onmouseover="showTip(event, 'fs71', 142)" class="i">fb</span> <span class="o">=</span><span onmouseout="hideTip(event, 'fs72', 143)" onmouseover="showTip(event, 'fs72', 143)" class="i">FreebaseData</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs73', 144)" onmouseover="showTip(event, 'fs73', 144)" class="i">GetDataContext</span>()</pre>
+
+
+<p>Let's build the grammar</p>
+
+<pre class="fssnip">
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs74', 145)" onmouseover="showTip(event, 'fs74', 145)" class="i">santaActorsFilms</span> <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs71', 146)" onmouseover="showTip(event, 'fs71', 146)" class="i">fb</span><span class="o">.</span><span class="i">``Arts and Entertainment``</span>
+      <span class="o">.</span><span class="i">Film</span>
+      <span class="o">.</span><span class="i">``Film characters``</span>
+      <span class="o">.</span><span class="i">IndividualsAZ</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs75', 147)" onmouseover="showTip(event, 'fs75', 147)" class="i">S</span>
+      <span class="o">.</span><span class="i">``Santa Claus``</span>
+      <span class="o">.</span><span class="i">``Portrayed in films``</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs76', 148)" onmouseover="showTip(event, 'fs76', 148)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs77', 149)" onmouseover="showTip(event, 'fs77', 149)" class="i">map</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs78', 150)" onmouseover="showTip(event, 'fs78', 150)" class="i">c</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs78', 151)" onmouseover="showTip(event, 'fs78', 151)" class="i">c</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs79', 152)" onmouseover="showTip(event, 'fs79', 152)" class="i">Actor</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs80', 153)" onmouseover="showTip(event, 'fs80', 153)" class="i">Name</span>, <span onmouseout="hideTip(event, 'fs78', 154)" onmouseover="showTip(event, 'fs78', 154)" class="i">c</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs81', 155)" onmouseover="showTip(event, 'fs81', 155)" class="i">Film</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs80', 156)" onmouseover="showTip(event, 'fs80', 156)" class="i">Name</span>)
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs76', 157)" onmouseover="showTip(event, 'fs76', 157)" class="i">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs82', 158)" onmouseover="showTip(event, 'fs82', 158)" class="i">toList</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs83', 159)" onmouseover="showTip(event, 'fs83', 159)" class="i">santaActorsGrammar</span> <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs74', 160)" onmouseover="showTip(event, 'fs74', 160)" class="i">santaActorsFilms</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 161)" onmouseover="showTip(event, 'fs19', 161)" class="i">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs20', 162)" onmouseover="showTip(event, 'fs20', 162)" class="i">map</span> (<span class="k">fun</span> (<span onmouseout="hideTip(event, 'fs84', 163)" onmouseover="showTip(event, 'fs84', 163)" class="i">actor</span>,<span onmouseout="hideTip(event, 'fs85', 164)" onmouseover="showTip(event, 'fs85', 164)" class="i">film</span>) <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs25', 165)" onmouseover="showTip(event, 'fs25', 165)" class="i">Phrase</span>(<span onmouseout="hideTip(event, 'fs84', 166)" onmouseover="showTip(event, 'fs84', 166)" class="i">actor</span>, <span onmouseout="hideTip(event, 'fs85', 167)" onmouseover="showTip(event, 'fs85', 167)" class="i">film</span>))
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs28', 168)" onmouseover="showTip(event, 'fs28', 168)" class="i">Alt</span></pre>
+
+
+<p>Here is the function to call when an actor is recognized.</p>
+
+<p>I tried to pass a discriminated union as a value, but even if the API uses an object, the documentation
+states that it has to be a bool, an int or a string. I used only strings here.</p>
+
+<pre class="fssnip">
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs86', 169)" onmouseover="showTip(event, 'fs86', 169)" class="i">recognized</span> <span onmouseout="hideTip(event, 'fs34', 170)" onmouseover="showTip(event, 'fs34', 170)" class="i">text</span> <span onmouseout="hideTip(event, 'fs87', 171)" onmouseover="showTip(event, 'fs87', 171)" class="i">value</span> <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs6', 172)" onmouseover="showTip(event, 'fs6', 172)" class="i">say</span> (<span onmouseout="hideTip(event, 'fs88', 173)" onmouseover="showTip(event, 'fs88', 173)" class="i">sprintf</span> <span class="s">&quot;</span><span class="s">True</span><span class="s"> </span><span class="s">!</span><span class="s"> </span><span class="s">%</span><span class="s">s</span><span class="s"> </span><span class="s">was</span><span class="s"> </span><span class="s">Santa</span><span class="s"> </span><span class="s">in</span><span class="s"> </span><span class="s">%</span><span class="s">s</span><span class="s">&quot;</span> <span onmouseout="hideTip(event, 'fs34', 174)" onmouseover="showTip(event, 'fs34', 174)" class="i">text</span> <span onmouseout="hideTip(event, 'fs87', 175)" onmouseover="showTip(event, 'fs87', 175)" class="i">value</span>)</pre>
+
+
+<p>Here is the function when the speech could not be matched with the grammar.</p>
+
+<p>It is also possible to get the audio of the text in this case. I decided to ignore it due to time constraints.</p>
+
+<pre class="fssnip">
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs89', 176)" onmouseover="showTip(event, 'fs89', 176)" class="i">rejected</span> () <span class="o">=</span> <span onmouseout="hideTip(event, 'fs6', 177)" onmouseover="showTip(event, 'fs6', 177)" class="i">say</span> <span class="s">&quot;</span><span class="s">No</span><span class="s">,</span><span class="s"> </span><span class="s">Not</span><span class="s"> </span><span class="s">a</span><span class="s"> </span><span class="s">Santa</span><span class="s"> </span><span class="s">!</span><span class="s">&quot;</span></pre>
+
+
+<p>Now, let's run it !!</p>
+
+<pre class="fssnip">
+<span onmouseout="hideTip(event, 'fs50', 178)" onmouseover="showTip(event, 'fs50', 178)" class="i">recognize</span> <span onmouseout="hideTip(event, 'fs83', 179)" onmouseover="showTip(event, 'fs83', 179)" class="i">santaActorsGrammar</span> <span onmouseout="hideTip(event, 'fs86', 180)" onmouseover="showTip(event, 'fs86', 180)" class="i">recognized</span> <span onmouseout="hideTip(event, 'fs89', 181)" onmouseover="showTip(event, 'fs89', 181)" class="i">rejected</span></pre>
+
+
+<p>At this point the speech recognition configuration should appear if it's the 
+first time you use it.</p>
+
+<p>Once done you should be able to try the quizz !</p>
+
+<p>If your OS culture is not english, don't hesitate to use a local accent for
+actor's name !</p>
+
+<h2>Conlusion</h2>
+
+<p>I hope you had fun with this API, and that you'll want to tweak it for your own demo !</p>
+
+<p>The full code - using FSharp.Formatting - is on <a href="https://gist.github.com/thinkbeforecoding/37ae152c6fe24a649d86">my gist</a></p>
+
+<p><strong>Happy Christmass !</strong></p>
+
+          <div class="tip" id="fs1">namespace System</div>
+<div class="tip" id="fs2">namespace System.Speech</div>
+<div class="tip" id="fs3">namespace System.Speech.Synthesis</div>
+<div class="tip" id="fs4">val synt : SpeechSynthesizer<br /><br />Full name: XMas fun.synt</div>
+<div class="tip" id="fs5">Multiple items<br />type SpeechSynthesizer =<br />&#160;&#160;new : unit -&gt; SpeechSynthesizer<br />&#160;&#160;member AddLexicon : uri:Uri * mediaType:string -&gt; unit<br />&#160;&#160;member Dispose : unit -&gt; unit<br />&#160;&#160;member GetCurrentlySpokenPrompt : unit -&gt; Prompt<br />&#160;&#160;member GetInstalledVoices : unit -&gt; ReadOnlyCollection&lt;InstalledVoice&gt; + 1 overload<br />&#160;&#160;member Pause : unit -&gt; unit<br />&#160;&#160;member Rate : int with get, set<br />&#160;&#160;member RemoveLexicon : uri:Uri -&gt; unit<br />&#160;&#160;member Resume : unit -&gt; unit<br />&#160;&#160;member SelectVoice : name:string -&gt; unit<br />&#160;&#160;...<br /><br />Full name: System.Speech.Synthesis.SpeechSynthesizer<br /><br />--------------------<br />SpeechSynthesizer() : unit</div>
+<div class="tip" id="fs6">val say : s:string -&gt; unit<br /><br />Full name: XMas fun.say</div>
+<div class="tip" id="fs7">val s : string</div>
+<div class="tip" id="fs8">SpeechSynthesizer.Speak(promptBuilder: PromptBuilder) : unit<br />SpeechSynthesizer.Speak(prompt: Prompt) : unit<br />SpeechSynthesizer.Speak(textToSpeak: string) : unit</div>
+<div class="tip" id="fs9">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string</div>
+<div class="tip" id="fs10">namespace System.Globalization</div>
+<div class="tip" id="fs11">val english : CultureInfo<br /><br />Full name: XMas fun.english</div>
+<div class="tip" id="fs12">Multiple items<br />type CultureInfo =<br />&#160;&#160;new : name:string -&gt; CultureInfo + 3 overloads<br />&#160;&#160;member Calendar : Calendar<br />&#160;&#160;member ClearCachedData : unit -&gt; unit<br />&#160;&#160;member Clone : unit -&gt; obj<br />&#160;&#160;member CompareInfo : CompareInfo<br />&#160;&#160;member CultureTypes : CultureTypes<br />&#160;&#160;member DateTimeFormat : DateTimeFormatInfo with get, set<br />&#160;&#160;member DisplayName : string<br />&#160;&#160;member EnglishName : string<br />&#160;&#160;member Equals : value:obj -&gt; bool<br />&#160;&#160;...<br /><br />Full name: System.Globalization.CultureInfo<br /><br />--------------------<br />CultureInfo(name: string) : unit<br />CultureInfo(culture: int) : unit<br />CultureInfo(name: string, useUserOverride: bool) : unit<br />CultureInfo(culture: int, useUserOverride: bool) : unit</div>
+<div class="tip" id="fs13">CultureInfo.GetCultureInfo(name: string) : CultureInfo<br />CultureInfo.GetCultureInfo(culture: int) : CultureInfo<br />CultureInfo.GetCultureInfo(name: string, altName: string) : CultureInfo</div>
+<div class="tip" id="fs14">SpeechSynthesizer.SelectVoiceByHints(gender: VoiceGender) : unit<br />SpeechSynthesizer.SelectVoiceByHints(gender: VoiceGender, age: VoiceAge) : unit<br />SpeechSynthesizer.SelectVoiceByHints(gender: VoiceGender, age: VoiceAge, voiceAlternate: int) : unit<br />SpeechSynthesizer.SelectVoiceByHints(gender: VoiceGender, age: VoiceAge, voiceAlternate: int, culture: CultureInfo) : unit</div>
+<div class="tip" id="fs15">type VoiceGender =<br />&#160;&#160;| NotSet = 0<br />&#160;&#160;| Male = 1<br />&#160;&#160;| Female = 2<br />&#160;&#160;| Neutral = 3<br /><br />Full name: System.Speech.Synthesis.VoiceGender</div>
+<div class="tip" id="fs16">field VoiceGender.NotSet = 0</div>
+<div class="tip" id="fs17">type VoiceAge =<br />&#160;&#160;| NotSet = 0<br />&#160;&#160;| Child = 10<br />&#160;&#160;| Teen = 15<br />&#160;&#160;| Adult = 30<br />&#160;&#160;| Senior = 65<br /><br />Full name: System.Speech.Synthesis.VoiceAge</div>
+<div class="tip" id="fs18">field VoiceAge.NotSet = 0</div>
+<div class="tip" id="fs19">Multiple items<br />module List<br /><br />from Microsoft.FSharp.Collections<br /><br />--------------------<br />type List&lt;&#39;T&gt; =<br />&#160;&#160;| ( [] )<br />&#160;&#160;| ( :: ) of Head: &#39;T * Tail: &#39;T list<br />&#160;&#160;interface IEnumerable<br />&#160;&#160;interface IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;member Head : &#39;T<br />&#160;&#160;member IsEmpty : bool<br />&#160;&#160;member Item : index:int -&gt; &#39;T with get<br />&#160;&#160;member Length : int<br />&#160;&#160;member Tail : &#39;T list<br />&#160;&#160;static member Cons : head:&#39;T * tail:&#39;T list -&gt; &#39;T list<br />&#160;&#160;static member Empty : &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List&lt;_&gt;</div>
+<div class="tip" id="fs20">val map : mapping:(&#39;T -&gt; &#39;U) -&gt; list:&#39;T list -&gt; &#39;U list<br /><br />Full name: Microsoft.FSharp.Collections.List.map</div>
+<div class="tip" id="fs21">val n : int</div>
+<div class="tip" id="fs22">val iter : action:(&#39;T -&gt; unit) -&gt; list:&#39;T list -&gt; unit<br /><br />Full name: Microsoft.FSharp.Collections.List.iter</div>
+<div class="tip" id="fs23">namespace System.Speech.Recognition</div>
+<div class="tip" id="fs24">type Grammar =<br />&#160;&#160;| Phrase of text: string * result: string<br />&#160;&#160;| Lst of Grammar list<br />&#160;&#160;| Alt of Grammar list<br />&#160;&#160;| Repeat of min: int * max: int * Grammar<br /><br />Full name: XMas fun.Grammar</div>
+<div class="tip" id="fs25">union case Grammar.Phrase: text: string * result: string -&gt; Grammar</div>
+<div class="tip" id="fs26">union case Grammar.Lst: Grammar list -&gt; Grammar</div>
+<div class="tip" id="fs27">type &#39;T list = List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.list&lt;_&gt;</div>
+<div class="tip" id="fs28">union case Grammar.Alt: Grammar list -&gt; Grammar</div>
+<div class="tip" id="fs29">union case Grammar.Repeat: min: int * max: int * Grammar -&gt; Grammar</div>
+<div class="tip" id="fs30">val min : e1:&#39;T -&gt; e2:&#39;T -&gt; &#39;T (requires comparison)<br /><br />Full name: Microsoft.FSharp.Core.Operators.min</div>
+<div class="tip" id="fs31">Multiple items<br />val int : value:&#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;</div>
+<div class="tip" id="fs32">val max : e1:&#39;T -&gt; e2:&#39;T -&gt; &#39;T (requires comparison)<br /><br />Full name: Microsoft.FSharp.Core.Operators.max</div>
+<div class="tip" id="fs33">val build : _arg1:Grammar -&gt; GrammarBuilder<br /><br />Full name: XMas fun.build</div>
+<div class="tip" id="fs34">val text : string</div>
+<div class="tip" id="fs35">val result : string</div>
+<div class="tip" id="fs36">Multiple items<br />type GrammarBuilder =<br />&#160;&#160;new : unit -&gt; GrammarBuilder + 7 overloads<br />&#160;&#160;member Append : phrase:string -&gt; unit + 7 overloads<br />&#160;&#160;member AppendDictation : unit -&gt; unit + 1 overload<br />&#160;&#160;member AppendRuleReference : path:string -&gt; unit + 1 overload<br />&#160;&#160;member AppendWildcard : unit -&gt; unit<br />&#160;&#160;member Culture : CultureInfo with get, set<br />&#160;&#160;member DebugShowPhrases : string<br />&#160;&#160;static member Add : phrase:string * builder:GrammarBuilder -&gt; GrammarBuilder + 4 overloads<br /><br />Full name: System.Speech.Recognition.GrammarBuilder<br /><br />--------------------<br />GrammarBuilder() : unit<br />GrammarBuilder(phrase: string) : unit<br />GrammarBuilder(alternateChoices: Choices) : unit<br />GrammarBuilder(key: SemanticResultKey) : unit<br />GrammarBuilder(value: SemanticResultValue) : unit<br />GrammarBuilder(phrase: string, subsetMatchingCriteria: SubsetMatchingMode) : unit<br />GrammarBuilder(phrase: string, minRepeat: int, maxRepeat: int) : unit<br />GrammarBuilder(builder: GrammarBuilder, minRepeat: int, maxRepeat: int) : unit</div>
+<div class="tip" id="fs37">Multiple items<br />type SemanticResultValue =<br />&#160;&#160;new : value:obj -&gt; SemanticResultValue + 2 overloads<br />&#160;&#160;member ToGrammarBuilder : unit -&gt; GrammarBuilder<br /><br />Full name: System.Speech.Recognition.SemanticResultValue<br /><br />--------------------<br />SemanticResultValue(value: obj) : unit<br />SemanticResultValue(phrase: string, value: obj) : unit<br />SemanticResultValue(builder: GrammarBuilder, value: obj) : unit</div>
+<div class="tip" id="fs38">val grammars : Grammar list</div>
+<div class="tip" id="fs39">val builder : GrammarBuilder</div>
+<div class="tip" id="fs40">GrammarBuilder.Append(value: SemanticResultValue) : unit<br />GrammarBuilder.Append(key: SemanticResultKey) : unit<br />GrammarBuilder.Append(alternateChoices: Choices) : unit<br />GrammarBuilder.Append(builder: GrammarBuilder) : unit<br />GrammarBuilder.Append(phrase: string) : unit<br />GrammarBuilder.Append(phrase: string, subsetMatchingCriteria: SubsetMatchingMode) : unit<br />GrammarBuilder.Append(builder: GrammarBuilder, minRepeat: int, maxRepeat: int) : unit<br />GrammarBuilder.Append(phrase: string, minRepeat: int, maxRepeat: int) : unit</div>
+<div class="tip" id="fs41">val alternatives : Grammar list</div>
+<div class="tip" id="fs42">val choices : GrammarBuilder []</div>
+<div class="tip" id="fs43">val toArray : list:&#39;T list -&gt; &#39;T []<br /><br />Full name: Microsoft.FSharp.Collections.List.toArray</div>
+<div class="tip" id="fs44">Multiple items<br />type Choices =<br />&#160;&#160;new : unit -&gt; Choices + 2 overloads<br />&#160;&#160;member Add : params phrases:string[] -&gt; unit + 1 overload<br />&#160;&#160;member ToGrammarBuilder : unit -&gt; GrammarBuilder<br /><br />Full name: System.Speech.Recognition.Choices<br /><br />--------------------<br />Choices() : unit<br />Choices(params phrases: string []) : unit<br />Choices(params alternateChoices: GrammarBuilder []) : unit</div>
+<div class="tip" id="fs45">val min : int</div>
+<div class="tip" id="fs46">val max : int</div>
+<div class="tip" id="fs47">val grammar : Grammar</div>
+<div class="tip" id="fs48">val recog : SpeechRecognizer<br /><br />Full name: XMas fun.recog</div>
+<div class="tip" id="fs49">Multiple items<br />type SpeechRecognizer =<br />&#160;&#160;new : unit -&gt; SpeechRecognizer<br />&#160;&#160;member AudioFormat : SpeechAudioFormatInfo<br />&#160;&#160;member AudioLevel : int<br />&#160;&#160;member AudioPosition : TimeSpan<br />&#160;&#160;member AudioState : AudioState<br />&#160;&#160;member Dispose : unit -&gt; unit<br />&#160;&#160;member EmulateRecognize : inputText:string -&gt; RecognitionResult + 2 overloads<br />&#160;&#160;member EmulateRecognizeAsync : inputText:string -&gt; unit + 2 overloads<br />&#160;&#160;member Enabled : bool with get, set<br />&#160;&#160;member Grammars : ReadOnlyCollection&lt;Grammar&gt;<br />&#160;&#160;...<br /><br />Full name: System.Speech.Recognition.SpeechRecognizer<br /><br />--------------------<br />SpeechRecognizer() : unit</div>
+<div class="tip" id="fs50">val recognize : grammar:Grammar -&gt; recognized:(string -&gt; string -&gt; unit) -&gt; rejected:(unit -&gt; unit) -&gt; bool<br /><br />Full name: XMas fun.recognize</div>
+<div class="tip" id="fs51">val recognized : (string -&gt; string -&gt; unit)</div>
+<div class="tip" id="fs52">val rejected : (unit -&gt; unit)</div>
+<div class="tip" id="fs53">property GrammarBuilder.Culture: CultureInfo</div>
+<div class="tip" id="fs54">property SpeechRecognizer.RecognizerInfo: RecognizerInfo</div>
+<div class="tip" id="fs55">property RecognizerInfo.Culture: CultureInfo</div>
+<div class="tip" id="fs56">val printfn : format:Printf.TextWriterFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.printfn</div>
+<div class="tip" id="fs57">SpeechRecognizer.LoadGrammar(grammar: Grammar) : unit</div>
+<div class="tip" id="fs58">event SpeechRecognizer.SpeechRecognized: IEvent&lt;System.EventHandler&lt;SpeechRecognizedEventArgs&gt;,SpeechRecognizedEventArgs&gt;</div>
+<div class="tip" id="fs59">Multiple items<br />module Event<br /><br />from Microsoft.FSharp.Control<br /><br />--------------------<br />type Event&lt;&#39;T&gt; =<br />&#160;&#160;new : unit -&gt; Event&lt;&#39;T&gt;<br />&#160;&#160;member Trigger : arg:&#39;T -&gt; unit<br />&#160;&#160;member Publish : IEvent&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Control.Event&lt;_&gt;<br /><br />--------------------<br />type Event&lt;&#39;Delegate,&#39;Args (requires delegate and &#39;Delegate :&gt; Delegate)&gt; =<br />&#160;&#160;new : unit -&gt; Event&lt;&#39;Delegate,&#39;Args&gt;<br />&#160;&#160;member Trigger : sender:obj * args:&#39;Args -&gt; unit<br />&#160;&#160;member Publish : IEvent&lt;&#39;Delegate,&#39;Args&gt;<br /><br />Full name: Microsoft.FSharp.Control.Event&lt;_,_&gt;<br /><br />--------------------<br />new : unit -&gt; Event&lt;&#39;T&gt;<br /><br />--------------------<br />new : unit -&gt; Event&lt;&#39;Delegate,&#39;Args&gt;</div>
+<div class="tip" id="fs60">val add : callback:(&#39;T -&gt; unit) -&gt; sourceEvent:IEvent&lt;&#39;Del,&#39;T&gt; -&gt; unit (requires delegate and &#39;Del :&gt; System.Delegate)<br /><br />Full name: Microsoft.FSharp.Control.Event.add</div>
+<div class="tip" id="fs61">val e : SpeechRecognizedEventArgs</div>
+<div class="tip" id="fs62">property RecognitionEventArgs.Result: RecognitionResult</div>
+<div class="tip" id="fs63">property RecognizedPhrase.Text: string</div>
+<div class="tip" id="fs64">property RecognizedPhrase.Semantics: SemanticValue</div>
+<div class="tip" id="fs65">property SemanticValue.Value: obj</div>
+<div class="tip" id="fs66">event SpeechRecognizer.SpeechRecognitionRejected: IEvent&lt;System.EventHandler&lt;SpeechRecognitionRejectedEventArgs&gt;,SpeechRecognitionRejectedEventArgs&gt;</div>
+<div class="tip" id="fs67">val e : SpeechRecognitionRejectedEventArgs</div>
+<div class="tip" id="fs68">property SpeechRecognizer.Enabled: bool</div>
+<div class="tip" id="fs69">namespace FSharp</div>
+<div class="tip" id="fs70">namespace FSharp.Data</div>
+<div class="tip" id="fs71">val fb : FreebaseData.ServiceTypes.FreebaseService<br /><br />Full name: XMas fun.fb</div>
+<div class="tip" id="fs72">type FreebaseData =<br />&#160;&#160;static member GetDataContext : unit -&gt; FreebaseService<br />&#160;&#160;nested type ServiceTypes<br /><br />Full name: FSharp.Data.FreebaseData<br /><em><br /><br />&lt;summary&gt;Typed representation of Freebase data. See http://www.freebase.com for terms and conditions.&lt;/summary&gt;</em></div>
+<div class="tip" id="fs73">FreebaseData.GetDataContext() : FreebaseData.ServiceTypes.FreebaseService</div>
+<div class="tip" id="fs74">val santaActorsFilms : (string * string) list<br /><br />Full name: XMas fun.santaActorsFilms</div>
+<div class="tip" id="fs75">property FreebaseData.ServiceTypes.Film.Film.Film_characterDataIndividualsAZ.S: FreebaseData.ServiceTypes.Film.Film.Film_characterDataIndividualsAZ.Film_characterDataIndividualsIndexedS<br /><em><br /><br />&lt;summary&gt;An indexing of specific named individuals of type &amp;apos;Film character&amp;apos; in the web data store&lt;/summary&gt;</em></div>
+<div class="tip" id="fs76">module Seq<br /><br />from Microsoft.FSharp.Collections</div>
+<div class="tip" id="fs77">val map : mapping:(&#39;T -&gt; &#39;U) -&gt; source:seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;U&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.map</div>
+<div class="tip" id="fs78">val c : FreebaseData.ServiceTypes.Film.Film.PerformanceData</div>
+<div class="tip" id="fs79">property FreebaseData.ServiceTypes.Film.Film.PerformanceData.Actor: FreebaseData.ServiceTypes.Film.Film.ActorData<br /><em><br /><br />&lt;summary&gt;&lt;/summary&gt;</em></div>
+<div class="tip" id="fs80">property Runtime.Freebase.IFreebaseObject.Name: string</div>
+<div class="tip" id="fs81">property FreebaseData.ServiceTypes.Film.Film.PerformanceData.Film: FreebaseData.ServiceTypes.Film.Film.FilmData<br /><em><br /><br />&lt;summary&gt;&lt;/summary&gt;</em></div>
+<div class="tip" id="fs82">val toList : source:seq&lt;&#39;T&gt; -&gt; &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.Seq.toList</div>
+<div class="tip" id="fs83">val santaActorsGrammar : Grammar<br /><br />Full name: XMas fun.santaActorsGrammar</div>
+<div class="tip" id="fs84">val actor : string</div>
+<div class="tip" id="fs85">val film : string</div>
+<div class="tip" id="fs86">val recognized : text:string -&gt; value:string -&gt; unit<br /><br />Full name: XMas fun.recognized</div>
+<div class="tip" id="fs87">val value : string</div>
+<div class="tip" id="fs88">val sprintf : format:Printf.StringFormat&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.sprintf</div>
+<div class="tip" id="fs89">val rejected : unit -&gt; unit<br /><br />Full name: XMas fun.rejected</div>

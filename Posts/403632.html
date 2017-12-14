@@ -1,0 +1,43 @@
+<p>Ok, there seem to be some misunderstanding with the suggestion from my <a href="http://thinkbeforecoding.com/post/2009/05/15/IOC-container-go-hide" target="_blank">previous post</a>.</p>
+<p>A framework manipulates two kind of objects :</p>
+<ul>
+<li>its objects</li>
+<li>your objects</li>
+</ul>
+<p>You don’t care about its object, you care about yours.</p>
+<p>So you want to be able to take part in your objects instantiation so that you can do your own stuff (inject dependencies, handle differently based on runtime behavior…).</p>
+<h2>Without container</h2>
+<p>Look at Asp.net, when it needs to create an Http Handler, it calls a IHttpHandlerFactory.</p>
+<p>You can provide your own IHttpHandlerFactory, just implement its two methods (the second one can even be left empty in most cases) :</p>
+<div style="PADDING-BOTTOM: 0; MARGIN: 0; PADDING-LEFT: 0; PADDING-RIGHT: 0; DISPLAY: inline; FLOAT: none; PADDING-TOP: 0" id="scid:DFDE9937-D816-47f4-A306-7B60D5CE5AC0:4c1e1e5b-18bf-4873-baf6-3d26d63b1af8" class="wlWriterEditableSmartContent"><pre class="brush: csharp; gutter: false; first-line: 1; tab-size: 4;  toolbar: true; ">public interface IHttpHandlerFactory
+{
+// Methods
+IHttpHandler GetHandler(HttpContext context, string requestType, string url, string pathTranslated);
+void ReleaseHandler(IHttpHandler handler);
+}
+</pre><!-- Code inserted with Steve Dunn's Windows Live Writer Code Formatter Plugin.  http://dunnhq.com --></div>
+<p>In the GetHandler method, you’re free to use the container you want ! But you can also do this :</p>
+<div style="PADDING-BOTTOM: 0; MARGIN: 0; PADDING-LEFT: 0; PADDING-RIGHT: 0; DISPLAY: inline; FLOAT: none; PADDING-TOP: 0" id="scid:DFDE9937-D816-47f4-A306-7B60D5CE5AC0:d67b366d-c548-4803-99a5-8c215ebdf019" class="wlWriterEditableSmartContent"><pre class="brush: csharp; gutter: false; first-line: 1; tab-size: 4;  toolbar: false; ">return new CustomHttpHandler(theDependency);</pre><!-- Code inserted with Steve Dunn's Windows Live Writer Code Formatter Plugin.  http://dunnhq.com --></div>
+<p>Or make a call to another factory, or… or…</p>
+<h2>With container</h2>
+<p>The framework ask to provide a container so that the it can simply run. Ok there is also a builtin container so I don’t have to care.</p>
+<p>But if I want to do a custom instantiation I have now to implement the following interface :</p>
+<div style="PADDING-BOTTOM: 0; MARGIN: 0; PADDING-LEFT: 0; PADDING-RIGHT: 0; DISPLAY: inline; FLOAT: none; PADDING-TOP: 0" id="scid:DFDE9937-D816-47f4-A306-7B60D5CE5AC0:c20991cb-e0a4-429c-b79b-3605e2e5a3c5" class="wlWriterEditableSmartContent"><pre class="brush: csharp; gutter: false; first-line: 1; tab-size: 4;  toolbar: true; ">public interface IServiceLocator : IServiceProvider
+{
+// Methods
+IEnumerable&lt;TService&gt; GetAllInstances&lt;TService&gt;();
+IEnumerable&lt;object&gt; GetAllInstances(Type serviceType);
+TService GetInstance&lt;TService&gt;();
+TService GetInstance&lt;TService&gt;(string key);
+object GetInstance(Type serviceType);
+object GetInstance(Type serviceType, string key);
+}
+</pre><!-- Code inserted with Steve Dunn's Windows Live Writer Code Formatter Plugin.  http://dunnhq.com --></div>
+<p>This interface will be used when any instantiation will occur. If I mess internal framework instantiation. Wooch !</p>
+<p>And there is no clear meaning with this interface. It should be able to instantiate any object requested.</p>
+<p>It doesn’t give a clean and clear API in my personal opinion !</p>
+<p><strong>Using an IOC container as an extension point is clearly an over abstraction !</strong></p>
+<h2>Provide clear, focused extensibility points</h2>
+<p>The framework doesn’t need to be extended on every instantiation, especially when instantiation its own internal stuff. There are clear extension points, and a specific interface should be created for each.</p>
+<p><em>This is just a framework design good practice.</em></p>
+<p>Then, there is no need to show the container you use to the outside, and it resolves potential version conflicts.</p>

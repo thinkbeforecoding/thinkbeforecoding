@@ -1,0 +1,18 @@
+<p>I had quite a lot of comments on my previous post on <a href="http://www.thinkbeforecoding.com/post/2009/01/19/Repositories-and-IQueryable-the-paging-case" target="_blank">repositories and paging</a>, and there’s a lot of people coming from google looking for answers… It’s sign that there’s no good response to this issue now.</p>
+<p><em>The problem was how paging (a presentation concern) fits into a repository that should have only domain concerns…</em></p>
+<p>And the short answers is… <strong>It doesn’t fit !</strong></p>
+<p>It doesn’t mean you should forget everything I told you before but there’s a vision change.</p>
+<h3>There’s something missing in DDD book…</h3>
+<p>but present in current discussion about DDD. The book provides good building blocks (entities, repository…) but Evans says himself <a href="http://gojko.net/2009/03/12/qcon-london-2009-eric-evans-what-ive-learned-about-ddd-since-the-book/" target="_blank">it has been a bit over emphasized</a>. The book is mainly about maintaining and mutating your domain state, not about it’s presentation.</p>
+<h3>CQS to the rescue</h3>
+<p>The CQS (Command Query Separation) principle proposes to decouple Commands that change the state of the system, from Queries that ask the state of the system.</p>
+<p>The repository lies on the Command side, that’s why :</p>
+<ul>
+<li>It should be specialized to express only mutations that are possible for the system</li>
+<li>It should not expose presentation concerns like paging</li>
+</ul>
+<p>But what’s on the Query side ?</p>
+<p>The query side should be far more supple and provide tools to query the state of the domain. It can even be implemented with IQueryable interfaces to provide that flexibility. Asking for pages in this area is natural since you just want to query a part of the domain state.</p>
+<p>The goal of all this is to report the state of the system. So Reporting is a good name here.</p>
+<p>You can read <a href="http://codebetter.com/blogs/gregyoung/default.aspx" target="_blank">Greg Young</a>’s <a href="http://codebetter.com/blogs/gregyoung/archive/2008/04/09/dddd-1-when-to-message.aspx" target="_blank">DDDD posts</a> to see where CQS can lead : Write only domain model (Commands) and rich scalable distributed Query mechanisms using messaging.</p>
+<p>There’s no clear guidance yet in this field but I’m still investigating. The flexibility of a reporting service in the domain layer is still a huge gain to understand where each concept fits.</p>

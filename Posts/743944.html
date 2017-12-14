@@ -1,0 +1,31 @@
+<p>A remark by <a href="https://twitter.com/serialseb" target="_blank">@serialseb</a> after <a href="http://thinkbeforecoding.com/post/2013/07/28/Event-Sourcing-vs-Command-Sourcing" target="_blank">my previous post</a> :</p>
+<blockquote class="twitter-tweet"><p><a href="https://twitter.com/thinkb4coding">@thinkb4coding</a> <a href="https://twitter.com/ashic">@ashic</a> <a href="https://twitter.com/cduhard">@cduhard</a> <a href="https://twitter.com/abdullin">@abdullin</a> <a href="https://twitter.com/martinfowler">@martinfowler</a> I refuse there is a useful differentiation between commands and events.</p>&mdash; serialseb (@serialseb) <a href="https://twitter.com/serialseb/statuses/361444940384976896">July 28, 2013</a></blockquote>
+<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+<p>&nbsp;</p>
+<blockquote class="twitter-tweet"><p><a href="https://twitter.com/thinkb4coding">@thinkb4coding</a> <a href="https://twitter.com/ashic">@ashic</a> <a href="https://twitter.com/cduhard">@cduhard</a> <a href="https://twitter.com/abdullin">@abdullin</a> <a href="https://twitter.com/martinfowler">@martinfowler</a> BV I&#39;ve not seen value in the distinction on systems I worked on. Academic at best</p>&mdash; serialseb (@serialseb) <a href="https://twitter.com/serialseb/statuses/361445929091481600">July 28, 2013</a></blockquote>
+<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+<p>First, here is some the distinction between a Command and an Event.</p>
+<p>A command express what you want to do. Usually expressed with a verb in the present tense:   <br />WithdrawMoney</p>
+<p>A event express what actually happened. Usually expressed with a verb in the past tense;   <br />MoneyWithdrawn</p>
+<p>As you can anticipate, what you request is not always what actually happens:   <br />WithdrawMoney($100000000)</p>
+<h3>A Command is still an Event ?</h3>
+<p>Let’s go a bit meta.</p>
+<p>The fact that you decide you want to do something is something that happens in time. So it can also be considered as an event !</p>
+<p>True… but what’s the usefulness of this ?</p>
+<p>Someone who would like to study the correlation between your desires and their realizations will model both as events..</p>
+<p>This can be the same in a tracking context. Track both causes and effects..</p>
+<h3>Should we just ignore the distinction then ?</h3>
+<p>Surely not !</p>
+<p>It’s here again a matter of context. Of Bounded Context.</p>
+<p>Let’s take a sample with different kind of concepts, Value Object and Entities, to highlight how the same thing can take different modeling forms in different contexts:</p>
+<p>Money is usually modeled as a Value Object, which implies equality by Value. I give you $10 you give me $10, we’re even, even if I give you a bill and you give me some coins.</p>
+<p>In the context of fraud tracking, this can be very different. Bills have a tracking number, and you can model it as entity.</p>
+<p>If you make both context work together you’ll go through an Anti Corruption Layer for context mapping. You’ll not model all your accounting with entities for money because some other context models it this way !</p>
+<p>In the case of Command and Events, some contexts can be interested in the fact that a decision was made, so this will be modeled as an event. But in the context where this decision happens, the decision is different from the actual outcome, and not being clear about this difference can lead to several issues..</p>
+<p>For example if you model a withdrawal with&nbsp; a Withdrawal concept: It is not clear whether it represe,ts the fact that you asked it to happen or the fact that is has actually been done.</p>
+<p>Being explicit on it with WithdrawMoney / MoneyWithdrawn removes the ambiguity.</p>
+<p>In the context of event sourcing, this distinction is very important as the previous article showed. As is the distinction between upstream events and internal events, since upstream events is input and will only produce things you’d like to happen, so are closer to commands from the system point of view.</p>
+<p>Of course if your context is not about time and decision, don’t use these concepts that would be useless. You’re writing a compiler ? Forget about all this. </p>
+<h3>Should I have Command DTOs ?</h3>
+<p>not necessarily, a command can be modeled as a function/method call. So creating Command object is not mandatory.</p>
+<p>It can still be useful for dispatch, storage for diagnostics, functional test etc.</p>

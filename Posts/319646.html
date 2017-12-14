@@ -1,0 +1,14 @@
+<p>Marcel posted a comment in <a href="http://www.thinkbeforecoding.com/post/2009/01/19/Repositories-and-IQueryable-the-paging-case">the previous post</a> saying that even if returning IEnumerable, the new query clauses would be executed in the database… <strong>But it’s not.</strong></p>
+<p>If the repository use linq internally and returns the result as IEnumerable, on the other side, consider something like this :</p>
+<div style="FONT-SIZE: 10pt; BACKGROUND: white; COLOR: black; FONT-FAMILY: courier new">
+<p style="MARGIN: 0">var selectedEntities = repository.GetAll().Where(x =&gt; x.Selected)</p>
+</div>
+<p>Where GetAll returns an IEnumerable (that is actually a IQueryable).</p>
+<p>The Where extension method will be selected on Enumerable. <em>Be careful, Extension methods are static methods, no virtual call is involved here</em>. The static type of the object decide the selected extension method.</p>
+<p>&nbsp;</p>
+<p>Check in your debugger, selectedEntities is an instance of the Enumerable.WhereIterator internal class.</p>
+<p>&nbsp;</p>
+<p>So when enumerating it, it enumerates its source and returns every item that passes the predicate.</p>
+<p>When enumerating the source, here the source use linq2Sql to get the items and creates a query that returns all rows from the database.</p>
+<p><strong>The where clause was not executed in the database.</strong></p>
+<p>So the Linq provider did not leak outside of the repository.</p>

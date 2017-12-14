@@ -1,0 +1,64 @@
+<p>&nbsp;</p>
+<p>I have <a href="http://thinkbeforecoding.com/post/2009/03/04/How-not-to-inject-services-in-entities" target="_blank">still new comments</a> and there are some <a href="http://stackoverflow.com/questions/5694241/ddd-the-rule-that-entities-cant-access-repositories-directly" target="_blank">Stack Overflow questions</a> on the subject that show the response to the question is still unclear…</p>
+<p>&nbsp;</p>
+<blockquote>
+<p>Should you inject, or even use repositories in you entities ?</p>
+</blockquote>  <p>The response is two fold, and both go in the same direction, you shouldn’t.</p>
+<p>&nbsp;</p>
+<p><em>Of course, we’re discussing design here, so if in your specific case you find reasons more important than those invoked here, there’s always a possibility to decide to go as you wish…</em></p>
+<p>&nbsp;</p>
+<h3>Injection and DDD patterns</h3>
+<p>Where talking Injection and Entities/Repositories here, so the first reason concerns what injection means in a Domain Driven Design environement.</p>
+<p>&nbsp;</p>
+<p>The <a href="http://en.wikipedia.org/wiki/Dependency_injection" target="_blank">wikipedia definition of the dependency injection pattern</a> only makes references to objects or components without defining explicitly which kind of object or which kind of component…</p>
+<p>&nbsp;</p>
+<p>But a famous injection anti pattern can give use more information on what are injected components.</p>
+<p>I call the <strong>Service Locator</strong> anti pattern.</p>
+<p>&nbsp;</p>
+<p>This make it clear that what we are looking for is a way to find service in a supple and configurable way.</p>
+<p>I won’t explain here why the service locator is an anti pattern, but it makes it obvious that the use of injection is to provide access to services in the code.</p>
+<p>&nbsp;</p>
+<p>Since services are supposed to be stateless, their lifecycles are usually quite flexible. A service could be instanciated on each call, on each request or as a single instance without much difference. The injected service dependencies enable to compose services to replace implementations by configuration or for tests.. </p>
+<p>But even at runtime. A live configuration change could indicates to replace an injected service on next instantiation.</p>
+<p>&nbsp;</p>
+<p>Services and repositories are quite obviously not injected with Entities/Aggregates:</p>
+<ul>   <li>A repository is here to instantiate entities, it’s its own job, it doesn’t need to be injected with entities…</li>
+<li>When a service needs an entity, it can be injected with a repository, and get the entity through it.</li>
+</ul>
+<p>But could entities be injected with services or repositories ?</p>
+<p>&nbsp;</p>
+<p>An aggregate or an entity is not stateless as a service, it is statefull, and its member fields are here to maintain current state.</p>
+<p>It seems quite odd to use those fields to store references to services that are obviously not part of the state.</p>
+<p>It also links the referenced service lifecycle to the lifecycle of the entity itself.</p>
+<p>&nbsp;</p>
+<p>Most entities instanciation schemes in web applications are on a per call basis, and since most web application don’t do anything between calls, the response to the lifecycle problem is simply that everything in created and destroyed on each call.</p>
+<p>But it is only a specific simplistic way to consider object lifecycle. <a href="http://thinkbeforecoding.com/post/2010/02/25/Event-Sourcing-and-CQRS-Snapshots" target="_blank">What if you kept your entities longer in memory and reused them on next call</a> to avoid roundtrips with the data storage ?</p>
+<p>Having a reference to a service inside an entity state would make the live reconfiguration far harder to achieve : You would have to trash all current state and reload everything. There is no such problem with services since they’re meant to be stateless.</p>
+<p>&nbsp;</p>
+<p>Entities fields are meant to store state, no to reference services. Their lifecycles should not be coupled.</p>
+<p>&nbsp;</p>
+<h3>Consistency boundary</h3>
+<p>&nbsp;</p>
+<p>The second reason is about the aggregate consistency boundary.</p>
+<p>&nbsp;</p>
+<p>Why would you typically need a reference to a repository inside an aggregate ?</p>
+<p>&nbsp;</p>
+<p>First reason would be to load sub entities when needed. It’s also called delay load.</p>
+<p>&nbsp;</p>
+<blockquote>
+<p>You shouldn’t need delay load in aggregates</p>
+</blockquote>  <p>The reason comes from the aggregate definitions. From wikipedia:</p>
+<p><em><strong>Aggregate</strong>: A collection of objects that are bound together by a root entity, otherwise known as an aggregate root. The aggregate root guarantees the consistency of changes being made within the aggregate by forbidding external objects from holding references to its members.</em></p>
+<p>&nbsp;</p>
+<p>The definition talks about object being bound together. Those objects – entities – have strong relationships, or grouping them in an aggregate makes little sense. When the relation is strong, you will need for each</p>
+<p>aggregate method to change all objects in coordination, or none. If not, parts of your aggregate should not be here.</p>
+<p>If an aggregate needs all its state for each operation, there is strictly no reason to use delay load.</p>
+<blockquote>
+<p>Load all, use all, save all.</p>
+</blockquote>  <p>&nbsp;</p>
+<p>The second reason would be to load entities in other aggregates.</p>
+<blockquote>
+<p>You shouldn’t need references to entities in other aggregates</p>
+</blockquote>  <p>or at least not directly. The service calling the method on the aggregate will find information needed to call the method (which can contain information coming from other aggregates), but if you need a direct reference to another entity, it’s a clear indication that the aggregated boundary is wrong ! Put that other entity in the aggregate !</p>
+<p>&nbsp;</p>
+<p>Thus once your aggregate modeling is ok, there is really no reason to use a repository inside an entity.</p>

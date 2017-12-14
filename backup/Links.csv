@@ -1,0 +1,12 @@
+link link_id,blog_id,link_href,link_title,link_desc,link_lang,link_xfn,link_position
+"54194","bfbe7b38ff563c323c884dbaf9b071d8","http://jonathan-oliver.blogspot.com/","Jonathan Oliver","Resources on CQRS","","","6"
+"50186","bfbe7b38ff563c323c884dbaf9b071d8","http://www.udidahan.com/","Udi Dahan","","","","9"
+"46493","bfbe7b38ff563c323c884dbaf9b071d8","http://1fille100histoires.fr","1fille100histoires","","fr","","11"
+"50182","bfbe7b38ff563c323c884dbaf9b071d8","http://codebetter.com/blogs/gregyoung/default.aspx","Greg Young","Main Resources on CQRS","","","5"
+"43149","bfbe7b38ff563c323c884dbaf9b071d8","http://www.pixvillage.com/blogs/devblog/","Skup's .Net C# blog","","","me","2"
+"50185","bfbe7b38ff563c323c884dbaf9b071d8","","","Service Bus","","","7"
+"50184","bfbe7b38ff563c323c884dbaf9b071d8","http://codebetter.com/blogs/dru.sellers/default.aspx","Dru Sellers","","","","8"
+"50183","bfbe7b38ff563c323c884dbaf9b071d8","","","Domain Driven Design","","","3"
+"46494","bfbe7b38ff563c323c884dbaf9b071d8","","","Coding","","","1"
+"50181","bfbe7b38ff563c323c884dbaf9b071d8","http://devlicio.us/blogs/casey/default.aspx","Jak Charlton - Insane World","","","","4"
+"46495","bfbe7b38ff563c323c884dbaf9b071d8","","","Living","","","10"

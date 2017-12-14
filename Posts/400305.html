@@ -1,0 +1,55 @@
+<p>Yesterday, I stumbled on something I didn’t expect at all…</p>  <p>An exception appeared while testing my code that I had been carefully writing following <a href="http://thinkbeforecoding.com/post/2009/04/18/TDD-becomes-Design-By-Example">Design By Example</a>..</p>  <p>Looking in my debugger my decimal two variables had value 4M.</p>  <p>But calling <strong>ToString</strong> on it led to different results : “4” and “4.00”…</p>  <p>What the heck ?! How come ?</p>  <p>&#160;</p>  <h1></h1>  <h3>I should have known this</h3>  <p>Yes, <a href="http://msdn.microsoft.com/en-us/library/system.decimal.aspx" target="_blank">the MSDN state it explicitly</a> :</p>  <blockquote>   <p>The scaling factor also preserves any trailing zeroes in a Decimal number. Trailing zeroes do not affect the value of a Decimal number in arithmetic or comparison operations. However, trailing zeroes can be revealed by the <a href="http://msdn.microsoft.com/en-us/library/system.decimal.tostring.aspx">ToString</a> method if an appropriate format string is applied.</p> </blockquote>  <p>And I did not know that, did you ?</p>  <p>&#160;</p>  <h3>Try it yourself</h3>  <p>you can try it yourself :</p>  <div style="padding-bottom: 0px; margin: 0px; padding-left: 0px; padding-right: 0px; display: inline; float: none; padding-top: 0px" id="scid:DFDE9937-D816-47f4-A306-7B60D5CE5AC0:9992f2a4-f054-4b99-aa5a-2009cd1b5a2a" class="wlWriterEditableSmartContent"><pre class="brush: csharp; gutter: false; first-line: 1; tab-size: 4;  toolbar: true; ">Console.WriteLine(1m);      // 1
+Console.WriteLine(1.0m);    // 1.0
+Console.WriteLine(1.00m);   // 1.00
+
+Console.WriteLine(1m == 1.0m); // true
+Console.WriteLine(1m.ToString() == 1.0m.ToString()); // false
+
+</pre><!-- Code inserted with Steve Dunn's Windows Live Writer Code Formatter Plugin.  http://dunnhq.com --></div>
+
+<p>The decimal.Parse function also preserve trailing zeros :</p>
+
+<p>
+  <div style="padding-bottom: 0px; margin: 0px; padding-left: 0px; padding-right: 0px; display: inline; float: none; padding-top: 0px" id="scid:DFDE9937-D816-47f4-A306-7B60D5CE5AC0:c216e0d0-6df8-4c97-b5ae-6319623cc96b" class="wlWriterEditableSmartContent"><pre class="brush: csharp; gutter: false; first-line: 1; tab-size: 4;  toolbar: true; ">Console.WriteLine(decimal.Parse(&quot;1.0&quot;, CultureInfo.InvariantCulture)); // 1.0
+Console.WriteLine(decimal.Parse(&quot;1.000&quot;, CultureInfo.InvariantCulture)); // 1.000
+</pre><!-- Code inserted with Steve Dunn's Windows Live Writer Code Formatter Plugin.  http://dunnhq.com --></div>
+</p>
+
+<p>&#160;</p>
+
+<p></p>
+
+<h3>The explanation</h3>
+
+<p>The decimal type internally represents values using an 96 bit integer and a negative power of 10 (between 0 and 28).</p>
+
+<p>Those values are simply internally stored like this :</p>
+
+<p>1.0 –&gt; 10 * 10^-1 
+  <br />1.000 –&gt; 1000 * 10^-3</p>
+
+<p>You can check it using the <strong>decimal.GetBits</strong> method.</p>
+
+<p>The trailing zeros are even maintained in arithmetical operations :</p>
+
+<div style="padding-bottom: 0px; margin: 0px; padding-left: 0px; padding-right: 0px; display: inline; float: none; padding-top: 0px" id="scid:57F11A72-B0E5-49c7-9094-E3A15BD5B5E6:b6b85237-45bd-4d22-8129-3201466cd015" class="wlWriterEditableSmartContent"><pre style="background-color:#FFFFFF;white-space:-moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap; white-space: pre-wrap; word-wrap: break-word;overflow: auto;"><span style="color: #000000;">Console.WriteLine(</span><span style="color: #800080;">2.0m</span><span style="color: #000000;"> </span><span style="color: #000000;">*</span><span style="color: #000000;"> </span><span style="color: #800080;">3.00m</span><span style="color: #000000;">);  </span><span style="color: #008000;">//</span><span style="color: #008000;"> 6.000</span></pre><!-- Code inserted with Steve Dunn's Windows Live Writer Code Formatter Plugin.  http://dunnhq.com --></div>
+
+<p>But are handled correctly by the equality and comparison methods :</p>
+
+<p>
+  <div style="padding-bottom: 0px; margin: 0px; padding-left: 0px; padding-right: 0px; display: inline; float: none; padding-top: 0px" id="scid:DFDE9937-D816-47f4-A306-7B60D5CE5AC0:80af6e7a-9f58-4202-8550-8c720a8d78c2" class="wlWriterEditableSmartContent"><pre class="brush: csharp; gutter: false; first-line: 1; tab-size: 4;  toolbar: true; ">Console.WriteLine(1m == 1.0m);  // true
+Console.WriteLine(1m.GetHashCode() == 1.0m.GetHashCode()); // true
+</pre><!-- Code inserted with Steve Dunn's Windows Live Writer Code Formatter Plugin.  http://dunnhq.com --></div>
+</p>
+
+<p>&#160;</p>
+
+<p></p>
+
+<h3>Do you know other secrets like this ?</h3>
+
+<p>Of course, my unit tests did not test case I didn’t expect to happen !</p>
+
+<p>But, Hey ! <strong>If you knew it, you should have told me before</strong> !</p>
+
+<p><em>What secret feature/behavior in the .Net framework or in the C# language do you know ?</em></p>
