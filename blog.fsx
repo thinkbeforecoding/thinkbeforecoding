@@ -5,17 +5,60 @@
 #load "feed.fsx"
 open System
 open Fake
+open Html
+open Attributes
 open Posts
 
 open FSharp.Literate
 
 
-let template templateStr replacements =
-    let rx = Text.RegularExpressions.Regex("\{([^}]+)\}")
-    rx.Replace(templateStr, fun (m: Text.RegularExpressions.Match) ->
-        match Map.tryFind (m.Groups.[1].Value) replacements with
-        | Some v -> v
-        | None -> "")
+let blogTitle = text "// thinkbeforecoding"
+let scripts =
+  els [
+      script "//code.jquery.com/jquery-1.8.0.js"
+      script "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"
+      script "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+      stylesheet "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css"
+      stylesheet "/content/tips.js"
+  ]
+
+type Template = {
+    title: string
+    content: Html
+    categories: Html
+    footer: Html
+  } 
+let template template =
+  html ["lang" := "en"]
+    [ head [] 
+        [ meta ["charset" := "utf-8"]
+          Html.title template.title
+          meta ["name" := "viewport"; "content" := "width=device-width, initial-scale=1.0"]
+          scripts
+          stylesheet "/content/style.css"
+          link [ "rel" := "alternate"
+                 "type" := "application/atom+xml"
+                 "title" := "Atom 1.0"
+                 "href" := "/feed/atom" ]
+        ]
+      body [] 
+        [ div [cls "container"] 
+            [ div [] [ h1 [ cls "header"] [ a [href "/"] [ blogTitle ]] ]
+              div [ cls "row" ] 
+                [ div [cls "span1"] []
+                  div [cls "span8"; id "main"] [ template.content ]
+                  div [cls "span3 categories"] [ template.categories ] 
+                ]
+            ]
+          div [cls "footer"] [ template.footer ]
+        ]
+      ]
+// let template templateStr replacements =
+//     let rx = Text.RegularExpressions.Regex("\{([^}]+)\}")
+//     rx.Replace(templateStr, fun (m: Text.RegularExpressions.Match) ->
+//         match Map.tryFind (m.Groups.[1].Value) replacements with
+//         | Some v -> v
+//         | None -> "")
 
 type FormattedPost = {
   Link: Link
@@ -67,42 +110,51 @@ let processPost post =
     processHtmlPost post
 
 open Html
-let copyright = div [cls "copyright"] ["&copy; 2017 Jérémie Chassaing / thinkbeforecoding"]
+open Attributes
+open Entities
 
+
+let copyright =
+  let currentYear = DateTime.UtcNow.Year
+  div [cls "copyright"] [Entities.copy ; textf " 2009-%d Jérémie Chassaing / thinkbeforecoding" currentYear]
+
+let left = els [text "<"; nbsp]
+let pipe = text "|"
+let right = els [ nbsp; text ">"]
+let fmtDate (d:DateTime) = text (d.ToString("yyyy-MM-ddTHH:mm-ss"))
+let author = text " / jeremie chassaing"
 let save outputDir templateStr categories post =
-  let link l = a ["href", "/post/" + l.Href] [ Html.text l.Text]
+  let link l = a [href ("/post/" + l.Href)] [ text l.Text]
   let prev = post.Previous |> Option.map link
   let next = post.Next |> Option.map link
   let links =
       match prev, next with
-      | None, None -> ""
-      | Some p, None -> "&lt;&nbsp;" + p + "&nbsp;|"
-      | None, Some n -> "|&nbsp;" + n + "&nbsp;&gt;"
-      | Some p, Some n -> "&lt;&nbsp;" + p + "&nbsp;|&nbsp;" + n + "&nbsp;&gt;"
+      | None, None -> [] 
+      | Some p, None -> [left; p ; nbsp ; pipe ]
+      | None, Some n -> [ pipe; nbsp; n; right ]
+      | Some p, Some n -> [ left; p ; nbsp; pipe; nbsp; n; right ]
+      |> els
 
   let content =
     els [
       h1 [cls "title"] [ link post.Link ]
       div [cls "date"] 
-        [ post.Date.ToString("yyyy-MM-ddTHH:mm-ss")
-          " / jeremie chassaing"]
-      post.Content
-      " "
-      post.Tooltips
+        [ fmtDate post.Date
+          author ]
+      Html post.Content
+      Html post.Tooltips
     ]
   let footer =
     els [
       div [cls "links"] [links]
       copyright
     ]
-  [ "document", content
-    "page-title", post.Link.Text
-    "categories", categories
-    "footer", footer ]
-
-  |> Map.ofList
-  |> template templateStr
-  |> fun r -> IO.File.WriteAllText(outputDir </> post.FileName, r)
+  { title = post.Link.Text
+    content = content
+    categories = categories
+    footer = footer }
+  |> template  
+  |> Html.save (outputDir </> post.FileName)
 
 
 module Categories =
@@ -131,7 +183,7 @@ module Categories =
     |> Array.toList
 
   let categoriesHtml =
-    div ["class", "categoris"] [
+    div [cls "categoris"] [
       spant [cls "k"] "type "
       spant [cls "t"] "Categories "
       spant [cls "o"] "="
@@ -139,8 +191,9 @@ module Categories =
         for c in categories ->
           li [] [
             spant [cls "o"] "| "
-            a ["href", "/category/" + name c ] [text (title c)]
+            a ["href" := "/category/" + name c ] [text (title c)]
           ] ] ]
+    |> Html.flatten
  
   let processCategory outputDir templateStr cat =
     let dest = outputDir </> name cat + ".html"
@@ -151,22 +204,20 @@ module Categories =
     let content =
       els [
         h1 [cls "title"] [text (title cat)]
-        ul ["class", "category"]
+        ul [cls "category"]
           [ for p in catPosts ->
                li [] [ 
-                    p.Date.ToString("yyyy-MM-ddTHH:mm:ss")
-                    " |> "
-                    a ["href", "/post/" + p.Url ] [text p.Title] ] ]
+                    text (p.Date.ToString("yyyy-MM-ddTHH:mm:ss"))
+                    text " |> "
+                    a [href ("/post/" + p.Url) ] [text p.Title] ] ]
       ]
     let footer = copyright
-    [ "document", content
-      "page-title", title cat
-      "categories", categoriesHtml
-      "footer", footer ]
-    |> Map.ofList
-    |> template templateStr
-   
-    |> fun r -> IO.File.WriteAllText(dest, r)
+    { content = content
+      title = title cat
+      categories = categoriesHtml
+      footer = footer }
+    |> template
+    |> Html.save dest
 
 
 let prevnext f l =

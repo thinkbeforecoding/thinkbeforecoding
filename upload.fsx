@@ -20,6 +20,18 @@ let md5 path =
   md5p.ComputeHash(stream)
   |> Convert.ToBase64String
 
+let contentType uri = 
+  match IO.Path.GetExtension uri with
+  | ".css" -> "text/css"
+  | ".js" -> "application/javascript"
+  | ".jpeg" 
+  | ".jpg" -> "image/jpeg"
+  | ".png" -> "image/png"
+  | ".gif" -> "image/gif"
+  | ".htm"
+  | ".html" -> "text/html"
+  | _ -> null
+
 let uploadMedia path =
     let uri =
         path 
@@ -33,6 +45,7 @@ let uploadMedia path =
     let blob = blog.GetBlockBlobReference(uri)
     if not (blob.Exists()) then
         tracefn "[Media] %s is new" uri
+        blob.Properties.ContentType <- contentType uri  
         blob.UploadFromFile(path, options = opts)
     else
         let fileMd5 = md5 path  
@@ -42,7 +55,13 @@ let uploadMedia path =
             blob.UploadFromFile(path, options = opts)
         else
             logfn "[Media] Skipping %s" uri
-
+        let contenttype = contentType uri
+        if blob.Properties.ContentType <> contenttype then
+          tracefn "[Media] %s content type has changed" uri
+          blob.Properties.ContentType <- contenttype
+          blob.SetProperties()
+        else
+          logfn "[Media] Skipping %s content type" uri
 
 tracef "Upload media"
 !! (Path.media </> "**/*.*")
