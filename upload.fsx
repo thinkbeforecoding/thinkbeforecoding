@@ -1,11 +1,13 @@
 #r "packages/Fake/tools/FakeLib.dll"
 #load "packages/FSharp.Azure.StorageTypeProvider/StorageTypeProvider.fsx"
 #load "posts.fsx"
+#load "Categories.fsx"
 
 open System
 open Fake
 open FSharp.Azure.StorageTypeProvider
 open Posts
+open Categories
 open Microsoft.WindowsAzure.Storage
 
 type BlogStorage = AzureTypeProvider<"***">
@@ -75,24 +77,22 @@ tracef "Upload media"
 |> List.iter uploadMedia
 
 
+let upload tag path blobPath name contentType =
 
-let uploadPost post =
-  let path = Path.outPosts </> post.Name + ".html"
-
-  let blob = blog.GetBlockBlobReference("posts/" + post.Url)
+  let blob = blog.GetBlockBlobReference(blobPath)
 
   let fileMd5 = md5 path  
   let upload = 
     if blob.Exists() then
       blob.FetchAttributes()
       if blob.Properties.ContentMD5 <> fileMd5 then
-        tracefn "[Post] %s has changed" post.Url
+        tracefn "[%s] %s has changed" tag name
         true
       else
-        logfn "[Post] Skipping %s" post.Url
+        logfn "[%s] Skipping %s" tag name
         false
     else
-      tracefn "[Post] %s is new" post.Url
+      tracefn "[%s] %s is new" tag name
       true
   if upload then
     let opts = 
@@ -100,7 +100,14 @@ let uploadPost post =
         StoreBlobContentMD5 = Nullable true, 
         UseTransactionalMD5 = Nullable true)
     blob.UploadFromFile(path, options = opts)
- 
+    blob.Properties.ContentType <- contentType
+    blob.SetProperties()
+
+let uploadPost post =
+  let path = Path.outPosts </> post.Name + ".html"
+  let blob = "posts/" + post.Url
+  upload "Post" path blob post.Url "text/html"
+    
 tracef "Upload posts"
 posts
 |> List.iter uploadPost
@@ -110,3 +117,14 @@ posts
 |> List.head
 |> fun p -> { p with Url = "index.html"}
 |> uploadPost
+
+let uploadCategory category =
+    let name = Categories.name category
+    let path = Path.categories </> name + ".html"
+    let blob = "category/" + name
+    upload "Category" path blob name "text/html"
+      
+Categories.categories
+|> List.iter uploadCategory 
+
+upload "Feed" Path.atom "feed/atom" "feed" "application/atom+xml"

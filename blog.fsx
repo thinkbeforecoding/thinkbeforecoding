@@ -8,6 +8,7 @@ open Fake
 open Html
 open Attributes
 open Posts
+open Categories
 
 open FSharp.Literate
 
@@ -18,8 +19,7 @@ let scripts =
       script "//code.jquery.com/jquery-1.8.0.js"
       script "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"
       script "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-      stylesheet "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css"
-      stylesheet "/content/tips.js"
+      script "/content/tips.js"
   ]
 
 type Template = {
@@ -35,7 +35,12 @@ let template template =
           Html.title template.title
           meta ["name" := "viewport"; "content" := "width=device-width, initial-scale=1.0"]
           scripts
+          stylesheet "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css"
           stylesheet "/content/style.css"
+          // stylesheet "https://use.fontawesome.com/c3e81a7a2a.css"
+          script "https://use.fontawesome.com/5477943014.js"
+
+
           link [ "rel" := "alternate"
                  "type" := "application/atom+xml"
                  "title" := "Atom 1.0"
@@ -47,9 +52,20 @@ let template template =
               div [ cls "row" ] 
                 [ div [cls "span1"] []
                   div [cls "span8"; id "main"] [ template.content ]
-                  div [cls "span3 categories"] [ template.categories ] 
-                ]
+                  div [cls "span3 categories"] 
+                      [ template.categories
+                        div [] [
+                          a [ href "/feed/atom"] 
+                            [ i [ cls "fa fa-rss-square"] []
+                              text " atom feed"]
+                          br
+                          a [ href "https://twitter.com/thinkb4coding"] 
+                            [ i [ cls "fa fa-twitter-square"] []
+                              text " @thinkb4coding" ] ]
+                      ]
+                 ] 
             ]
+         
           div [cls "footer"] [ template.footer ]
         ]
       ]
@@ -158,30 +174,6 @@ let save outputDir templateStr categories post =
 
 
 module Categories =
-  let title = function
-  | DomainDrivenDesign -> "Domain Driven Desing"
-  | NetFramework -> ".Net Framework"
-  | AspNet -> "Asp.net"
-  | FSharp -> "F#"
-  | EventSourcing -> "Event Sourcing"
-  | c -> string c
-
-  let name = function
-  | NetFramework -> "Net-Framework"
-  | AspNet -> "Aspnet" 
-  | FSharp -> "FSharp"
-  | cat -> (title cat).Replace(" ","-") 
-
-  let adapt = function
-  | "F" -> "FSharp"
-  | cat -> cat
-  
-  let categories =
-    Reflection.FSharpType.GetUnionCases(typeof<Category>)
-    |> Array.map (fun c ->Reflection.FSharpValue.MakeUnion(c,[||]) |> unbox)
-    |> Array.filter ((<>) NoCategory)
-    |> Array.toList
-
   let categoriesHtml =
     div [cls "categoris"] [
       spant [cls "k"] "type "
@@ -191,7 +183,7 @@ module Categories =
         for c in categories ->
           li [] [
             spant [cls "o"] "| "
-            a ["href" := "/category/" + name c ] [text (title c)]
+            a ["href" := "/category/" + name c ] [text (Categories.title c)]
           ] ] ]
     |> Html.flatten
  
@@ -203,7 +195,7 @@ module Categories =
       |> List.sortByDescending (fun p -> p.Date)
     let content =
       els [
-        h1 [cls "title"] [text (title cat)]
+        h1 [cls "title"] [text (Categories.title cat)]
         ul [cls "category"]
           [ for p in catPosts ->
                li [] [ 
@@ -213,7 +205,7 @@ module Categories =
       ]
     let footer = copyright
     { content = content
-      title = title cat
+      title = Categories.title cat
       categories = categoriesHtml
       footer = footer }
     |> template

@@ -1,5 +1,8 @@
 [<AutoOpen>]
 module Posts
+
+#load "Categories.fsx"
+
 open System
 
 module Path =
@@ -24,21 +27,6 @@ type Post = {
     Category: Category 
     Date: DateTime
     Url: string}
-and Category =
-    | NoCategory
-    | Personal 
-    | Design
-    | DomainDrivenDesign
-    | NetFramework
-    | AspNet
-    | Linq
-    | Duck
-    | WP7
-    | Agile
-    | NuRep
-    | CQRS
-    | FSharp
-    | EventSourcing
 
 let date s= DateTime.Parse(s)
 let posts = [

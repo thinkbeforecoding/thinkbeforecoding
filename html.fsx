@@ -90,7 +90,8 @@ let link = empty "link"
 
 let stylesheet src = link [ "type" := "text/css"; "rel" := "stylesheet"; "href" := src ]
 
- 
+let i = element "i"
+let br = empty "br" [] 
 
 module Attributes =
     let cls = attr "class"

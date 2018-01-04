@@ -1,7 +1,7 @@
 RESTRICTION: >= net45
 NUGET
   remote: https://www.nuget.org/api/v2
-    FAKE (4.64.2)
+    FAKE (4.64.3)
     FSharp.Azure.StorageTypeProvider (1.9.5)
       WindowsAzure.Storage (>= 7.2.1)
     FSharp.Compiler.Service (2.0.0.6)
@@ -54,7 +54,7 @@ NUGET
       System.Security.Cryptography.Algorithms (>= 4.3)
       System.Security.Cryptography.Encoding (>= 4.3)
     System.Spatial (5.8.3)
-    WindowsAzure.Storage (8.6)
+    WindowsAzure.Storage (8.7)
       Microsoft.Azure.KeyVault.Core (>= 1.0)
       Microsoft.Data.OData (>= 5.8.2)
       Microsoft.Data.Services.Client (>= 5.8.2)
