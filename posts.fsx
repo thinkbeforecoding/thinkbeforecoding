@@ -424,5 +424,11 @@ let posts = [
       Title="fck: Fake Construction Kit"
       Category= FSharp
       Date=date "2016-12-04T09:34:56Z"
-      Url="2016/12/04/fck:-Fake-Construction-Kit" }]
+      Url="2016/12/04/fck:-Fake-Construction-Kit" }
+    { Name="back"
+      Title="Back to blogging"
+      Category = Category.Personal
+      Date=date "2018-01-20T22:04:08Z"
+      Url="2018/01/20/back-to-blogging" }
+      ]
 

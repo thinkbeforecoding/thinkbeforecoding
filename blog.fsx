@@ -26,6 +26,7 @@ type Template = {
     title: string
     content: Html
     categories: Html
+    recentPosts: Html
     footer: Html
   } 
 let template template =
@@ -54,7 +55,7 @@ let template template =
                   div [cls "span8"; id "main"] [ template.content ]
                   div [cls "span3 categories"] 
                       [ template.categories
-                        div [] [
+                        div [cls "social"] [
                           a [ href "/feed/atom"] 
                             [ i [ cls "fa fa-rss-square"] []
                               text " atom feed"]
@@ -62,6 +63,8 @@ let template template =
                           a [ href "https://twitter.com/thinkb4coding"] 
                             [ i [ cls "fa fa-twitter-square"] []
                               text " @thinkb4coding" ] ]
+
+                        template.recentPosts
                       ]
                  ] 
             ]
@@ -119,9 +122,27 @@ let processScriptPost post =
     Next = None
     Previous = None }
 
+let processMarkdownPost post =
+  let source = Path.posts </> post.Name + ".md"
+  let dest = post.Name + ".html"
+  let doc = Literate.ParseScriptFile(source)
+
+  let output = 
+    IO.File.ReadAllText source
+    |> FSharp.Markdown.Markdown.TransformHtml
+  { Content = output
+    Tooltips = ""
+    Link =  { Text = post.Title; Href = post.Url }
+    Date = post.Date 
+    FileName = dest
+    Next = None
+    Previous = None }
+
 let processPost post =
   if fileExists (Path.posts </> post.Name + ".fsx") then
     processScriptPost post
+  elif fileExists (Path.posts </> post.Name + ".md") then
+    processMarkdownPost post
   else
     processHtmlPost post
 
@@ -139,7 +160,7 @@ let pipe = text "|"
 let right = els [ nbsp; text ">"]
 let fmtDate (d:DateTime) = text (d.ToString("yyyy-MM-ddTHH:mm-ss"))
 let author = text " / jeremie chassaing"
-let save outputDir templateStr categories post =
+let save outputDir categories recentPosts post =
   let link l = a [href ("/post/" + l.Href)] [ text l.Text]
   let prev = post.Previous |> Option.map link
   let next = post.Next |> Option.map link
@@ -168,14 +189,31 @@ let save outputDir templateStr categories post =
   { title = post.Link.Text
     content = content
     categories = categories
+    recentPosts = recentPosts
     footer = footer }
   |> template  
   |> Html.save (outputDir </> post.FileName)
 
+let recentPosts =
+    div [ cls "recent-posts"] [
+      spant [cls "k"] "type "
+      spant [cls "t"] "RecentPosts "
+      spant [cls "o"] "="
+      ul [] [
+        for p in posts 
+                |> List.sortByDescending (fun p -> p.Date ) 
+                |> List.truncate 10 ->
+          li [] [
+            spant [cls "o"] "| ``"
+            a [href <| p.Url] [text p.Title]
+            spant [cls "o"] "``"]
+      ]
+    ]
+    |> Html.flatten
 
 module Categories =
   let categoriesHtml =
-    div [cls "categoris"] [
+    div [cls "categories"] [
       spant [cls "k"] "type "
       spant [cls "t"] "Categories "
       spant [cls "o"] "="
@@ -183,11 +221,11 @@ module Categories =
         for c in categories ->
           li [] [
             spant [cls "o"] "| "
-            a ["href" := "/category/" + name c ] [text (Categories.title c)]
+            a [href <| "/category/" + name c ] [text (Categories.title c)]
           ] ] ]
     |> Html.flatten
  
-  let processCategory outputDir templateStr cat =
+  let processCategory outputDir recentPosts cat =
     let dest = outputDir </> name cat + ".html"
     let catPosts =
       posts
@@ -207,6 +245,7 @@ module Categories =
     { content = content
       title = Categories.title cat
       categories = categoriesHtml
+      recentPosts = recentPosts
       footer = footer }
     |> template
     |> Html.save dest
@@ -223,8 +262,6 @@ let prevnext f l =
   | [ c ] -> [f None c None]
   | c :: n :: tail -> loop n  [f None c (Some n)] (n :: tail) 
 
-let templateStr = IO.File.ReadAllText(__SOURCE_DIRECTORY__ </> "template.html")
-
 let formattedPosts =
   posts
   |> List.map processPost
@@ -236,7 +273,7 @@ if directoryExists Path.out then
   DeleteDir Path.out
 CreateDir Path.outPosts
 formattedPosts
-|> List.iter (save Path.outPosts templateStr Categories.categoriesHtml)
+|> List.iter (save Path.outPosts Categories.categoriesHtml recentPosts)
 
 CreateDir Path.feed
 formattedPosts
@@ -250,7 +287,7 @@ if directoryExists Path.categories then
   DeleteDir Path.categories
 CreateDir Path.categories
 Categories.categories
-|> List.iter (Categories.processCategory Path.categories templateStr)
+|> List.iter (Categories.processCategory Path.categories recentPosts)
 CopyDir Path.outmedia Path.media allFiles
 CopyDir Path.outcontent Path.content allFiles
 
