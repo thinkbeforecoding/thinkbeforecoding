@@ -13,7 +13,7 @@ open Categories
 open FSharp.Literate
 
 
-let blogTitle = text "// thinkbeforecoding"
+let blogTitle = els [text "//";Entities.nbsp;text"thinkbeforecoding"] |> Html.flatten
 let scripts =
   els [
       script "//code.jquery.com/jquery-1.8.0.js"
@@ -202,14 +202,47 @@ let recentPosts =
       ul [] [
         for p in posts 
                 |> List.sortByDescending (fun p -> p.Date ) 
-                |> List.truncate 10 ->
-          li [] [
+                |> List.truncate 10 do
+          yield li [] [
             spant [cls "o"] "| ``"
             a [href <| p.Url] [text p.Title]
             spant [cls "o"] "``"]
+
+        yield li [] [
+          spant [cls "o"] "| "
+          a [href "/category/all" ] [text "_"]
+          nbsp
+          nbsp
+          spant [ cls "c"] "// "
+          a [href "/category/all"] [spant [cls "c"] "all posts so far"]
+        ]
       ]
     ]
     |> Html.flatten
+
+let listPage outputDir categoriesHtml recentPosts name title (posts: Post list) = 
+    let dest = outputDir </> name + ".html"
+    let catPosts =
+      posts
+      |> List.sortByDescending (fun p -> p.Date)
+    let content =
+      els [
+        h1 [cls "title"] [text title]
+        ul [cls "category"]
+          [ for p in catPosts ->
+               li [] [ 
+                    text (p.Date.ToString("yyyy-MM-ddTHH:mm:ss"))
+                    text " |> "
+                    a [href ("/post/" + p.Url) ] [text p.Title] ] ]
+      ]
+    let footer = copyright
+    { content = content
+      title = title
+      categories = categoriesHtml
+      recentPosts = recentPosts
+      footer = footer }
+    |> template
+    |> Html.save dest
 
 module Categories =
   let categoriesHtml =
@@ -226,29 +259,9 @@ module Categories =
     |> Html.flatten
  
   let processCategory outputDir recentPosts cat =
-    let dest = outputDir </> name cat + ".html"
-    let catPosts =
-      posts
-      |> List.filter (fun p -> p.Category = cat)
-      |> List.sortByDescending (fun p -> p.Date)
-    let content =
-      els [
-        h1 [cls "title"] [text (Categories.title cat)]
-        ul [cls "category"]
-          [ for p in catPosts ->
-               li [] [ 
-                    text (p.Date.ToString("yyyy-MM-ddTHH:mm:ss"))
-                    text " |> "
-                    a [href ("/post/" + p.Url) ] [text p.Title] ] ]
-      ]
-    let footer = copyright
-    { content = content
-      title = Categories.title cat
-      categories = categoriesHtml
-      recentPosts = recentPosts
-      footer = footer }
-    |> template
-    |> Html.save dest
+    posts
+    |> List.filter (fun p -> p.Category = cat)
+    |> listPage outputDir categoriesHtml recentPosts (name cat) (Categories.title cat) 
 
 
 let prevnext f l =
@@ -288,6 +301,9 @@ if directoryExists Path.categories then
 CreateDir Path.categories
 Categories.categories
 |> List.iter (Categories.processCategory Path.categories recentPosts)
+
+listPage Path.categories Categories.categoriesHtml recentPosts "all" "All posts so far" posts
+
 CopyDir Path.outmedia Path.media allFiles
 CopyDir Path.outcontent Path.content allFiles
 

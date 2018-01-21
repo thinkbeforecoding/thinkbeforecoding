@@ -126,5 +126,11 @@ let uploadCategory category =
       
 Categories.categories
 |> List.iter uploadCategory 
-
+let uploadAll() =
+    let name = "all"
+    let path = Path.categories </> name + ".html"
+    let blob = "category/" + name
+    upload "Category" path blob name "text/html"
+ 
+uploadAll()
 upload "Feed" Path.atom "feed/atom" "feed" "application/atom+xml"
