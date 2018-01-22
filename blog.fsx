@@ -205,7 +205,7 @@ let recentPosts =
                 |> List.truncate 10 do
           yield li [] [
             spant [cls "o"] "| ``"
-            a [href <| p.Url] [text p.Title]
+            a [href <| "/post/" + p.Url] [text p.Title]
             spant [cls "o"] "``"]
 
         yield li [] [
