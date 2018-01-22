@@ -1,0 +1,115 @@
+{
+    "$schema": "http://json.schemastore.org/proxies",
+    "proxies": {
+        "Posts": {
+            "matchCondition": {
+                "route": "post/{*path}",
+                "methods": [
+                    "GET",
+                    "HEAD"
+                ]
+            },
+            "backendUri": "https://thinkbeforecodingblog.blob.core.windows.net/blog/posts/{path}"
+        },
+        "media": {
+            "matchCondition": {
+                "route": "public/{*path}",
+                "methods": [
+                    "GET",
+                    "HEAD"
+                ]
+            },
+            "backendUri": "https://thinkbeforecodingblog.blob.core.windows.net/blog/media/{path}"
+        },
+        "content": {
+            "matchCondition": {
+                "route": "content/{*path}"
+            },
+            "backendUri": "https://thinkbeforecodingblog.blob.core.windows.net/blog/content/{path}"
+        },
+        "Index": {
+            "matchCondition": {
+                "route": "/"
+            },
+            "backendUri": "https://thinkbeforecodingblog.blob.core.windows.net/blog/posts/index.html"
+        },
+        "category": {
+            "matchCondition": {
+                "route": "/category/{*path}",
+                "methods": [
+                    "GET",
+                    "HEAD",
+                    "OPTIONS"
+                ]
+            },
+            "backendUri": "https://thinkbeforecodingblog.blob.core.windows.net/blog/category/{path}"
+        },
+        "category-fsharp": {
+            "matchCondition": {
+                "route": "/category/F"
+            },
+            "responseOverrides": {
+                "response.statusCode": "301",
+                "response.statusReason": "Redirect",
+                "response.headers.Location": "/category/FSharp"
+            }
+        },
+        "feed": {
+            "matchCondition": {
+                "route": "/feed/atom",
+                "methods": [
+                    "GET",
+                    "HEAD",
+                    "OPTIONS"
+                ]
+            },
+            "backendUri": "https://thinkbeforecodingblog.blob.core.windows.net/blog/feed/atom"
+        },
+        "letsencryptproxy": {
+            "matchCondition": {
+                "route": "/.well-known/acme-challenge/{*rest}"
+            },
+            "backendUri": "https://%WEBSITE_HOSTNAME%/api/letsencrypt/{rest}"
+        },
+        "archive": {
+            "matchCondition": {
+                "route": "/archive",
+                "methods": [
+                    "GET",
+                    "HEAD",
+                    "OPTIONS"
+                ]
+            },
+            "responseOverrides": {
+                "response.statusCode": "301",
+                "response.statusReason": "Redirect",
+                "response.headers.Location": "/category/all"
+            }
+        },
+        "page": {
+            "matchCondition": {
+                "route": "/page/{*path}",
+                "methods": [
+                    "GET",
+                    "HEAD",
+                    "OPTIONS"
+                ]
+            },
+            "responseOverrides": {
+                "response.statusCode": "301",
+                "response.statusReason": "Redirect",
+                "response.headers.Location": "/category/all"
+            }
+        },
+        "tag": {
+            "matchCondition": {
+                "route": "/tag/{*path}"
+            },
+            "responseOverrides": {
+                "response.statusCode": "301",
+                "response.statusReason": "Redirect",
+                "response.headers.Location": "/category/all"
+            }
+        }
+    }
+}
