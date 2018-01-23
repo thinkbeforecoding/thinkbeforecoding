@@ -33,7 +33,7 @@ let template template =
   html ["lang" := "en"]
     [ head [] 
         [ meta ["charset" := "utf-8"]
-          Html.title template.title
+          Html.title <| "// thinkbeforecoding -> " + template.title
           meta ["name" := "viewport"; "content" := "width=device-width, initial-scale=1.0"]
           scripts
           stylesheet "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css"
@@ -125,7 +125,6 @@ let processScriptPost post =
 let processMarkdownPost post =
   let source = Path.posts </> post.Name + ".md"
   let dest = post.Name + ".html"
-  let doc = Literate.ParseScriptFile(source)
 
   let output = 
     IO.File.ReadAllText source
