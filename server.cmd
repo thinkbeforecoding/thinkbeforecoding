@@ -1,2 +1,2 @@
 @echo off
-fsianycpy --load:server.fsx
+fsianycpu --load:server.fsx

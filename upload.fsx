@@ -112,11 +112,14 @@ tracef "Upload posts"
 posts
 |> List.iter uploadPost
 
-posts
-|> List.sortByDescending (fun p -> p.Date)
-|> List.head
-|> fun p -> { p with Url = "index.html"}
-|> uploadPost
+// posts
+// |> List.sortByDescending (fun p -> p.Date)
+// |> List.head
+// |> fun p -> { p with Url = "index.html"}
+// |> uploadPost
+
+upload "Post" (Path.out </> "index.html") "posts/index.html" "index.html" "text/html"
+ 
 
 let uploadCategory category =
     let name = Categories.name category

@@ -22,8 +22,12 @@ let scripts =
       script "/content/tips.js"
   ]
 
+type Title =
+  | Home
+  | Post of string
+
 type Template = {
-    title: string
+    title: Title
     content: Html
     categories: Html
     recentPosts: Html
@@ -33,7 +37,9 @@ let template template =
   html ["lang" := "en"]
     [ head [] 
         [ meta ["charset" := "utf-8"]
-          Html.title <| "// thinkbeforecoding -> " + template.title
+          Html.title <| match template.title with
+                        | Post title -> "// thinkbeforecoding -> " + title
+                        | Home -> "// thinkbeforecoding"
           meta ["name" := "viewport"; "content" := "width=device-width, initial-scale=1.0"]
           scripts
           stylesheet "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css"
@@ -159,7 +165,7 @@ let pipe = text "|"
 let right = els [ nbsp; text ">"]
 let fmtDate (d:DateTime) = text (d.ToString("yyyy-MM-ddTHH:mm-ss"))
 let author = text " / jeremie chassaing"
-let save outputDir categories recentPosts post =
+let templatePost categories recentPosts titler post =
   let link l = a [href ("/post/" + l.Href)] [ text l.Text]
   let prev = post.Previous |> Option.map link
   let next = post.Next |> Option.map link
@@ -185,13 +191,16 @@ let save outputDir categories recentPosts post =
       div [cls "links"] [links]
       copyright
     ]
-  { title = post.Link.Text
+  { title = titler post.Link.Text
     content = content
     categories = categories
     recentPosts = recentPosts
     footer = footer }
   |> template  
-  |> Html.save (outputDir </> post.FileName)
+
+let savePost outputDir post html =
+    html |> Html.save (outputDir </> post.FileName)
+
 
 let recentPosts =
     div [ cls "recent-posts"] [
@@ -236,7 +245,7 @@ let listPage outputDir categoriesHtml recentPosts name title (posts: Post list) 
       ]
     let footer = copyright
     { content = content
-      title = title
+      title = Post title
       categories = categoriesHtml
       recentPosts = recentPosts
       footer = footer }
@@ -285,7 +294,10 @@ if directoryExists Path.out then
   DeleteDir Path.out
 CreateDir Path.outPosts
 formattedPosts
-|> List.iter (save Path.outPosts Categories.categoriesHtml recentPosts)
+|> List.iter (fun p ->
+  p
+  |> templatePost Categories.categoriesHtml recentPosts Post
+  |> savePost Path.outPosts p)
 
 CreateDir Path.feed
 formattedPosts
@@ -307,7 +319,13 @@ CopyDir Path.outmedia Path.media allFiles
 CopyDir Path.outcontent Path.content allFiles
 
 formattedPosts
-|> List.head
-|> fun p -> Path.outPosts </> p.FileName
-|> CopyFile (Path.out </> "index.html")
+|> List.tryHead
+|> Option.iter (fun p -> 
+      p
+      |> templatePost Categories.categoriesHtml recentPosts (fun _ -> Home)
+      |> Html.save (Path.out </> "index.html") )
+// formattedPosts
+// |> List.head
+// |> fun p -> Path.outPosts </> p.FileName
+// |> CopyFile (Path.out </> "index.html")
 
