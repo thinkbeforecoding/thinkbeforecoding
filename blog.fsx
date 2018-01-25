@@ -277,11 +277,11 @@ let prevnext f l =
     function
     | [] -> result |> List.rev
     | [ c ] -> List.rev (f (Some p) c None :: result)
-    | c :: n :: tail -> loop n (f (Some p) c (Some n) :: result) (n :: tail)
+    | c :: n :: tail -> loop c (f (Some p) c (Some n) :: result) (n :: tail)
   match l with
   | [] -> []
   | [ c ] -> [f None c None]
-  | c :: n :: tail -> loop n  [f None c (Some n)] (n :: tail) 
+  | c :: n :: tail -> loop c  [f None c (Some n)] (n :: tail) 
 
 let formattedPosts =
   posts
@@ -324,8 +324,4 @@ formattedPosts
       p
       |> templatePost Categories.categoriesHtml recentPosts (fun _ -> Home)
       |> Html.save (Path.out </> "index.html") )
-// formattedPosts
-// |> List.head
-// |> fun p -> Path.outPosts </> p.FileName
-// |> CopyFile (Path.out </> "index.html")
 
