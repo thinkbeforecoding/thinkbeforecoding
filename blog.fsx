@@ -144,6 +144,7 @@ let processMarkdownPost post =
     Previous = None }
 
 let processPost post =
+  tracefn "[Post] %s" post.Title
   if fileExists (Path.posts </> post.Name + ".fsx") then
     processScriptPost post
   elif fileExists (Path.posts </> post.Name + ".md") then
@@ -301,7 +302,7 @@ formattedPosts
 
 CreateDir Path.feed
 formattedPosts
-|> List.map (fun p -> Feed.entry p.Link.Text p.Link.Href p.Date p.Content)
+|> List.map (fun p -> Feed.entry p.Link.Text ("https://thinkbeforecoding.com/post/" + p.Link.Href) p.Date p.Content)
 |> Feed.feed
 |> string
 |> fun f -> IO.File.WriteAllText(Path.atom, f)

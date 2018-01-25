@@ -430,5 +430,10 @@ let posts = [
       Category = Category.Personal
       Date=date "2018-01-20T22:04:08Z"
       Url="2018/01/20/back-to-blogging" }
-      ]
+    { Name="functionalcore"
+      Title="Functional Core"
+      Category = Category.Design
+      Date=date "2018-01-25T21:41:12Z"
+      Url="2018/01/20/functional-core" }
+       ]
 
