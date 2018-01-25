@@ -9,7 +9,7 @@
                     "HEAD"
                 ]
             },
-            "backendUri": "https://thinkbeforecodingblog.blob.core.windows.net/blog/posts/{path}"
+            "backendUri": "https://%Blog.Storage%.blob.core.windows.net/%Blog.Container%/posts/{path}"
         },
         "media": {
             "matchCondition": {
@@ -19,19 +19,19 @@
                     "HEAD"
                 ]
             },
-            "backendUri": "https://thinkbeforecodingblog.blob.core.windows.net/blog/media/{path}"
+            "backendUri": "https://%Blog.Storage%.blob.core.windows.net/%Blog.Container%/media/{path}"
         },
         "content": {
             "matchCondition": {
                 "route": "content/{*path}"
             },
-            "backendUri": "https://thinkbeforecodingblog.blob.core.windows.net/blog/content/{path}"
+            "backendUri": "https://%Blog.Storage%.blob.core.windows.net/%Blog.Container%/content/{path}"
         },
         "Index": {
             "matchCondition": {
                 "route": "/"
             },
-            "backendUri": "https://thinkbeforecodingblog.blob.core.windows.net/blog/posts/index.html"
+            "backendUri": "https://%Blog.Storage%.blob.core.windows.net/%Blog.Container%/index.html"
         },
         "category": {
             "matchCondition": {
@@ -42,7 +42,7 @@
                     "OPTIONS"
                 ]
             },
-            "backendUri": "https://thinkbeforecodingblog.blob.core.windows.net/blog/category/{path}"
+            "backendUri": "https://%Blog.Storage%.blob.core.windows.net/%Blog.Container%/category/{path}"
         },
         "category-fsharp": {
             "matchCondition": {
@@ -63,7 +63,7 @@
                     "OPTIONS"
                 ]
             },
-            "backendUri": "https://thinkbeforecodingblog.blob.core.windows.net/blog/feed/atom"
+            "backendUri": "https://%Blog.Storage%.blob.core.windows.net/%Blog.Container%/feed/atom"
         },
         "letsencryptproxy": {
             "matchCondition": {

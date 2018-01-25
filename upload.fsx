@@ -11,7 +11,7 @@ open Categories
 open Microsoft.WindowsAzure.Storage
 
 type BlogStorage = AzureTypeProvider<"***">
-let blog = BlogStorage.Containers.CloudBlobClient.GetContainerReference("blog")
+let blog = BlogStorage.Containers.CloudBlobClient.GetContainerReference("gzipblog")
 
 blog.CreateIfNotExists()
 
@@ -22,17 +22,35 @@ let md5 path =
   md5p.ComputeHash(stream)
   |> Convert.ToBase64String
 
+let md5Gzip path =
+  use stream = IO.File.OpenRead(path)
+  use memoryStream = new IO.MemoryStream()
+  use gzip = new IO.Compression.GZipStream(memoryStream, IO.Compression.CompressionMode.Compress, true)
+  stream.CopyTo(gzip)
+  gzip.Flush()
+  gzip.Close()
+  memoryStream.Position <- 0L
+  use md5p = new System.Security.Cryptography.MD5CryptoServiceProvider()
+  md5p.ComputeHash(memoryStream)
+  |> Convert.ToBase64String
+   
+
+type Encoding =
+  | Gzip of string
+  | Flat of string
+  | NoEncoding 
+
 let contentType uri = 
   match IO.Path.GetExtension uri with
-  | ".css" -> "text/css"
-  | ".js" -> "application/javascript"
+  | ".css" -> Gzip "text/css"
+  | ".js" -> Gzip "application/javascript"
   | ".jpeg" 
-  | ".jpg" -> "image/jpeg"
-  | ".png" -> "image/png"
-  | ".gif" -> "image/gif"
+  | ".jpg" -> Flat "image/jpeg"
+  | ".png" -> Flat "image/png"
+  | ".gif" -> Flat "image/gif"
   | ".htm"
-  | ".html" -> "text/html"
-  | _ -> null
+  | ".html" -> Gzip "text/html"
+  | _ -> NoEncoding
 
 let uploadMedia path =
     let uri =
@@ -47,23 +65,42 @@ let uploadMedia path =
     let blob = blog.GetBlockBlobReference(uri)
     if not (blob.Exists()) then
         tracefn "[Media] %s is new" uri
-        blob.Properties.ContentType <- contentType uri  
-        blob.UploadFromFile(path, options = opts)
+        match contentType uri with
+        | Flat contentType ->
+          blob.Properties.ContentType <- contentType
+          blob.UploadFromFile(path, options = opts)
+        | NoEncoding ->
+            blob.UploadFromFile(path, options = opts)
+        | Gzip contentType ->
+          blob.Properties.ContentType <- contentType
+          blob.Properties.ContentEncoding <- "gzip"
+          use file = IO.File.OpenRead(path)
+          use blobStream = blob.OpenWrite(options = opts)
+          use gzip = new IO.Compression.GZipStream(blobStream, IO.Compression.CompressionMode.Compress)
+          file.CopyTo(gzip)
     else
-        let fileMd5 = md5 path  
+        let fileMd5 =
+          match contentType uri with
+          | Flat _ | NoEncoding -> md5 path  
+          | Gzip _ -> md5Gzip path
         blob.FetchAttributes()
         if blob.Properties.ContentMD5 <> fileMd5 then
             tracefn "[Media] %s has changed" uri
-            blob.UploadFromFile(path, options = opts)
-        else
+            match contentType uri with
+            | Flat contentType ->
+              blob.Properties.ContentType <- contentType
+              blob.UploadFromFile(path, options = opts)
+            | NoEncoding ->
+                blob.UploadFromFile(path, options = opts)
+            | Gzip contentType ->
+              blob.Properties.ContentType <- contentType
+              blob.Properties.ContentEncoding <- "gzip"
+              use file = IO.File.OpenRead(path)
+              use blobStream = blob.OpenWrite(options = opts)
+              use gzip = new IO.Compression.GZipStream(blobStream, IO.Compression.CompressionMode.Compress)
+              file.CopyTo(gzip)
+          else
             logfn "[Media] Skipping %s" uri
-        let contenttype = contentType uri
-        if blob.Properties.ContentType <> contenttype then
-          tracefn "[Media] %s content type has changed" uri
-          blob.Properties.ContentType <- contenttype
-          blob.SetProperties()
-        else
-          logfn "[Media] Skipping %s content type" uri
 
 tracef "Upload media"
 !! (Path.media </> "**/*.*")
@@ -81,7 +118,7 @@ let upload tag path blobPath name contentType =
 
   let blob = blog.GetBlockBlobReference(blobPath)
 
-  let fileMd5 = md5 path  
+  let fileMd5 = md5Gzip path
   let upload = 
     if blob.Exists() then
       blob.FetchAttributes()
@@ -99,8 +136,14 @@ let upload tag path blobPath name contentType =
       Blob.BlobRequestOptions(
         StoreBlobContentMD5 = Nullable true, 
         UseTransactionalMD5 = Nullable true)
-    blob.UploadFromFile(path, options = opts)
+    let upload() =    
+      use file = IO.File.OpenRead(path)
+      use blobStream = blob.OpenWrite(options = opts)
+      use gzip = new IO.Compression.GZipStream(blobStream, IO.Compression.CompressionMode.Compress)
+      file.CopyTo(gzip)
+    upload()
     blob.Properties.ContentType <- contentType
+    blob.Properties.ContentEncoding <- "gzip"
     blob.SetProperties()
 
 let uploadPost post =
@@ -112,13 +155,8 @@ tracef "Upload posts"
 posts
 |> List.iter uploadPost
 
-// posts
-// |> List.sortByDescending (fun p -> p.Date)
-// |> List.head
-// |> fun p -> { p with Url = "index.html"}
-// |> uploadPost
-
-upload "Post" (Path.out </> "index.html") "posts/index.html" "index.html" "text/html"
+md5 (Path.out </> "index.html")
+upload "Post" (Path.out </> "index.html") "index.html" "index.html" "text/html"
  
 
 let uploadCategory category =
@@ -137,3 +175,4 @@ let uploadAll() =
  
 uploadAll()
 upload "Feed" Path.atom "feed/atom" "feed" "application/atom+xml"
+
