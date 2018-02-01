@@ -194,4 +194,6 @@ let serviceWithReporting parameters =
     with
     | ex -> retryOrReportToOps ex
 
-    
+(**
+More about the this pattern in [Part 2](/post/2018/02/01/functional-core-2)
+*)
