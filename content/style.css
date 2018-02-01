@@ -244,15 +244,20 @@ h1.header:visited {
   color: green;
 }
 
-.categories, .category {
+.categories, .category, .recent-posts {
   font-family: 'Droid Sans', arial, sans-serif;
 }
 
-.categories ul {
+.categories ul,
+.recent-posts ul {
   margin-left: 0;  
 }
-.categories li, .category li {
+.categories li,
+.category li,
+.recent-posts li
+{
   list-style-type: none;
+  white-space: nowrap;
 }
 
 .footer {
