@@ -78,12 +78,6 @@ let template template =
           div [cls "footer"] [ template.footer ]
         ]
       ]
-// let template templateStr replacements =
-//     let rx = Text.RegularExpressions.Regex("\{([^}]+)\}")
-//     rx.Replace(templateStr, fun (m: Text.RegularExpressions.Match) ->
-//         match Map.tryFind (m.Groups.[1].Value) replacements with
-//         | Some v -> v
-//         | None -> "")
 
 type FormattedPost = {
   Link: Link
@@ -263,14 +257,14 @@ module Categories =
         for c in categories ->
           li [] [
             spant [cls "o"] "| "
-            a [href <| "/category/" + name c ] [text (Categories.title c)]
+            a [href <| "/category/" + Categories.name c ] [text (Categories.title c)]
           ] ] ]
     |> Html.flatten
  
   let processCategory outputDir recentPosts cat =
     posts
     |> List.filter (fun p -> p.Category = cat)
-    |> listPage outputDir categoriesHtml recentPosts (name cat) (Categories.title cat) 
+    |> listPage outputDir categoriesHtml recentPosts (Categories.name cat) (Categories.title cat) 
 
 
 let prevnext f l =
@@ -286,8 +280,8 @@ let prevnext f l =
 
 let formattedPosts =
   posts
+  |> List.sortByDescending (fun p -> p.Date) 
   |> List.map processPost
-  |> List.sortByDescending (fun p -> p.Date)
   |> prevnext (fun p c n -> { c with Next = n |> Option.map (fun n -> n.Link); Previous = p |> Option.map (fun p -> p.Link)})
   
 
