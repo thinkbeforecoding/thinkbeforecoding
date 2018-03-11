@@ -440,5 +440,10 @@ let posts = [
       Category = Category.Design
       Date=date "2018-02-01T21:09:13Z"
       Url="2018/02/01/functional-core-2" }
-        ]
+    { Name="information-space-time"
+      Title="Information Space-Time"
+      Category = Category.Design
+      Date=date "2018-03-11T14:33:56Z"
+      Url="2018/03/11/information-space-time" }      
+]
 
