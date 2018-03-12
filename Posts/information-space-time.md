@@ -80,7 +80,7 @@ If all your data can fit on a single machine, problem is solved.
 >
 > **Don't**
 
-But once data can't fit you have too distribute, and you get this kind of schemas:
+But once data can't fit you have to distribute, and you get this kind of schemas:
 
 ![Event propagation and causality](https://www.cs.rit.edu/~ark/winter2012/730/module04/fig03.png "Event propagation and causality in a distributed system")
 
@@ -96,7 +96,7 @@ Time cannot be considered absolute anymore like in Cartesian space time. Time is
 This is what Einstein discovered in 1905 with the [Special Relativity](https://en.wikipedia.org/wiki/Theory_of_relativity#Special_relativity).
 
 
-Any information you get from remote computer can be considered stall.
+Any information you get from remote computer can be considered stale.
 
 When information changes slowly it's of limited importance but when there are several changes happening during the time of a single ping, it becomes critical to take decisions appropriately.
 
@@ -124,9 +124,9 @@ When computer arrived in the business in the 50's and 60's, the world was mostly
 
 Once using computers at that business speed, everything looked flat. You put all the data in a single computer, got the result in a dozen minutes witch was way shorter than previously computed by hand or electromechanical machines. Problem solved.
 
-But then it was not competitive anymore to continue to process a few transactions per second. Arm race.
+But then it was not competitive anymore to continue to process a few transactions per second. Arms race.
 
-As memory size and processor speed increase, more information can be brought locally. Arm race.
+As memory size and processor speed increase, more information can be brought locally. Arms race.
 
 And at some point, if you want competitive advantage, you need to break current memory size and processor limit on a single machine, so you have to distribute. And space time is not flat anymore, and you have to define clearly information locality to take decisions quickly enough.
 
