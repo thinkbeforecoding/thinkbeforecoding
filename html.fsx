@@ -27,6 +27,7 @@ let inline text txt =
   |> HttpUtility.HtmlEncode
   |> Html
 
+let none = Lst []
 /// creates an html encoded text fragment with a formatting string
 let textf fmt = Printf.kprintf text fmt
 
@@ -75,7 +76,7 @@ let empty tag =
 
 module Attributes =
     let cls = attr "class"
-    let href  = attr "href"
+    let inline href url = url |> string |> attr "href"
     let id = attr "id"
     let ``type`` = attr "type"
     let src = attr "src"

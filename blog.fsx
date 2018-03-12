@@ -11,7 +11,11 @@ open Posts
 open Categories
 
 open FSharp.Literate
-
+let (./) (x: string) (y: string) =
+ match x.EndsWith("/"), y.StartsWith("/") with
+ | false, false -> x + "/" + y
+ | true, true -> x + y.Substring(1)
+ | _ -> x + y
 
 let blogTitle = els [text "//";Entities.nbsp;text"thinkbeforecoding"] |> Html.flatten
 let scripts =
@@ -32,7 +36,8 @@ type Template = {
     categories: Html
     recentPosts: Html
     footer: Html
-  } 
+    canonicalUrl: Uri option } 
+
 let template template =
   html ["lang" := "en"]
     [ head [] 
@@ -41,6 +46,9 @@ let template template =
                         | Post title -> "// thinkbeforecoding -> " + title
                         | Home -> "// thinkbeforecoding"
           meta ["name" := "viewport"; "content" := "width=device-width, initial-scale=1.0"]
+          (match template.canonicalUrl with
+           | Some url -> link [ rel "canonical"; href url  ]
+           | _ -> none)
           scripts
           stylesheet "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css"
           stylesheet "/content/style.css"
@@ -100,7 +108,7 @@ let processHtmlPost post  =
   let document = html.Replace("http://www.thinkbeforecoding.com/","/")
   { Content = document
     Tooltips = ""
-    Link = { Text = post.Title; Href = post.Url }
+    Link = { Text = post.Title; Href = "/post" ./ post.Url }
     Date = post.Date
     FileName = dest
     Next =  None
@@ -116,7 +124,7 @@ let processScriptPost post =
   let output = Formatting.format doc'.MarkdownDocument true OutputKind.Html
   { Content = output
     Tooltips = doc'.FormattedTips
-    Link =  { Text = post.Title; Href = post.Url }
+    Link =  { Text = post.Title; Href =  "/post" ./ post.Url }
     Date = post.Date 
     FileName = dest
     Next = None
@@ -131,7 +139,7 @@ let processMarkdownPost post =
     |> FSharp.Markdown.Markdown.TransformHtml
   { Content = output
     Tooltips = ""
-    Link =  { Text = post.Title; Href = post.Url }
+    Link =  { Text = post.Title; Href = "/post" ./ post.Url }
     Date = post.Date 
     FileName = dest
     Next = None
@@ -161,7 +169,7 @@ let right = els [ nbsp; text ">"]
 let fmtDate (d:DateTime) = text (d.ToString("yyyy-MM-ddTHH:mm-ss"))
 let author = text " / jeremie chassaing"
 let templatePost categories recentPosts titler post =
-  let link l = a [href ("/post/" + l.Href)] [ text l.Text]
+  let link l = a [href l.Href] [ text l.Text]
   let prev = post.Previous |> Option.map link
   let next = post.Next |> Option.map link
   let links =
@@ -190,7 +198,8 @@ let templatePost categories recentPosts titler post =
     content = content
     categories = categories
     recentPosts = recentPosts
-    footer = footer }
+    footer = footer
+    canonicalUrl = Some (Uri ("https://thinkbeforecoding.com/" ./ post.Link.Href)) }
   |> template  
 
 let savePost outputDir post html =
@@ -208,7 +217,7 @@ let recentPosts =
                 |> List.truncate 10 do
           yield li [] [
             spant [cls "o"] "| ``"
-            a [href <| "/post/" + p.Url] [text p.Title]
+            a [href <| "/post/" ./ p.Url] [text p.Title]
             spant [cls "o"] "``"]
 
         yield li [] [
@@ -236,14 +245,16 @@ let listPage outputDir categoriesHtml recentPosts name title (posts: Post list) 
                li [] [ 
                     text (p.Date.ToString("yyyy-MM-ddTHH:mm:ss"))
                     text " |> "
-                    a [href ("/post/" + p.Url) ] [text p.Title] ] ]
+                    a [href ("/post/" ./ p.Url) ] [text p.Title] ] ]
       ]
     let footer = copyright
     { content = content
       title = Post title
       categories = categoriesHtml
       recentPosts = recentPosts
-      footer = footer }
+      footer = footer
+      canonicalUrl = None
+       }
     |> template
     |> Html.save dest
 
@@ -296,7 +307,7 @@ formattedPosts
 
 CreateDir Path.feed
 formattedPosts
-|> List.map (fun p -> Feed.entry p.Link.Text ("https://thinkbeforecoding.com/post/" + p.Link.Href) p.Date p.Content)
+|> List.map (fun p -> Feed.entry p.Link.Text ("https://thinkbeforecoding.com/" ./ p.Link.Href) p.Date p.Content)
 |> Feed.feed
 |> string
 |> fun f -> IO.File.WriteAllText(Path.atom, f)
