@@ -1,5 +1,10 @@
 module Feed
-#r "packages/FSharp.Data/lib/net45/FSharp.Data.dll"
+#load "./.fake/blog.fsx/intellisense.fsx" 
+#if !FAKE
+  #r "netstandard"
+#endif
+
+//#r "packages/FSharp.Data/lib/netstandard2.0/FSharp.Data.dll"
 #r "System.Xml.Linq"
 open System
 open FSharp.Data

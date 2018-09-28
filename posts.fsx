@@ -444,6 +444,11 @@ let posts = [
       Title="Information Space-Time"
       Category = Category.Design
       Date=date "2018-03-11T14:33:56Z"
-      Url="2018/03/11/information-space-time" }      
+      Url="2018/03/11/information-space-time" }
+    { Name="openfsharp-2018"
+      Title="OpenFSharp 2018"
+      Category = Category.FSharp
+      Date=date "2018-09-28T21:14:46Z"
+      Url="2018/09/28/openfsharp-2018" }
 ]
 

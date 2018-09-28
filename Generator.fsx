@@ -1,4 +1,9 @@
-#r "packages/FSharp.Data/lib/net45/FSharp.Data.dll"
+#r "paket: 
+nuget Fake.Core.Target 
+nuget Fake.Core.Trace
+nuget FSharp.Data prerelease //" 
+#load "./.fake/blog.fsx/intellisense.fsx" 
+//#r "packages/FSharp.Data/lib/netstandard2.0/FSharp.Data.dll"
 #r "System.Xml.Linq"
 
 open System

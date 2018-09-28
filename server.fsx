@@ -1,4 +1,4 @@
-#r "packages/suave/lib/net40/suave.dll"
+#r "packages/suave/lib/net461/suave.dll"
 #load "posts.fsx"
 open Suave
 open Web

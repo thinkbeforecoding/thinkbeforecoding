@@ -1,16 +1,35 @@
-#r "packages/Fake/tools/FakeLib.dll"
-#load "packages/FSharp.Formatting/FSharp.Formatting.fsx"
+#r "paket:
+framework: netstandard2.0
+source https://api.nuget.org/v3/index.json
+source c:/Development/FSharp.Formatting/bin/nuget
+source /mnt/c/Development/FSharp.Formatting/bin/nuget
+
+nuget Fake.Core.Target 
+nuget Fake.Core.Trace
+nuget FSharp.Data prerelease
+nuget FSharp.Literate //" 
+
+#load "./.fake/blog.fsx/intellisense.fsx" 
 #load "html.fsx"
 #load "posts.fsx"
 #load "feed.fsx"
-open System
-open Fake
+#if !FAKE
+#r "netstandard"
+#endif
+
+#nowarn "86"
+
 open Html
 open Attributes
 open Posts
 open Categories
+open Fake.IO.FileSystemOperators
+open Fake.IO
+open Fake.Core
+open System
 
 open FSharp.Literate
+open FSharp.Markdown
 let (./) (x: string) (y: string) =
  match x.EndsWith("/"), y.StartsWith("/") with
  | false, false -> x + "/" + y
@@ -30,6 +49,7 @@ type Title =
   | Home
   | Post of string
 
+[<NoComparison>]
 type Template = {
     title: Title
     content: Html
@@ -52,7 +72,6 @@ let template template =
           scripts
           stylesheet "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css"
           stylesheet "/content/style.css"
-          // stylesheet "https://use.fontawesome.com/c3e81a7a2a.css"
           script "https://use.fontawesome.com/5477943014.js"
 
 
@@ -101,7 +120,7 @@ and Link = {
   Href: string
 }
 
-let processHtmlPost post  =
+let processHtmlPost (post: Post)  =
   let source = Path.posts </> post.Name + ".html"
   let dest = post.Name + ".html"
   let html = IO.File.ReadAllText source
@@ -114,23 +133,34 @@ let processHtmlPost post  =
     Next =  None
     Previous =None }
 
+FSharp.Formatting.Common.Log.SetupListener
+    Diagnostics.TraceOptions.None
+    Diagnostics.SourceLevels.All
+    (FSharp.Formatting.Common.Log.ConsoleListener())
+    
+let processScriptPost (post: Post) =
+  try
+    let source = Path.posts </> post.Name + ".fsx"
+    let dest = post.Name + ".html"
+    Trace.tracefn "Parsing script %s" source
+    let doc = Literate.ParseScriptFile(source)
+    Trace.tracefn "Format"
+    let doc' = FSharp.Literate.Literate.FormatLiterateNodes(doc, OutputKind.Html, "", true, true)
+    Trace.tracefn "Format Html"
+    let output = Formatting.format doc'.MarkdownDocument true OutputKind.Html
+    { Content = output
+      Tooltips = doc'.FormattedTips
+      Link =  { Text = post.Title; Href =  "/post" ./ post.Url }
+      Date = post.Date 
+      FileName = dest
+      Next = None
+      Previous = None }
+    with
+    | ex -> 
+       Trace.traceError <| string ex
+       reraise()
 
-let processScriptPost post =
-  let source = Path.posts </> post.Name + ".fsx"
-  let dest = post.Name + ".html"
-  let doc = Literate.ParseScriptFile(source)
-
-  let doc' = FSharp.Literate.Literate.FormatLiterateNodes(doc, OutputKind.Html, "", true, true)
-  let output = Formatting.format doc'.MarkdownDocument true OutputKind.Html
-  { Content = output
-    Tooltips = doc'.FormattedTips
-    Link =  { Text = post.Title; Href =  "/post" ./ post.Url }
-    Date = post.Date 
-    FileName = dest
-    Next = None
-    Previous = None }
-
-let processMarkdownPost post =
+let processMarkdownPost (post: Post) =
   let source = Path.posts </> post.Name + ".md"
   let dest = post.Name + ".html"
 
@@ -146,16 +176,14 @@ let processMarkdownPost post =
     Previous = None }
 
 let processPost post =
-  tracefn "[Post] %s" post.Title
-  if fileExists (Path.posts </> post.Name + ".fsx") then
+  Trace.tracefn "[Post] %s" post.Title
+  if File.exists (Path.posts </> post.Name + ".fsx") then
     processScriptPost post
-  elif fileExists (Path.posts </> post.Name + ".md") then
+  elif File.exists (Path.posts </> post.Name + ".md") then
     processMarkdownPost post
   else
     processHtmlPost post
 
-open Html
-open Attributes
 open Entities
 
 
@@ -166,7 +194,7 @@ let copyright =
 let left = els [text "<"; nbsp]
 let pipe = text "|"
 let right = els [ nbsp; text ">"]
-let fmtDate (d:DateTime) = text (d.ToString("yyyy-MM-ddTHH:mm-ss"))
+let fmtDate (d:DateTime) = text (d.ToString("yyyy-MM-ddTHH:mm:ss"))
 let author = text " / jeremie chassaing"
 let templatePost categories recentPosts titler post =
   let link l = a [href l.Href] [ text l.Text]
@@ -296,33 +324,32 @@ let formattedPosts =
   |> prevnext (fun p c n -> { c with Next = n |> Option.map (fun n -> n.Link); Previous = p |> Option.map (fun p -> p.Link)})
   
 
-if directoryExists Path.out then
-  DeleteDir Path.out
-CreateDir Path.outPosts
+Directory.delete Path.out
+Directory.ensure Path.outPosts
 formattedPosts
 |> List.iter (fun p ->
   p
   |> templatePost Categories.categoriesHtml recentPosts Post
   |> savePost Path.outPosts p)
 
-CreateDir Path.feed
+Directory.ensure Path.feed
 formattedPosts
+|> List.truncate 5
 |> List.map (fun p -> Feed.entry p.Link.Text ("https://thinkbeforecoding.com/" ./ p.Link.Href) p.Date p.Content)
 |> Feed.feed
 |> string
 |> fun f -> IO.File.WriteAllText(Path.atom, f)
 
 
-if directoryExists Path.categories then
-  DeleteDir Path.categories
-CreateDir Path.categories
+Directory.delete Path.categories
+Directory.ensure Path.categories
 Categories.categories
 |> List.iter (Categories.processCategory Path.categories recentPosts)
 
 listPage Path.categories Categories.categoriesHtml recentPosts "all" "All posts so far" posts
 
-CopyDir Path.outmedia Path.media allFiles
-CopyDir Path.outcontent Path.content allFiles
+Shell.copyRecursive Path.media Path.outmedia true
+Shell.copyRecursive Path.content Path.outcontent
 
 formattedPosts
 |> List.tryHead
@@ -330,4 +357,3 @@ formattedPosts
       p
       |> templatePost Categories.categoriesHtml recentPosts (fun _ -> Home)
       |> Html.save (Path.out </> "index.html") )
-
