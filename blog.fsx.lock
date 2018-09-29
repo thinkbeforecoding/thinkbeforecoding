@@ -378,6 +378,6 @@ NUGET
       System.Runtime (>= 4.3)
       System.Runtime.Handles (>= 4.3)
   remote: c:/Development/FSharp.Formatting/bin/nuget
-    FSharp.Literate (1.3.3)
+    FSharp.Literate (1.3.5)
       FSharp.Compiler.Service (25.0.1)
       FSharp.Core (4.5.2)
