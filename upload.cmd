@@ -1,2 +1,2 @@
 @echo off
-fsianycpu --exec upload.fsx
+fake run upload.fsx

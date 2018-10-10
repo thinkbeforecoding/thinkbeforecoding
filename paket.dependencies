@@ -1,7 +1,0 @@
-source https://www.nuget.org/api/v2
-nuget Fable.Core
-nuget Fake
-nuget FSharp.Azure.StorageTypeProvider
-nuget FSharp.Data prerelease
-nuget FSharp.Formatting
-nuget suave

@@ -1,4 +1,5 @@
 module Feed
+open System
 #load "./.fake/blog.fsx/intellisense.fsx" 
 #if !FAKE
   #r "netstandard"
@@ -69,7 +70,7 @@ let entry title link date content =
         title,
         Rss.Link2(link, "alternate", "text/html", title),
         md5,
-        date,
+        DateTimeOffset.op_Implicit date,
         Rss.Author2("Jérémie Chassaing"),
         [||],
         Rss.Content("html", content)
@@ -77,7 +78,7 @@ let entry title link date content =
 let feed entries =
     Rss.Feed("en", 
         Rss.Title("html","thinkbeforecoding"), 
-        links,DateTime.UtcNow, 
+        links,DateTimeOffset.UtcNow, 
         Rss.Author("Jérémie Chassaing"),
         "urn:md5:18477",
         Rss.Generator("https://fsharp.org","F# script"),

@@ -7,10 +7,10 @@ source /mnt/c/Development/FSharp.Formatting/bin/nuget
 nuget Fake.Core.Target 
 nuget Fake.Core.Trace
 nuget FSharp.Data prerelease
+nuget Fable.React
 nuget FSharp.Literate //" 
 
 #load "./.fake/blog.fsx/intellisense.fsx" 
-#load "html.fsx"
 #load "posts.fsx"
 #load "feed.fsx"
 #if !FAKE
@@ -19,8 +19,9 @@ nuget FSharp.Literate //"
 
 #nowarn "86"
 
-open Html
-open Attributes
+open Fable.Helpers.React
+open Fable.Helpers.React.Props
+open Fable.Import.React
 open Posts
 open Categories
 open Fake.IO.FileSystemOperators
@@ -36,13 +37,34 @@ let (./) (x: string) (y: string) =
  | true, true -> x + y.Substring(1)
  | _ -> x + y
 
-let blogTitle = els [text "//";Entities.nbsp;text"thinkbeforecoding"] |> Html.flatten
+let raw value = Fable.Helpers.React.RawText value :> ReactElement
+module Entities =
+  let nbsp = raw "&nbsp;"
+  let copy = raw "&copy;"
+
+
+module Html =
+  let script' src = script [ HTMLAttr.Type "text/javascript"; Src src ] []
+  let stylesheet src = link [ HTMLAttr.Type "text/css"; Rel "stylesheet"; Href src ]
+
+  let strf fmt = Printf.kprintf str fmt
+
+  let save path html =
+    let content = 
+      "<!DOCTYPE html>\n" +
+      Fable.Helpers.ReactServer.renderToString html
+    IO.File.WriteAllText(path, content)
+
+open Html
+
+let blogTitle = fragment [] [str "//"; Entities.nbsp; str"thinkbeforecoding"]
+
 let scripts =
-  els [
-      script "//code.jquery.com/jquery-1.8.0.js"
-      script "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"
-      script "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-      script "/content/tips.js"
+  fragment [] [
+      script' "//code.jquery.com/jquery-1.8.0.js"
+      script' "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"
+      script' "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+      script' "/content/tips.js"
   ]
 
 type Title =
@@ -52,57 +74,58 @@ type Title =
 [<NoComparison>]
 type Template = {
     title: Title
-    content: Html
-    categories: Html
-    recentPosts: Html
-    footer: Html
+    content: ReactElement
+    categories: ReactElement
+    recentPosts: ReactElement
+    footer: ReactElement
     canonicalUrl: Uri option } 
 
 let template template =
-  html ["lang" := "en"]
+  html [ Lang "en"]
     [ head [] 
-        [ meta ["charset" := "utf-8"]
-          Html.title <| match template.title with
-                        | Post title -> "// thinkbeforecoding -> " + title
-                        | Home -> "// thinkbeforecoding"
-          meta ["name" := "viewport"; "content" := "width=device-width, initial-scale=1.0"]
+        [ meta [CharSet "utf-8"]
+          Fable.Helpers.React.title [] 
+             <| match template.title with
+                | Post title -> [str ("// thinkbeforecoding -> " + title) ]
+                | Home -> [str "// thinkbeforecoding"]
+          meta [Name "viewport"; HTMLAttr.Content "width=device-width, initial-scale=1.0"]
           (match template.canonicalUrl with
-           | Some url -> link [ rel "canonical"; href url  ]
-           | _ -> none)
+           | Some url -> link [ Rel "canonical"; Href (string url)  ]
+           | _ -> fragment [] [])
           scripts
           stylesheet "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css"
           stylesheet "/content/style.css"
-          script "https://use.fontawesome.com/5477943014.js"
+          script' "https://use.fontawesome.com/5477943014.js"
 
 
-          link [ "rel" := "alternate"
-                 "type" := "application/atom+xml"
-                 "title" := "Atom 1.0"
-                 "href" := "/feed/atom" ]
+          link [ Rel "alternate"
+                 HTMLAttr.Type "application/atom+xml"
+                 Title "Atom 1.0"
+                 Href "/feed/atom" ]
         ]
       body [] 
-        [ div [cls "container"] 
-            [ div [] [ h1 [ cls "header"] [ a [href "/"] [ blogTitle ]] ]
-              div [ cls "row" ] 
-                [ div [cls "span1"] []
-                  div [cls "span8"; id "main"] [ template.content ]
-                  div [cls "span3 categories"] 
+        [ div [Class "container"] 
+            [ div [] [ h1 [ Class "header"] [ a [Href "/"] [ blogTitle ]] ]
+              div [ Class "row" ] 
+                [ div [Class "span1"] []
+                  div [Class "span8"; Id "main"] [ template.content ]
+                  div [Class "span3 categories"] 
                       [ template.categories
-                        div [cls "social"] [
-                          a [ href "/feed/atom"] 
-                            [ i [ cls "fa fa-rss-square"] []
-                              text " atom feed"]
-                          br
-                          a [ href "https://twitter.com/thinkb4coding"] 
-                            [ i [ cls "fa fa-twitter-square"] []
-                              text " @thinkb4coding" ] ]
+                        div [Class "social"] [
+                          a [ Href "/feed/atom"] 
+                            [ i [ Class "fa fa-rss-square"] []
+                              str " atom feed"]
+                          br []
+                          a [ Href "https://twitter.com/thinkb4coding"] 
+                            [ i [ Class "fa fa-twitter-square"] []
+                              str " @thinkb4coding" ] ]
 
                         template.recentPosts
                       ]
                  ] 
             ]
          
-          div [cls "footer"] [ template.footer ]
+          div [Class "footer"] [ template.footer ]
         ]
       ]
 
@@ -188,16 +211,16 @@ open Entities
 
 
 let copyright =
-  let currentYear = DateTime.UtcNow.Year
-  div [cls "copyright"] [Entities.copy ; textf " 2009-%d Jérémie Chassaing / thinkbeforecoding" currentYear]
+  let now = DateTime.UtcNow
+  div [Class "copyright"] [Entities.copy ; strf " 2009-%d Jérémie Chassaing / thinkbeforecoding" now.Year]
 
-let left = els [text "<"; nbsp]
-let pipe = text "|"
-let right = els [ nbsp; text ">"]
-let fmtDate (d:DateTime) = text (d.ToString("yyyy-MM-ddTHH:mm:ss"))
-let author = text " / jeremie chassaing"
+let left = fragment [] [str "<"; nbsp]
+let pipe = str "|"
+let right = fragment [] [ nbsp; str ">"]
+let fmtDate (d:DateTime) = str (d.ToString("yyyy-MM-ddTHH:mm:ss"))
+let author = str " / jeremie chassaing"
 let templatePost categories recentPosts titler post =
-  let link l = a [href l.Href] [ text l.Text]
+  let link l = a [Href l.Href] [ str l.Text]
   let prev = post.Previous |> Option.map link
   let next = post.Next |> Option.map link
   let links =
@@ -206,20 +229,20 @@ let templatePost categories recentPosts titler post =
       | Some p, None -> [left; p ; nbsp ; pipe ]
       | None, Some n -> [ pipe; nbsp; n; right ]
       | Some p, Some n -> [ left; p ; nbsp; pipe; nbsp; n; right ]
-      |> els
+      |> fragment []
 
   let content =
-    els [
-      h1 [cls "title"] [ link post.Link ]
-      div [cls "date"] 
+    fragment [] [
+      h1 [Class "title"] [ link post.Link ]
+      div [Class "date"] 
         [ fmtDate post.Date
           author ]
-      Html post.Content
-      Html post.Tooltips
+      raw post.Content
+      raw post.Tooltips
     ]
   let footer =
-    els [
-      div [cls "links"] [links]
+    fragment [] [
+      div [Class "links"] [links]
       copyright
     ]
   { title = titler post.Link.Text
@@ -235,30 +258,29 @@ let savePost outputDir post html =
 
 
 let recentPosts =
-    div [ cls "recent-posts"] [
-      spant [cls "k"] "type "
-      spant [cls "t"] "RecentPosts "
-      spant [cls "o"] "="
+    div [ Class "recent-posts"] [
+      span [Class "k"] [str "type "]
+      span [Class "t"] [str "RecentPosts "]
+      span [Class "o"] [str "="]
       ul [] [
         for p in posts 
                 |> List.sortByDescending (fun p -> p.Date ) 
                 |> List.truncate 10 do
           yield li [] [
-            spant [cls "o"] "| ``"
-            a [href <| "/post/" ./ p.Url] [text p.Title]
-            spant [cls "o"] "``"]
+            span [Class "o"] [str "| ``"]
+            a [Href <| "/post/" ./ p.Url] [str p.Title]
+            span [Class "o"] [str "``"]]
 
         yield li [] [
-          spant [cls "o"] "| "
-          a [href "/category/all" ] [text "_"]
+          span [Class "o"] [str "| "]
+          a [Href "/category/all" ] [str "_"]
           nbsp
           nbsp
-          spant [ cls "c"] "// "
-          a [href "/category/all"] [spant [cls "c"] "all posts so far"]
+          span [ Class "c"] [str "// "]
+          a [Href "/category/all"] [span [Class "c"] [str "all posts so far"]]
         ]
       ]
     ]
-    |> Html.flatten
 
 let listPage outputDir categoriesHtml recentPosts name title (posts: Post list) = 
     let dest = outputDir </> name + ".html"
@@ -266,14 +288,14 @@ let listPage outputDir categoriesHtml recentPosts name title (posts: Post list) 
       posts
       |> List.sortByDescending (fun p -> p.Date)
     let content =
-      els [
-        h1 [cls "title"] [text title]
-        ul [cls "category"]
+      fragment [] [
+        h1 [Class "title"] [str title]
+        ul [Class "category"]
           [ for p in catPosts ->
                li [] [ 
-                    text (p.Date.ToString("yyyy-MM-ddTHH:mm:ss"))
-                    text " |> "
-                    a [href ("/post/" ./ p.Url) ] [text p.Title] ] ]
+                    str (p.Date.ToString("yyyy-MM-ddTHH:mm:ss"))
+                    str " |> "
+                    a [Href ("/post/" ./ p.Url) ] [str p.Title] ] ]
       ]
     let footer = copyright
     { content = content
@@ -288,17 +310,16 @@ let listPage outputDir categoriesHtml recentPosts name title (posts: Post list) 
 
 module Categories =
   let categoriesHtml =
-    div [cls "categories"] [
-      spant [cls "k"] "type "
-      spant [cls "t"] "Categories "
-      spant [cls "o"] "="
+    div [Class "categories"] [
+      span [Class "k"] [str "type "]
+      span [Class "t"] [str "Categories "]
+      span [Class "o"] [str "="]
       ul [] [
         for c in categories ->
           li [] [
-            spant [cls "o"] "| "
-            a [href <| "/category/" + Categories.name c ] [text (Categories.title c)]
+            span [Class "o"] [str "| "]
+            a [Href <| "/category/" + Categories.name c ] [str (Categories.title c)]
           ] ] ]
-    |> Html.flatten
  
   let processCategory outputDir recentPosts cat =
     posts

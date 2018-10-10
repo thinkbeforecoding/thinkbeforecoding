@@ -1,19 +1,36 @@
-#r "packages/Fake/tools/FakeLib.dll"
-#load "packages/FSharp.Azure.StorageTypeProvider/StorageTypeProvider.fsx"
-#load "posts.fsx"
+#r "paket:
+framework: netstandard2.0
+source https://api.nuget.org/v3/index.json
+
+nuget Fake.Core
+nuget Fake.Core.Trace
+nuget Fake.IO.FileSystem
+nuget WindowsAzure.Storage
+nuget TaskBuilder.fs // "
+#if !FAKE
+#r "netstandard"
+#endif
+
+#load ".fake/upload.fsx/intellisense.fsx"
+
 #load "Categories.fsx"
+#load "posts.fsx"
 
 open System
-open Fake
-open FSharp.Azure.StorageTypeProvider
+open Fake.Core
+open Fake.IO.FileSystemOperators
+open Fake.IO
+open Fake.IO.Globbing.Operators
 open Posts
 open Categories
 open Microsoft.WindowsAzure.Storage
+open Microsoft.WindowsAzure.Storage.Blob
+open FSharp.Control.Tasks.V2.ContextInsensitive
 
-type BlogStorage = AzureTypeProvider<"***">
-let blog = BlogStorage.Containers.CloudBlobClient.GetContainerReference("gzipblog")
 
-blog.CreateIfNotExists()
+let account = Microsoft.WindowsAzure.Storage.CloudStorageAccount.Parse "***"
+let blobClient = account.CreateCloudBlobClient()
+let blog = blobClient.GetContainerReference("gzipblog")
 
 let toUri (u: string) = u.Replace(@".\","").Replace(@"\","/")
 let md5 path = 
@@ -21,19 +38,6 @@ let md5 path =
   use stream = IO.File.OpenRead(path)
   md5p.ComputeHash(stream)
   |> Convert.ToBase64String
-
-let md5Gzip path =
-  use stream = IO.File.OpenRead(path)
-  use memoryStream = new IO.MemoryStream()
-  use gzip = new IO.Compression.GZipStream(memoryStream, IO.Compression.CompressionMode.Compress, true)
-  stream.CopyTo(gzip)
-  gzip.Flush()
-  gzip.Close()
-  memoryStream.Position <- 0L
-  use md5p = new System.Security.Cryptography.MD5CryptoServiceProvider()
-  md5p.ComputeHash(memoryStream)
-  |> Convert.ToBase64String
-   
 
 type Encoding =
   | Gzip of string
@@ -52,127 +56,158 @@ let contentType uri =
   | ".html" -> Gzip "text/html"
   | _ -> NoEncoding
 
-let uploadMedia path =
+let uploadMedia (blog: CloudBlobContainer) path =
+  task {
     let uri =
         path 
-        |> ProduceRelativePath Path.root
+        |> Fake.IO.Path.toRelativeFrom Path.out
         |> toUri
 
     let opts = 
       Blob.BlobRequestOptions(
         StoreBlobContentMD5 = Nullable true, 
-        UseTransactionalMD5 = Nullable true)
+        UseTransactionalMD5 = Nullable true
+        )
     let blob = blog.GetBlockBlobReference(uri)
-    if not (blob.Exists()) then
-        tracefn "[Media] %s is new" uri
+    let! exists = blob.ExistsAsync() 
+    if not exists then
+        Trace.tracefn "[Media] %s is new" uri
         match contentType uri with
         | Flat contentType ->
           blob.Properties.ContentType <- contentType
-          blob.UploadFromFile(path, options = opts)
+          do! blob.UploadFromFileAsync(path, null, opts, null)
         | NoEncoding ->
-            blob.UploadFromFile(path, options = opts)
+          do! blob.UploadFromFileAsync(path, null, opts, null)
         | Gzip contentType ->
           blob.Properties.ContentType <- contentType
           blob.Properties.ContentEncoding <- "gzip"
           use file = IO.File.OpenRead(path)
-          use blobStream = blob.OpenWrite(options = opts)
+          use! blobStream = blob.OpenWriteAsync(null, opts, null)
           use gzip = new IO.Compression.GZipStream(blobStream, IO.Compression.CompressionMode.Compress)
-          file.CopyTo(gzip)
+          do! file.CopyToAsync(gzip)
     else
-        let fileMd5 =
+        let fileMd5 = md5 path
+        do! blob.FetchAttributesAsync()
+        let blobMd5 =
           match contentType uri with
-          | Flat _ | NoEncoding -> md5 path  
-          | Gzip _ -> md5Gzip path
-        blob.FetchAttributes()
-        if blob.Properties.ContentMD5 <> fileMd5 then
-            tracefn "[Media] %s has changed" uri
+          | Flat _ | NoEncoding -> blob.Properties.ContentMD5  
+          | Gzip _ -> 
+              match blob.Metadata.TryGetValue "md5" with
+              | true, v -> v
+              | _ -> ""
+
+        if blobMd5 <> fileMd5 then
+            Trace.tracefn "[Media] %s has changed" uri
             match contentType uri with
             | Flat contentType ->
               blob.Properties.ContentType <- contentType
-              blob.UploadFromFile(path, options = opts)
+              do! blob.UploadFromFileAsync(path, null, opts, null)
             | NoEncoding ->
-                blob.UploadFromFile(path, options = opts)
+              do! blob.UploadFromFileAsync(path, null, opts, null)
             | Gzip contentType ->
+              if blob.Metadata.ContainsKey "md5" then
+                blob.Metadata.["md5"] <- fileMd5
+              else
+                blob.Metadata.Add("md5", fileMd5)
+
+              use file = IO.File.OpenRead(path)
+              use! blobStream = blob.OpenWriteAsync(null, opts, null)
+              use gzip = new IO.Compression.GZipStream(blobStream, IO.Compression.CompressionMode.Compress)
+              do! file.CopyToAsync(gzip)
               blob.Properties.ContentType <- contentType
               blob.Properties.ContentEncoding <- "gzip"
-              use file = IO.File.OpenRead(path)
-              use blobStream = blob.OpenWrite(options = opts)
-              use gzip = new IO.Compression.GZipStream(blobStream, IO.Compression.CompressionMode.Compress)
-              file.CopyTo(gzip)
+              do! blob.SetPropertiesAsync()
           else
-            logfn "[Media] Skipping %s" uri
-
-tracef "Upload media"
-!! (Path.media </> "**/*.*")
-|> Seq.map (ProduceRelativePath Path.root  >> toUri)
-|> Seq.toList
-|> List.iter uploadMedia
-
-!! (Path.outcontent </> "**/*.*")
-|> Seq.map (ProduceRelativePath Path.out >> toUri)
-|> Seq.toList
-|> List.iter uploadMedia
+            Trace.logfn "[Media] Skipping %s" uri
+  }
 
 
-let upload tag path blobPath name contentType =
-
+let upload (blog: CloudBlobContainer) tag path blobPath name contentType =
+  task {
   let blob = blog.GetBlockBlobReference(blobPath)
 
-  let fileMd5 = md5Gzip path
-  let upload = 
-    if blob.Exists() then
-      blob.FetchAttributes()
-      if blob.Properties.ContentMD5 <> fileMd5 then
-        tracefn "[%s] %s has changed" tag name
-        true
+  let fileMd5 = md5 path
+  let! upload = 
+    task {
+    let! exists = blob.ExistsAsync()
+    if exists then
+      do! blob.FetchAttributesAsync()
+      let blobMd5 =
+        match blob.Metadata.TryGetValue "md5" with
+        | true, v -> v
+        | _ -> ""
+
+      if blobMd5 <> fileMd5 then
+        Trace.tracefn "[%s] %s has changed" tag name 
+        return true
       else
-        logfn "[%s] Skipping %s" tag name
-        false
+        Trace.logfn "[%s] Skipping %s" tag name
+        return false
     else
-      tracefn "[%s] %s is new" tag name
-      true
+      Trace.tracefn "[%s] %s is new" tag name
+      return true }
   if upload then
     let opts = 
       Blob.BlobRequestOptions(
         StoreBlobContentMD5 = Nullable true, 
         UseTransactionalMD5 = Nullable true)
     let upload() =    
+      task {
       use file = IO.File.OpenRead(path)
-      use blobStream = blob.OpenWrite(options = opts)
+      use! blobStream = blob.OpenWriteAsync(null, opts, null)
       use gzip = new IO.Compression.GZipStream(blobStream, IO.Compression.CompressionMode.Compress)
-      file.CopyTo(gzip)
-    upload()
+      do! file.CopyToAsync (gzip) }
+    if blog.Metadata.ContainsKey("md5") then
+      blob.Metadata.["md5"] <- fileMd5
+    else
+      blob.Metadata.Add("md5", fileMd5)
+    do! upload()
     blob.Properties.ContentType <- contentType
     blob.Properties.ContentEncoding <- "gzip"
-    blob.SetProperties()
+    do! blob.SetPropertiesAsync()
+  }
 
-let uploadPost post =
+let uploadPost blog post =
   let path = Path.outPosts </> post.Name + ".html"
   let blob = "posts/" + post.Url
-  upload "Post" path blob post.Url "text/html"
-    
-tracef "Upload posts"
-posts
-|> List.iter uploadPost
+  upload blog "Post" path blob post.Url "text/html"
 
-md5 (Path.out </> "index.html")
-upload "Post" (Path.out </> "index.html") "index.html" "index.html" "text/html"
- 
-
-let uploadCategory category =
+let uploadCategory blog category =
     let name = Categories.name category
     let path = Path.categories </> name + ".html"
     let blob = "category/" + name
-    upload "Category" path blob name "text/html"
-      
-Categories.categories
-|> List.iter uploadCategory 
-let uploadAll() =
+    upload blog "Category" path blob name "text/html"
+
+let uploadAll blog =
     let name = "all"
     let path = Path.categories </> name + ".html"
     let blob = "category/" + name
-    upload "Category" path blob name "text/html"
- 
-uploadAll()
-upload "Feed" Path.atom "feed/atom" "feed" "application/atom+xml"
+    upload blog "Category" path blob name "text/html"
 
+let run =
+  task {
+    let! _ = blog.CreateIfNotExistsAsync()
+
+      
+    Trace.tracefn "Upload media"
+    let media =
+      !! (Path.outmedia </> "**/*.*")
+      |> Seq.toList
+
+    for m in media do
+      do! uploadMedia blog m
+
+    Trace.tracefn "Upload posts"
+    for post in posts do
+      do! uploadPost blog post
+
+    do! upload blog "Post" (Path.out </> "index.html") "index.html" "index.html" "text/html"
+     
+    for c in categories do
+      do! uploadCategory blog c
+     
+    do! uploadAll blog
+    do! upload blog "Feed" Path.atom "feed/atom" "feed" "application/atom+xml"
+  }
+
+run.Wait()

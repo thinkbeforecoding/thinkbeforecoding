@@ -1,2 +1,3 @@
 @echo off
-fsianycpu --load:server.fsx
+start https://localhost:5001
+fake run server.fsx
