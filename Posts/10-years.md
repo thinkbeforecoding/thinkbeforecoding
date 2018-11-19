@@ -1,0 +1,23 @@
+thinkbeforecoding is [turning 10 today](/post/2008/11/19/Back-in-the-blogosphere) !
+
+10 amazing years during which, lots of thing happened.
+
+First, this is 86 blog posts, and 6349 lines of text ! I won't say I'm a proficient blogger, but I'm still happy I could do it.
+
+Then this is the log of a journey in learning. 
+
+With my first steps with Domain Driven design in '[Do you understand what it is all about ?](/post/2008/11/24/Do-you-understand-what-it-is-all-about)' '[Domain Driven Design](/post/2008/12/02/Domain-Driven-Design)' and this '[Domain Driven Design Review](/post/2008/12/10/Wow-Book-review-Domain-Driven-Design)'. Then with more advanced topics like '[Strategic Design](/post/2009/04/28/Strategic-Design)', or '[Code Reuse](/post/2009/07/24/DDD-and-Code-ReUse)' which are still totaly relevant, and especialy this two that I often refer to: [Time](/post/2011/06/09/Time) and [Infomation Space-Time](/post/2018/03/11/information-space-time) 
+
+There are also a lot of important things about CQRS and EventSourcing, even I there is not yet a full series on the subject. The is nonetheless this very import post on [Event Sourcing vs Command Sourcing](/post/2013/07/28/Event-Sourcing-vs-Command-Sourcing) or this one image post that demystify EventSourcing once and for all '[Event Sourcing. Draw it](/post/2014/01/04/Event-Sourcing.-Draw-it)'.
+
+There is also new insights after meeting late [Pieter Hintjens](http://hintjens.com/) about Conway's law, and the whole problem of evolving software: [Generalized Conway's law](/post/2013/12/17/Generalized-Conway-s-law). This made even more sens after meeting Carlo Pescio introducing [Physics of Software](http://www.physicsofsoftware.com), one of the most interesting view on software I've seen for designers and architects.
+
+This is also a journey in learning functional programming and why it matters, shifting from C# to F#. With a lot of fun during [F#](/post/2014/12/23/Speaking-computers-for-more-fun-!) [Advent](/post/2015/12/17/Ukulele-Fun-for-XMas-!) [Calendar](/post/2016/12/04/fck:-Fake-Construction-Kit), and more serious stuff like [Functional Core](/post/2018/01/20/functional-core) and [Part 2](/post/2018/02/01/functional-core-2).
+
+During this time, there was also a lot of things I didn't blog about, like [conferences](/post/2018/01/20/back-to-blogging), discovering new languages (Haskell, Erlang, Idris...).
+
+During this 10 years I've also been building the tech in a growing company from 12 employees to 300 with exponential load with an heavy legacy. This is tons of experience about continuous improvement and dedication to a 24/24 7/7 critical system.
+
+Thank you to all of you who took time to read, comment and share. I hope you found valuable information here.
+
+This has been been fun time, and I'm ready for 10 more years.
