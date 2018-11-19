@@ -1,12 +1,10 @@
 #r "paket:
-framework: netstandard2.0
 source https://api.nuget.org/v3/index.json
-source c:/Development/FSharp.Formatting/bin/nuget
-source /mnt/c/Development/FSharp.Formatting/bin/nuget
+source https://ci.appveyor.com/nuget/fsharp-formatting
 
 nuget Fake.Core.Target 
 nuget Fake.Core.Trace
-nuget FSharp.Data prerelease
+nuget FSharp.Data
 nuget Fable.React
 nuget FSharp.Literate //" 
 
@@ -18,6 +16,8 @@ nuget FSharp.Literate //"
 #endif
 
 #nowarn "86"
+open FSharp.Literate
+open FSharp.Markdown
 
 open Fable.Helpers.React
 open Fable.Helpers.React.Props
@@ -29,8 +29,7 @@ open Fake.IO
 open Fake.Core
 open System
 
-open FSharp.Literate
-open FSharp.Markdown
+
 let (./) (x: string) (y: string) =
  match x.EndsWith("/"), y.StartsWith("/") with
  | false, false -> x + "/" + y
@@ -50,9 +49,12 @@ module Html =
   let strf fmt = Printf.kprintf str fmt
 
   let save path html =
-    let content = 
-      "<!DOCTYPE html>\n" +
-      Fable.Helpers.ReactServer.renderToString html
+    let content =
+      fragment [] [ 
+        raw "<!doctype html>"
+        raw "\n" 
+        html ]
+      |> Fable.Helpers.ReactServer.renderToString 
     IO.File.WriteAllText(path, content)
 
 open Html
@@ -61,9 +63,9 @@ let blogTitle = fragment [] [str "//"; Entities.nbsp; str"thinkbeforecoding"]
 
 let scripts =
   fragment [] [
-      script' "//code.jquery.com/jquery-1.8.0.js"
-      script' "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"
-      script' "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+      // script' "//code.jquery.com/jquery-1.8.0.js"
+      // script' "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"
+      // script' "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
       script' "/content/tips.js"
   ]
 
@@ -165,11 +167,20 @@ let processScriptPost (post: Post) =
   try
     let source = Path.posts </> post.Name + ".fsx"
     let dest = post.Name + ".html"
-    Trace.tracefn "Parsing script %s" source
-    let doc = Literate.ParseScriptFile(source)
-    Trace.tracefn "Format"
+    //Trace.tracefn "Parsing script %s" source
+    // let listener = 
+    //   FSharp.Formatting.Common.Log.SetupListener 
+    //                                 (Diagnostics.TraceOptions()) 
+    //                                 (Diagnostics.SourceLevels.All)
+    //                                 (FSharp.Formatting.Common.Log.ConsoleListener())
+    // FSharp.Formatting.Common.Log.SetupSource [|listener|] (FSharp.Formatting.Common.Log.source)
+    let doc = 
+      let fsharpCoreDir = "-I:" + __SOURCE_DIRECTORY__ + @"\lib"
+      Literate.ParseScriptFile(
+                  source , 
+                  compilerOptions = fsharpCoreDir,
+                  fsiEvaluator = FSharp.Literate.FsiEvaluator([|fsharpCoreDir|]))
     let doc' = FSharp.Literate.Literate.FormatLiterateNodes(doc, OutputKind.Html, "", true, true)
-    Trace.tracefn "Format Html"
     let output = Formatting.format doc'.MarkdownDocument true OutputKind.Html
     { Content = output
       Tooltips = doc'.FormattedTips

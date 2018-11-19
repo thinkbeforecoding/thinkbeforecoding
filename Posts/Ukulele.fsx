@@ -227,13 +227,13 @@ let chord root quality =
 let CM = chord C M
 
 (** and the result is: *)
-(** include-value: CM ***)
+(*** include-value: CM ***)
 
 (** Now C minor: *)
 let Cm = chord C m
 
 (** which is exactly what you can find on a tab sheet: *)
-(** include-value: Cm ***)
+(*** include-value: Cm ***)
 
 chord D m
     
@@ -266,18 +266,18 @@ let print chord  =
     |> printfn "%s"
 
 (** Let's try it *)
-(** define-output: chordCM ***)
+(*** define-output: chordCM ***)
 chord C M |> print
 
 (** It prints *)
-(** include-output: chordCM ***)
+(*** include-output: chordCM ***)
 
 (** Another one *)
-(** define-output: chordGM ***)
+(*** define-output: chordGM ***)
 chord G M |> print
 
 (** and we get *)
-(** include-output: chordGM ***)
+(*** include-output: chordGM ***)
 
 (**
 ## Playing chords 
@@ -288,7 +288,7 @@ You can find NAudio on nuget.org
 
 For simplicity I will use the midi synthetizer:
 *)
-#r @"packages\NAudio\lib\net35\NAudio.dll"
+#r @"../packages\NAudio\lib\net35\NAudio.dll"
 
 open NAudio.Midi
 let device = new MidiOut(0)
@@ -377,11 +377,11 @@ getLucky
 |> List.iter (play 130 25)
 
 (** And the tab notations for the song ! *)
-(** define-output: song ***)
+(*** define-output: song ***)
 luckyChords
 |> List.iter print
 
-(** include-output: song ***)
+(*** include-output: song ***)
 
 
 (**

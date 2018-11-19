@@ -157,7 +157,7 @@ let upload (blog: CloudBlobContainer) tag path blobPath name contentType =
       use! blobStream = blob.OpenWriteAsync(null, opts, null)
       use gzip = new IO.Compression.GZipStream(blobStream, IO.Compression.CompressionMode.Compress)
       do! file.CopyToAsync (gzip) }
-    if blog.Metadata.ContainsKey("md5") then
+    if blob.Metadata.ContainsKey("md5") then
       blob.Metadata.["md5"] <- fileMd5
     else
       blob.Metadata.Add("md5", fileMd5)

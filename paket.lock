@@ -1,0 +1,3 @@
+NUGET
+  remote: https://www.nuget.org/api/v2
+    NAudio (1.8.4)
