@@ -1,4 +1,4 @@
-I had several interesting feedbacks about the [Previous post](/post/2018/01/20/functional-core), and a few more
+I had several interesting feedbacks about the [Previous post](/post/2018/01/25/functional-core), and a few more
 points to share about the pattern.
 
 First, [Cyrille Martraire](https://twitter.com/cyriux)

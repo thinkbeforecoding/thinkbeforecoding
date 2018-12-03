@@ -35,8 +35,8 @@ let service =
     route "/" >=> htmlFile "index.html"
     routef "/post/%s" (fun url -> 
       posts
-      |> List.tryFind (fun p -> p.Url = url)
-      |> Option.map (fun p -> htmlFile ("posts/" + p.Name + ".html"))
+      |> List.tryFind (fun p -> p.Date.ToString("yyyy/MM/dd/") + p.Url = url)
+      |> Option.map (fun p -> htmlFile ("posts/" + p.Date.ToString("yyyy-MM-dd-") + p.Url.Replace(":","") + ".html"))
       |> Option.defaultValue (RequestErrors.NOT_FOUND "Not found"))
     routef "/category/%s" (fun c -> htmlFile ("category/" + c + ".html"))
     route "/feed/atom" >=> htmlFile ("/feed/atom.xml") >=> setContentType "application/atom+xml"

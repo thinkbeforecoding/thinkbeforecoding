@@ -1,3 +1,4 @@
+open Microsoft.WindowsAzure.Storage.Blob
 #r "paket:
 framework: netstandard2.0
 source https://api.nuget.org/v3/index.json
@@ -30,7 +31,7 @@ open FSharp.Control.Tasks.V2.ContextInsensitive
 
 let account = Microsoft.WindowsAzure.Storage.CloudStorageAccount.Parse "***"
 let blobClient = account.CreateCloudBlobClient()
-let blog = blobClient.GetContainerReference("gzipblog")
+let blog = blobClient.GetContainerReference("blog")
 
 let toUri (u: string) = u.Replace(@".\","").Replace(@"\","/")
 let md5 path = 
@@ -56,7 +57,7 @@ let contentType uri =
   | ".html" -> Gzip "text/html"
   | _ -> NoEncoding
 
-let uploadMedia (blog: CloudBlobContainer) path =
+let uploadMedia tag (blog: CloudBlobContainer) path =
   task {
     let uri =
         path 
@@ -71,7 +72,7 @@ let uploadMedia (blog: CloudBlobContainer) path =
     let blob = blog.GetBlockBlobReference(uri)
     let! exists = blob.ExistsAsync() 
     if not exists then
-        Trace.tracefn "[Media] %s is new" uri
+        Trace.tracefn "[%s] %s is new" tag uri
         match contentType uri with
         | Flat contentType ->
           blob.Properties.ContentType <- contentType
@@ -97,7 +98,7 @@ let uploadMedia (blog: CloudBlobContainer) path =
               | _ -> ""
 
         if blobMd5 <> fileMd5 then
-            Trace.tracefn "[Media] %s has changed" uri
+            Trace.tracefn "[%s] %s has changed" tag uri
             match contentType uri with
             | Flat contentType ->
               blob.Properties.ContentType <- contentType
@@ -118,13 +119,18 @@ let uploadMedia (blog: CloudBlobContainer) path =
               blob.Properties.ContentEncoding <- "gzip"
               do! blob.SetPropertiesAsync()
           else
-            Trace.logfn "[Media] Skipping %s" uri
+            Trace.logfn "[%s] Skipping %s" tag uri
   }
 
+let removeFirstSlash (url: string) =
+  if url.StartsWith("/") then
+    url.Substring(1)
+  else
+    url
 
 let upload (blog: CloudBlobContainer) tag path blobPath name contentType =
   task {
-  let blob = blog.GetBlockBlobReference(blobPath)
+  let blob = blog.GetBlockBlobReference(removeFirstSlash blobPath)
 
   let fileMd5 = md5 path
   let! upload = 
@@ -167,9 +173,9 @@ let upload (blog: CloudBlobContainer) tag path blobPath name contentType =
     do! blob.SetPropertiesAsync()
   }
 
-let uploadPost blog post =
-  let path = Path.outPosts </> post.Name + ".html"
-  let blob = "posts/" + post.Url
+let uploadPost blog (post: Post) =
+  let path = Path.outPosts </> post.Filename + ".html"
+  let blob = post.FullUrl
   upload blog "Post" path blob post.Url "text/html"
 
 let uploadCategory blog category =
@@ -186,7 +192,7 @@ let uploadAll blog =
 
 let run =
   task {
-    let! _ = blog.CreateIfNotExistsAsync()
+    let! _ = blog.CreateIfNotExistsAsync(BlobContainerPublicAccessType.Blob, null, null)
 
       
     Trace.tracefn "Upload media"
@@ -195,7 +201,14 @@ let run =
       |> Seq.toList
 
     for m in media do
-      do! uploadMedia blog m
+      do! uploadMedia "Media" blog m
+
+    let content =
+      !! (Path.outcontent </> "**/*.*")
+      |> Seq.toList
+
+    for c in content do
+      do! uploadMedia "Content" blog c
 
     Trace.tracefn "Upload posts"
     for post in posts do

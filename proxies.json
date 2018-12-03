@@ -110,6 +110,16 @@
                 "response.statusReason": "Redirect",
                 "response.headers.Location": "/category/all"
             }
+        },
+        "functional-core": {
+            "matchCondition": {
+                "route": "post/2018/01/20/functional-core"
+            },
+            "responseOverrides": {
+                "response.statusCode": "301",
+                "response.statusReason": "Redirect",
+                "response.headers.Location": "post/2018/01/25/functional-core"
+            }
         }
     }
 }

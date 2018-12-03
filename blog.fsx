@@ -145,14 +145,15 @@ and Link = {
   Href: string
 }
 
+
 let processHtmlPost (post: Post)  =
-  let source = Path.posts </> post.Name + ".html"
-  let dest = post.Name + ".html"
+  let source = Path.posts </> post.Filename + ".html"
+  let dest = post.Filename + ".html"
   let html = IO.File.ReadAllText source
   let document = html.Replace("http://www.thinkbeforecoding.com/","/")
   { Content = document
     Tooltips = ""
-    Link = { Text = post.Title; Href = "/post" ./ post.Url }
+    Link = { Text = post.Title; Href = post.FullUrl }
     Date = post.Date
     FileName = dest
     Next =  None
@@ -165,8 +166,8 @@ FSharp.Formatting.Common.Log.SetupListener
     
 let processScriptPost (post: Post) =
   try
-    let source = Path.posts </> post.Name + ".fsx"
-    let dest = post.Name + ".html"
+    let source = Path.posts </> post.Filename + ".fsx"
+    let dest = post.Filename + ".html"
     //Trace.tracefn "Parsing script %s" source
     // let listener = 
     //   FSharp.Formatting.Common.Log.SetupListener 
@@ -184,7 +185,7 @@ let processScriptPost (post: Post) =
     let output = Formatting.format doc'.MarkdownDocument true OutputKind.Html
     { Content = output
       Tooltips = doc'.FormattedTips
-      Link =  { Text = post.Title; Href =  "/post" ./ post.Url }
+      Link =  { Text = post.Title; Href = post.FullUrl }
       Date = post.Date 
       FileName = dest
       Next = None
@@ -195,15 +196,15 @@ let processScriptPost (post: Post) =
        reraise()
 
 let processMarkdownPost (post: Post) =
-  let source = Path.posts </> post.Name + ".md"
-  let dest = post.Name + ".html"
+  let source = Path.posts </> post.Filename + ".md"
+  let dest = post.Filename + ".html"
 
   let output = 
     IO.File.ReadAllText source
     |> FSharp.Markdown.Markdown.TransformHtml
   { Content = output
     Tooltips = ""
-    Link =  { Text = post.Title; Href = "/post" ./ post.Url }
+    Link =  { Text = post.Title; Href = post.FullUrl }
     Date = post.Date 
     FileName = dest
     Next = None
@@ -211,9 +212,10 @@ let processMarkdownPost (post: Post) =
 
 let processPost post =
   Trace.tracefn "[Post] %s" post.Title
-  if File.exists (Path.posts </> post.Name + ".fsx") then
+
+  if File.exists (Path.posts </> post.Filename + ".fsx") then
     processScriptPost post
-  elif File.exists (Path.posts </> post.Name + ".md") then
+  elif File.exists (Path.posts </> post.Filename + ".md") then
     processMarkdownPost post
   else
     processHtmlPost post
@@ -279,7 +281,7 @@ let recentPosts =
                 |> List.truncate 10 do
           yield li [] [
             span [Class "o"] [str "| ``"]
-            a [Href <| "/post/" ./ p.Url] [str p.Title]
+            a [Href <| p.FullUrl] [str p.Title]
             span [Class "o"] [str "``"]]
 
         yield li [] [
@@ -306,7 +308,7 @@ let listPage outputDir categoriesHtml recentPosts name title (posts: Post list) 
                li [] [ 
                     str (p.Date.ToString("yyyy-MM-ddTHH:mm:ss"))
                     str " |> "
-                    a [Href ("/post/" ./ p.Url) ] [str p.Title] ] ]
+                    a [Href ( p.FullUrl) ] [str p.Title] ] ]
       ]
     let footer = copyright
     { content = content
@@ -364,6 +366,7 @@ formattedPosts
   |> templatePost Categories.categoriesHtml recentPosts Post
   |> savePost Path.outPosts p)
 
+
 Directory.ensure Path.feed
 formattedPosts
 |> List.truncate 5
@@ -380,8 +383,12 @@ Categories.categories
 
 listPage Path.categories Categories.categoriesHtml recentPosts "all" "All posts so far" posts
 
+
+Trace.tracefn "[Media] copy dir"
 Shell.copyRecursive Path.media Path.outmedia true
-Shell.copyRecursive Path.content Path.outcontent
+Trace.tracefn "[Content] copy dir"
+Shell.mkdir Path.outcontent
+Shell.copyRecursive Path.content Path.outcontent true
 
 formattedPosts
 |> List.tryHead
@@ -389,3 +396,6 @@ formattedPosts
       p
       |> templatePost Categories.categoriesHtml recentPosts (fun _ -> Home)
       |> Html.save (Path.out </> "index.html") )
+
+
+
