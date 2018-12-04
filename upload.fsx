@@ -45,6 +45,8 @@ type Encoding =
   | Flat of string
   | NoEncoding 
 
+          
+
 let contentType uri = 
   match IO.Path.GetExtension uri with
   | ".css" -> Gzip "text/css"
@@ -56,7 +58,7 @@ let contentType uri =
   | ".htm"
   | ".html" -> Gzip "text/html"
   | _ -> NoEncoding
-
+let cachecontrol = "public, max-age=31536000"
 let uploadMedia tag (blog: CloudBlobContainer) path =
   task {
     let uri =
@@ -73,6 +75,7 @@ let uploadMedia tag (blog: CloudBlobContainer) path =
     let! exists = blob.ExistsAsync() 
     if not exists then
         Trace.tracefn "[%s] %s is new" tag uri
+        blob.Properties.CacheControl <- cachecontrol
         match contentType uri with
         | Flat contentType ->
           blob.Properties.ContentType <- contentType
@@ -97,8 +100,9 @@ let uploadMedia tag (blog: CloudBlobContainer) path =
               | true, v -> v
               | _ -> ""
 
-        if blobMd5 <> fileMd5 then
+        if blobMd5 <> fileMd5 || blob.Properties.CacheControl <> cachecontrol  then
             Trace.tracefn "[%s] %s has changed" tag uri
+            blob.Properties.CacheControl <- cachecontrol
             match contentType uri with
             | Flat contentType ->
               blob.Properties.ContentType <- contentType
@@ -117,7 +121,7 @@ let uploadMedia tag (blog: CloudBlobContainer) path =
               do! file.CopyToAsync(gzip)
               blob.Properties.ContentType <- contentType
               blob.Properties.ContentEncoding <- "gzip"
-              do! blob.SetPropertiesAsync()
+            do! blob.SetPropertiesAsync()
           else
             Trace.logfn "[%s] Skipping %s" tag uri
   }
@@ -128,7 +132,7 @@ let removeFirstSlash (url: string) =
   else
     url
 
-let upload (blog: CloudBlobContainer) tag path blobPath name contentType =
+let upload (blog: CloudBlobContainer) tag path blobPath name contentType cache =
   task {
   let blob = blog.GetBlockBlobReference(removeFirstSlash blobPath)
 
@@ -152,7 +156,8 @@ let upload (blog: CloudBlobContainer) tag path blobPath name contentType =
     else
       Trace.tracefn "[%s] %s is new" tag name
       return true }
-  if upload then
+  let cachectl = if cache then cachecontrol else null
+  if upload || blob.Properties.CacheControl <> cachectl  then
     let opts = 
       Blob.BlobRequestOptions(
         StoreBlobContentMD5 = Nullable true, 
@@ -170,25 +175,26 @@ let upload (blog: CloudBlobContainer) tag path blobPath name contentType =
     do! upload()
     blob.Properties.ContentType <- contentType
     blob.Properties.ContentEncoding <- "gzip"
+    blob.Properties.CacheControl <- cachectl
     do! blob.SetPropertiesAsync()
   }
 
 let uploadPost blog (post: Post) =
   let path = Path.outPosts </> post.Filename + ".html"
   let blob = post.FullUrl
-  upload blog "Post" path blob post.Url "text/html"
+  upload blog "Post" path blob post.Url "text/html" false
 
 let uploadCategory blog category =
     let name = Categories.name category
     let path = Path.categories </> name + ".html"
     let blob = "category/" + name
-    upload blog "Category" path blob name "text/html"
+    upload blog "Category" path blob name "text/html" false
 
 let uploadAll blog =
     let name = "all"
     let path = Path.categories </> name + ".html"
     let blob = "category/" + name
-    upload blog "Category" path blob name "text/html"
+    upload blog "Category" path blob name "text/html" false
 
 let run =
   task {
@@ -214,13 +220,13 @@ let run =
     for post in posts do
       do! uploadPost blog post
 
-    do! upload blog "Post" (Path.out </> "index.html") "index.html" "index.html" "text/html"
+    do! upload blog "Post" (Path.out </> "index.html") "index.html" "index.html" "text/html" false
      
     for c in categories do
       do! uploadCategory blog c
      
     do! uploadAll blog
-    do! upload blog "Feed" Path.atom "feed/atom" "feed" "application/atom+xml"
+    do! upload blog "Feed" Path.atom "feed/atom" "feed" "application/atom+xml" true
   }
 
 run.Wait()
