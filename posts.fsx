@@ -375,5 +375,9 @@ let posts = [
       Category = Category.Personal
       Date=date "2018-11-19T13:40:02Z"
       Url="10-years" }
+    { Title="Full F# Blog"
+      Category = Category.FSharp
+      Date=date "2018-12-05T20:25:48Z"
+      Url="full-fsharp-blog" }
 ]
 

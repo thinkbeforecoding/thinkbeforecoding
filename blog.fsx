@@ -2,7 +2,7 @@
 source https://api.nuget.org/v3/index.json
 source https://ci.appveyor.com/nuget/fsharp-formatting
 
-nuget Fake.Core.Target 
+nuget Fake.IO.FileSystem
 nuget Fake.Core.Trace
 nuget FSharp.Data
 nuget Fable.React
@@ -11,9 +11,6 @@ nuget FSharp.Literate //"
 #load "./.fake/blog.fsx/intellisense.fsx" 
 #load "posts.fsx"
 #load "feed.fsx"
-#if !FAKE
-#r "netstandard"
-#endif
 
 #nowarn "86"
 open FSharp.Literate
@@ -97,7 +94,11 @@ let template template =
           scripts
           stylesheet "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css"
           stylesheet "/content/style.css"
-          script' "https://use.fontawesome.com/5477943014.js"
+          script [ Defer true
+                   Src "https://use.fontawesome.com/releases/v5.5.0/js/all.js"
+                   Integrity "sha384-GqVMZRt5Gn7tB9D9q7ONtcp4gtHIUEW/yG7h98J7IpE3kpi+srfFyyB/04OV6pG0"
+                   CrossOrigin "anonymous"] []
+          // script' "https://use.fontawesome.com/5477943014.js"
 
 
           link [ Rel "alternate"
@@ -119,7 +120,7 @@ let template template =
                               str " atom feed"]
                           br []
                           a [ Href "https://twitter.com/thinkb4coding"] 
-                            [ i [ Class "fa fa-twitter-square"] []
+                            [ i [ Class "fab fa-twitter-square"] []
                               str " @thinkb4coding" ] ]
 
                         template.recentPosts
@@ -168,13 +169,16 @@ let processScriptPost (post: Post) =
   try
     let source = Path.posts </> post.Filename + ".fsx"
     let dest = post.Filename + ".html"
-    //Trace.tracefn "Parsing script %s" source
+
+
+    // Trace.tracefn "Parsing script %s" source
     // let listener = 
     //   FSharp.Formatting.Common.Log.SetupListener 
     //                                 (Diagnostics.TraceOptions()) 
     //                                 (Diagnostics.SourceLevels.All)
     //                                 (FSharp.Formatting.Common.Log.ConsoleListener())
     // FSharp.Formatting.Common.Log.SetupSource [|listener|] (FSharp.Formatting.Common.Log.source)
+    
     let doc = 
       let fsharpCoreDir = "-I:" + __SOURCE_DIRECTORY__ + @"\lib"
       Literate.ParseScriptFile(
@@ -358,7 +362,10 @@ let formattedPosts =
   |> prevnext (fun p c n -> { c with Next = n |> Option.map (fun n -> n.Link); Previous = p |> Option.map (fun p -> p.Link)})
   
 
-Directory.delete Path.out
+try
+  Directory.delete Path.out
+with
+| ex -> Trace.traceImportant "Could not delete out dir"
 Directory.ensure Path.outPosts
 formattedPosts
 |> List.iter (fun p ->
