@@ -55,7 +55,7 @@ I'm quite fluent in F#... everything would eventually be in F#.
 * F# script for publishing
 
 The other constraint was price. And since previous solution was free, I took it has a chanlenge to
-try to make it has cheap as possible. There are lots of free options, but never with custom domain 
+try to make it as cheap as possible. There are lots of free options, but never with custom domain 
 (needed to not break links), and never with https (mandatory since google is showing HTTP sites as unsecure).
 
 I choosed Azure Functions, but with no code. I get:
@@ -96,11 +96,11 @@ fsx like this:
 
 *)
 (*** hide ***)
+#r "netstandard"
 #I @"..\packages\full\FSharp.Literate\lib\netstandard2.0\"
 #r "FSharp.Literate"
 #r "FSharp.Markdown"
 #r "FSharp.CodeFormat"
-#r "netstandard"
 #r @"..\packages\full\Fable.React\lib\netstandard2.0\Fable.React.dll"
 
 (**
@@ -142,7 +142,6 @@ so for my build script I use the following references:
 *)
 open FSharp.Literate
 
-
 (**
 ### Markdown
 
@@ -150,11 +149,9 @@ The simplest usage of FSharp.Literate is for posts with
 no code. In this case, I write it as MarkDown file and convert them
 using the TransformHtml function:
 *)
-let md =
-    """
-# Markdown is cool
+let md = """# Markdown is cool
 especially with *FSharp.Formatting* ! """
-    |> FSharp.Markdown.Markdown.TransformHtml
+            |> FSharp.Markdown.Markdown.TransformHtml
 (** which returns: *)
 (*** include-value: md ***)
 
