@@ -169,9 +169,10 @@ let snipet  =
 let parse source =
     let doc = 
       let fsharpCoreDir = "-I:" + __SOURCE_DIRECTORY__ + @"\..\lib"
+      let systemRuntime = "-r:System.Runtime"
       Literate.ParseScriptString(
                   source, 
-                  compilerOptions = fsharpCoreDir,
+                  compilerOptions = systemRuntime + " " + fsharpCoreDir,
                   fsiEvaluator = FSharp.Literate.FsiEvaluator([|fsharpCoreDir|]))
     FSharp.Literate.Literate.FormatLiterateNodes(doc, OutputKind.Html, "", true, true)
 let format (doc: LiterateDocument) =
@@ -182,7 +183,8 @@ let fs =
     |> format
 (** 
 The fsharpCoreDir and the -I options are necessary to help FSharp.Literate resolve
-the path to FSharp.Core. FSharp interactive is not totally ready for production due
+the path to FSharp.Core. System.Runtime must also be referenced to get tooltips working
+fine with netstandard assemblies. FSharp interactive is not totally ready for production due
 to this problem, but with some helps, it works for our need.
 
 Running this code we get: *)

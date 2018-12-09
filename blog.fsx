@@ -1,7 +1,7 @@
 #r "paket:
 source https://api.nuget.org/v3/index.json
-source https://ci.appveyor.com/nuget/fsharp-formatting
-
+//source https://ci.appveyor.com/nuget/fsharp-formatting
+source c:/Development/FSharp.Formatting/bin/
 nuget Fake.IO.FileSystem
 nuget Fake.Core.Trace
 nuget FSharp.Data
@@ -180,10 +180,11 @@ let processScriptPost (post: Post) =
     // FSharp.Formatting.Common.Log.SetupSource [|listener|] (FSharp.Formatting.Common.Log.source)
     
     let doc = 
-      let fsharpCoreDir = "-I:" + __SOURCE_DIRECTORY__ + @"\lib"
+      let fsharpCoreDir = "-I:" + __SOURCE_DIRECTORY__ + @"\packages\full\FSharp.Core\lib\netstandard1.6"
+      let systemRuntime = "-r:System.Runtime"
       Literate.ParseScriptFile(
                   source , 
-                  compilerOptions = fsharpCoreDir,
+                  compilerOptions = systemRuntime + " " + fsharpCoreDir ,
                   fsiEvaluator = FSharp.Literate.FsiEvaluator([|fsharpCoreDir|]))
     let doc' = FSharp.Literate.Literate.FormatLiterateNodes(doc, OutputKind.Html, "", true, true)
     let output = Formatting.format doc'.MarkdownDocument true OutputKind.Html
