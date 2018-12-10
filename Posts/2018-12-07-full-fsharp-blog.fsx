@@ -396,7 +396,7 @@ new blog.
 
 Using F# tools, I get easily a full control on my blog. And all this in my favorite language!
 
-See you in next part about hosting in Azure.
+See you in [next part about hosting in Azure](/post/2018/12/09/full-fsharp-blog-2).
 
 Happy Christmas!
 
