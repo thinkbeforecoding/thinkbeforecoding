@@ -10,3 +10,16 @@ nuget FSharp.Core
 nuget FSharp.Literate
 nuget Fable.React
 nuget FSharp.Data
+
+group func
+source https://api.nuget.org/v3/index.json
+storage: none
+strategy: min
+
+nuget Microsoft.Azure.KeyVault
+nuget Microsoft.NET.Sdk.Functions == 1.0.24
+nuget Microsoft.NETCore.Platforms 2.0.1
+nuget Microsoft.AspNetCore 2.1.1
+nuget Microsoft.Azure.Services.AppAuthentication prerelease
+nuget TaskBuilder.fs
+nuget FSharp.Core

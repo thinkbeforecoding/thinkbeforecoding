@@ -9,9 +9,9 @@
                     "HEAD"
                 ]
             },
-            "backendUri": "https://%Blog.Storage%.blob.core.windows.net/%Blog.Container%/posts/{path}"
+            "backendUri": "https://%Blog.Storage%.blob.core.windows.net/%Blog.Container%/post/{path}"
         },
-        "media": {
+        "public": {
             "matchCondition": {
                 "route": "public/{*path}",
                 "methods": [
@@ -19,7 +19,7 @@
                     "HEAD"
                 ]
             },
-            "backendUri": "https://%Blog.Storage%.blob.core.windows.net/%Blog.Container%/media/{path}"
+            "backendUri": "https://%Blog.Storage%.blob.core.windows.net/%Blog.Container%/public/{path}"
         },
         "content": {
             "matchCondition": {
@@ -65,11 +65,11 @@
             },
             "backendUri": "https://%Blog.Storage%.blob.core.windows.net/%Blog.Container%/feed/atom"
         },
-        "letsencryptproxy": {
+        "letsencrypt": {
             "matchCondition": {
-                "route": "/.well-known/acme-challenge/{*rest}"
+                "route": "/.well-known/acme-challenge/{*code}"
             },
-            "backendUri": "https://%WEBSITE_HOSTNAME%/api/letsencrypt/{rest}"
+            "backendUri": "https://localhost/api/acme-challenge/{code}"
         },
         "archive": {
             "matchCondition": {
