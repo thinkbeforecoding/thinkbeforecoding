@@ -1,4 +1,3 @@
-open Microsoft.WindowsAzure.Storage.Blob
 #r "paket:
 framework: netstandard2.0
 source https://api.nuget.org/v3/index.json
