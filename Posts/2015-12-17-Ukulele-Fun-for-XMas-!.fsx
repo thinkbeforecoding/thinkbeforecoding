@@ -370,6 +370,12 @@ let getLucky =
     luckyChords
     |> List.collect (strum luckyStrum)
 
+(*** hide ***)
+#if BLOG
+module Hidden =
+    let play _ _ _ = ()
+open Hidden
+#endif
 (** And now, let's play it : *)
 getLucky
 |> List.replicate 2

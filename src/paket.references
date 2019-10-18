@@ -1,8 +1,5 @@
 group func
-Microsoft.Azure.KeyVault
 Microsoft.NET.Sdk.Functions
-Microsoft.NETCore.Platforms
 Microsoft.AspNetCore
-Microsoft.Azure.Services.AppAuthentication
 TaskBuilder.fs
 FSharp.Core

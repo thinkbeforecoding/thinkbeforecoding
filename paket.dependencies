@@ -1,25 +1,61 @@
 source https://www.nuget.org/api/v2
+framework: >= netstandard2.0
+
+nuget Fake
 nuget naudio
 
 group full
-source https://ci.appveyor.com/nuget/fsharp-formatting
+framework: >= netstandard2.0
+generate_load_scripts: true
 source https://api.nuget.org/v3/index.json
-framework: netstandard2.0
 
 nuget FSharp.Core
 nuget FSharp.Literate
 nuget Fable.React
 nuget FSharp.Data
+nuget Fake.IO.FileSystem
+nuget Fake.Core.Trace
+nuget FSharp.Text.RegexProvider
 
 group func
 source https://api.nuget.org/v3/index.json
 storage: none
-strategy: min
 
-nuget Microsoft.Azure.KeyVault
-nuget Microsoft.NET.Sdk.Functions
-nuget Microsoft.NETCore.Platforms
 nuget Microsoft.AspNetCore
-nuget Microsoft.Azure.Services.AppAuthentication prerelease
 nuget TaskBuilder.fs
 nuget FSharp.Core
+nuget Microsoft.Azure.WebJobs.Extensions.Http
+nuget Microsoft.NET.Sdk.Functions  == 1.0.29
+nuget Newtonsoft.Json == 12.0.1
+nuget Microsoft.Extensions.Http < 3.0.0
+nuget Microsoft.AspNetCore.Authorization < 3.0.0
+nuget Microsoft.AspNetCore.Cryptography.Internal < 3.0.0
+nuget Microsoft.AspNetCore.DataProtection < 3.0.0
+nuget Microsoft.AspNetCore.DataProtection.Abstractions < 3.0.0
+nuget Microsoft.AspNetCore.Http.Features < 3.0
+nuget Microsoft.AspNetCore.JsonPatch < 3.0
+nuget Microsoft.Extensions.Caching.Abstractions < 3.0.0
+nuget Microsoft.Extensions.Caching.Memory < 3.0.0
+nuget Microsoft.Extensions.Configuration < 3.0.0
+nuget Microsoft.Extensions.Configuration.Abstractions < 3.0.0
+nuget Microsoft.Extensions.Configuration.Binder < 3.0.0.4
+nuget Microsoft.Extensions.Configuration.EnvironmentVariables < 3.0.0
+nuget Microsoft.Extensions.Configuration.FileExtensions < 3.0.0
+nuget Microsoft.Extensions.Configuration.Json < 3.0.0
+nuget Microsoft.Extensions.DependencyInjection < 3.0.0
+nuget Microsoft.Extensions.DependencyInjection.Abstractions < 3.0.0
+nuget Microsoft.Extensions.DependencyModel - 2.1
+nuget Microsoft.Extensions.DiagnosticAdapter < 3.0.0
+nuget Microsoft.Extensions.FileProviders.Abstractions < 3.0.0
+nuget Microsoft.Extensions.FileProviders.Physical < 3.0.0
+nuget Microsoft.Extensions.FileSystemGlobbing < 3.0.0
+nuget Microsoft.Extensions.Hosting < 3.0.0
+nuget Microsoft.Extensions.Hosting.Abstractions < 3.0.0
+nuget Microsoft.Extensions.Logging < 3.0.0
+nuget Microsoft.Extensions.Logging.Abstractions < 3.0.0
+nuget Microsoft.Extensions.Logging.Configuration < 3.0.0
+nuget Microsoft.Extensions.ObjectPool < 3.0.0
+nuget Microsoft.Extensions.Options < 3.0.0
+nuget Microsoft.Extensions.Options.ConfigurationExtensions < 3.0.0
+nuget Microsoft.Extensions.Primitives < 3.0.0
+nuget Microsoft.Extensions.WebEncoders < 3.0.0

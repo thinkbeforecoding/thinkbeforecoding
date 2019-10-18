@@ -33,6 +33,7 @@ with far higher safety !
 
 Writing F# script is easy and fast. Test it from the command line:
     
+    [lang=bash]
     vim test.fsx
 
 Then write:
@@ -43,10 +44,12 @@ press `:q` to exit
 
 now launch it on linux with:
 
+    [lang=bash]
     fsharpi --exec test.fsx
 
 or on windows:
 
+    [lang=bash]
     fsianycpu --exec test.fsx
 
 Excellent.
@@ -57,18 +60,23 @@ The only problem is that typing the `fshapi --exec` this is a bit tedious.
 
 We can create a bash/batch script to puth in the path that will launch the script (for linux):
 
+    [lang=bash]
     vim test
 *)
 (**
+    [lang=bash]
     fsharpi --exec test.fsx
 *)
 (**
+    [lang=bash]
     chmod +x test
 or one windows
 
+    [lang=bash]
     vim test.cmd
 *)
 (**
+    [lang=bash]
     fsianycpu --exec test.fsx    
 
 Done !
@@ -78,10 +86,9 @@ Better, but now we need to write a bash and/or a batch script for each F# script
 ## fck bash/batch dispatcher FTW !
 
 We create a fck file (don't forget to chmod +x it) that takes a command
-
+    [lang=bash]
     #!/usr/bin/env bash
-
-
+    #
     #the fck tool path
     fckpath=$(readlink -f "$0")
     #this fck tool dir
@@ -90,7 +97,7 @@ We create a fck file (don't forget to chmod +x it) that takes a command
     shell="$dir/fck-cmd/fck-$1.sh"
     cmd="$1"
     shift
-
+    #
     #restore packages if needed
     if [ ! -d "$dir/fck-cmd/packages" ]
     then
@@ -98,17 +105,17 @@ We create a fck file (don't forget to chmod +x it) that takes a command
         mono "$dir/fck-cmd/.paket/paket.bootstrapper.exe" --run restore
     popd > /dev/null
     fi
-
+    #
     #execute script command if it exists
     if [ -e $script ]
     then
         mono "$dir/fck-cmd/packages/FAKE/tools/FAKE.exe" "$script" -- $@
-
+    #
     #execute shell command if it exists
     elif [ -e $shell ]
     then
         eval $shell $@
-
+    #
     #show help
     else
     pushd "$dir/fck-cmd" > /dev/null
@@ -119,15 +126,14 @@ We create a fck file (don't forget to chmod +x it) that takes a command
 (**
 and the batch version:
 
+    [lang=batch]
     @echo off
     set encoding=utf-8
-
     set dir=%~dp0
     set cmd=%1
     set script="%dir%\fck-cmd\fck-%cmd%.fsx"
     set batch="%dir%\fck-cmd\fck-%cmd%.cmd"
     shift
-
     set "args="
     :parse
     if "%~1" neq "" (
@@ -136,13 +142,11 @@ and the batch version:
       goto :parse
     )
     if defined args set args=%args:~1%
-
     if not exist "%dir%\fck-cmd\packages" (
     pushd "%dir%\fck-cmd\\"
     "%dir%\fck-cmd\.paket\paket.bootstrapper.exe" --run restore
     popd
     )
-
     if exist  "%script%" (
     "%dir%/fck-cmd/packages/fake/tools/fake.exe" "%script%" -- %args%
     ) else if exist "%batch%" (
@@ -199,10 +203,13 @@ open System.Xml.Linq
 module CommandLine =
     // get the command line, fck style...
     let getCommandLine() = 
+
         System.Environment.GetCommandLineArgs() 
         |> Array.toList
         |> List.skipWhile ((<>) "--")
-        |> List.tail
+        |> function 
+           | [] -> [] 
+           | _ :: tail -> tail
 
     // check whether the command line starts with specified command
     let (|Cmd|_|) str cmdLine =
@@ -217,7 +224,7 @@ Since Fake is used to launch scripts, we can also include FakeLib for all the fa
 Here is a sample fck-cmd/fck-hello.fsx script that can write hello.
 *)
 #load "fcklib/FckLib.fsx"
-#r "packages/FAKE/tools/FakeLib.dll"
+#r "../packages/FAKE/tools/FakeLib.dll"
 
 open FckLib.CommandLine
 open Fake
@@ -233,6 +240,7 @@ It uses FakeLib for the `tracefn` function and FckLib for `getCommandLine`.
 
 You can call it with (once fck is in your Path environment variable):
 
+    [lang=bash]
     fck hello Santa
 
 ## Help
@@ -269,10 +277,11 @@ else
 This script tries to find a fck-xxx.txt file and display it, or fallbacks to fck-help.txt.
 
 For exemple the help for our fck hello command will be in fck-hello.txt:
-
+    
+    [lang=bash]
     Usage:
     fck hello [<name>]
-
+    
     Display a friendly message to <name> or to you if <name> is omitted.
 
 Of course we can the pimp the fck-help.fsx to parse the txt help files and add codes for colors, verbosity etc.
@@ -286,6 +295,7 @@ Run the commands, it will automatically restore packages if missing, and lanch t
 
 To upgrade to a new version, call fck update, defined in fck-update.sh :
 
+    [lang=bash]
     script=$(readlink -f "$0")
     dir=$(dirname $script)
 
@@ -295,10 +305,10 @@ To upgrade to a new version, call fck update, defined in fck-update.sh :
     popd > /dev/null
 
 or batch fck-update.cmd:
-
+    [lang=bash]
     git pull
     .paket\paket.bootstrapper.exe --run restore
-    
+
 Yep, that's that easy
 
 ## Happy Christmas

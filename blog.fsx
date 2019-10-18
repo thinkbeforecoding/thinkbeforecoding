@@ -1,31 +1,48 @@
-#r "paket:
-source https://api.nuget.org/v3/index.json
-//source https://ci.appveyor.com/nuget/fsharp-formatting
-source c:/Development/FSharp.Formatting/bin/
-nuget Fake.IO.FileSystem
-nuget Fake.Core.Trace
-nuget FSharp.Data
-nuget Fable.React
-nuget FSharp.Literate //" 
+// #r "paket:
+// source https://api.nuget.org/v3/index.json
+// //source https://ci.appveyor.com/nuget/fsharp-formatting
+// source c:/Development/FSharp.Formatting/bin/
+// nuget Fake.IO.FileSystem
+// nuget Fake.Core.Trace
+// nuget FSharp.Data
+// nuget Fable.React
+// nuget FSharp.Literate
+// nuget FSharp.Compiler.Service //" 
 
-#load "./.fake/blog.fsx/intellisense.fsx" 
+// #load "./.fake/blog.fsx/intellisense.fsx" 
+// #load ".paket/load/netstandard2.1/full/full.group.fsx"
+#load ".paket/load/netstandard2.1/full/FSharp.Literate.fsx"
+#load ".paket/load/netstandard2.1/full/Fable.React.fsx"
+#load ".paket/load/netstandard2.1/full/FSharp.Text.RegexProvider.fsx"
 #load "posts.fsx"
 #load "feed.fsx"
 
-#nowarn "86"
+let md5 = new System.Security.Cryptography.MD5CryptoServiceProvider()
+
+// #nowarn "86"
 open FSharp.Literate
 open FSharp.Markdown
 
-open Fable.Helpers.React
-open Fable.Helpers.React.Props
-open Fable.Import.React
+open Fable.React
+open Fable.React.Props
 open Posts
 open Categories
-open Fake.IO.FileSystemOperators
-open Fake.IO
-open Fake.Core
+// open Fake.IO
+// open Fake.Core
 open System
 
+// HACK: force usage of Fsharp.Compiler.Services
+// or the indirect reference from FSharp.Literate will fail to loadlet dummy (pos: FSharp.Compiler.Range.pos) =
+let dummy (pos: FSharp.Compiler.Range.pos) =
+    pos.Column
+FSharp.Compiler.Range.mkPos 1 1 |> dummy
+
+// HACK: Force usage of Fable.Core
+// or the indirect reference from Fable.React will fail to load
+typeof<Fable.Core.EraseAttribute>
+
+
+let (</>) x y =IO.Path.Combine(x,y)
 
 let (./) (x: string) (y: string) =
  match x.EndsWith("/"), y.StartsWith("/") with
@@ -33,7 +50,38 @@ let (./) (x: string) (y: string) =
  | true, true -> x + y.Substring(1)
  | _ -> x + y
 
-let raw value = Fable.Helpers.React.RawText value :> ReactElement
+module File =
+  let exists path = IO.File.Exists(path)
+
+module Directory =
+  let delete path = 
+    if IO.Directory.Exists path then
+      let dir = IO.DirectoryInfo(path)
+      dir.Delete(true)
+
+  let ensure path =
+    if not(IO.Directory.Exists(path)) then
+      IO.Directory.CreateDirectory(path) |> ignore
+
+  let copy source dest =
+    let srcDir = IO.DirectoryInfo(source)
+    let dstDir = IO.Directory.CreateDirectory(dest)
+
+    let rec loop (src: IO.DirectoryInfo) (dst: IO.DirectoryInfo) =
+      for file in src.GetFiles() do
+        let path = dst.FullName </> file.Name
+        file.CopyTo(path, true) |> ignore
+
+      for srcsubdir in src.GetDirectories() do
+        let dstsubdir = dst.CreateSubdirectory(srcsubdir.Name)
+        loop srcsubdir dstsubdir
+
+
+    loop srcDir dstDir
+
+    
+
+let raw value = Fable.React.RawText value :> ReactElement
 module Entities =
   let nbsp = raw "&nbsp;"
   let copy = raw "&copy;"
@@ -51,7 +99,7 @@ module Html =
         raw "<!doctype html>"
         raw "\n" 
         html ]
-      |> Fable.Helpers.ReactServer.renderToString 
+      |> Fable.ReactServer.renderToString 
     IO.File.WriteAllText(path, content)
 
 open Html
@@ -83,7 +131,7 @@ let template template =
   html [ Lang "en"]
     [ head [] 
         [ meta [CharSet "utf-8"]
-          Fable.Helpers.React.title [] 
+          Fable.React.Standard.title [] 
              <| match template.title with
                 | Post title -> [str ("// thinkbeforecoding -> " + title) ]
                 | Home -> [str "// thinkbeforecoding"]
@@ -164,7 +212,10 @@ FSharp.Formatting.Common.Log.SetupListener
     Diagnostics.TraceOptions.None
     Diagnostics.SourceLevels.All
     (FSharp.Formatting.Common.Log.ConsoleListener())
-    
+
+open FSharp.Text.RegexProvider
+type RemoveNamespace = Regex< @"Microsoft\.FSharp\.Core\.(?<name>\w+)">
+
 let processScriptPost (post: Post) =
   try
     let source = Path.posts </> post.Filename + ".fsx"
@@ -180,16 +231,23 @@ let processScriptPost (post: Post) =
     // FSharp.Formatting.Common.Log.SetupSource [|listener|] (FSharp.Formatting.Common.Log.source)
     
     let doc = 
-      let fsharpCoreDir = "-I:" + __SOURCE_DIRECTORY__ + @"\packages\full\FSharp.Core\lib\netstandard1.6"
+      let fsharpCoreDir = "-I:" + __SOURCE_DIRECTORY__ + @"\packages\full\FSharp.Core\lib\netstandard2.0\"
+      let fcsDir = "-I:" + __SOURCE_DIRECTORY__ + @"\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\"
+      let fcs = "-r:" + __SOURCE_DIRECTORY__ + @"\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\FSharp.Compiler.Service.dll"
       let systemRuntime = "-r:System.Runtime"
+      let e = FsiEvaluator([|fsharpCoreDir; fcsDir; fcs ;  "-d:BLOG" |])
+      e.EvaluationFailed |> Event.add (fun e -> 
+        eprintfn "%s" e.Text
+        eprintfn "%O" e.Exception
+        eprintfn "%s" e.StdErr)
       Literate.ParseScriptFile(
                   source , 
-                  compilerOptions = systemRuntime + " " + fsharpCoreDir ,
-                  fsiEvaluator = FSharp.Literate.FsiEvaluator([|fsharpCoreDir|]))
-    let doc' = FSharp.Literate.Literate.FormatLiterateNodes(doc, OutputKind.Html, "", true, true)
+                  compilerOptions = String.concat " " [systemRuntime; fsharpCoreDir; fcsDir; fcs ],
+                  fsiEvaluator = e)
+    let doc' = Literate.FormatLiterateNodes(doc, OutputKind.Html, "", true, true)
     let output = Formatting.format doc'.MarkdownDocument true OutputKind.Html
     { Content = output
-      Tooltips = doc'.FormattedTips
+      Tooltips = RemoveNamespace().TypedReplace(doc'.FormattedTips, fun m -> m.name.Value)
       Link =  { Text = post.Title; Href = post.FullUrl }
       Date = post.Date 
       FileName = dest
@@ -197,7 +255,7 @@ let processScriptPost (post: Post) =
       Previous = None }
     with
     | ex -> 
-       Trace.traceError <| string ex
+       eprintfn "%O" ex
        reraise()
 
 let processMarkdownPost (post: Post) =
@@ -216,7 +274,7 @@ let processMarkdownPost (post: Post) =
     Previous = None }
 
 let processPost post =
-  Trace.tracefn "[Post] %s" post.Title
+  printfn "[Post] %s" post.Title
 
   if File.exists (Path.posts </> post.Filename + ".fsx") then
     processScriptPost post
@@ -366,7 +424,7 @@ let formattedPosts =
 try
   Directory.delete Path.out
 with
-| ex -> Trace.traceImportant "Could not delete out dir"
+| ex -> printfn "Could not delete out dir"
 Directory.ensure Path.outPosts
 formattedPosts
 |> List.iter (fun p ->
@@ -392,11 +450,11 @@ Categories.categories
 listPage Path.categories Categories.categoriesHtml recentPosts "all" "All posts so far" posts
 
 
-Trace.tracefn "[Media] copy dir"
-Shell.copyRecursive Path.media Path.outmedia true
-Trace.tracefn "[Content] copy dir"
-Shell.mkdir Path.outcontent
-Shell.copyRecursive Path.content Path.outcontent true
+printfn "[Media] copy dir"
+Directory.copy Path.media Path.outmedia
+printfn "[Content] copy dir"
+Directory.ensure Path.outcontent
+Directory.copy Path.content Path.outcontent
 
 formattedPosts
 |> List.tryHead

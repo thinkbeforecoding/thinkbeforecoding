@@ -1,11 +1,12 @@
 module Feed
 open System
-#load "./.fake/blog.fsx/intellisense.fsx" 
-#if !FAKE
-  #r "netstandard"
-#endif
+// #load "./.fake/blog.fsx/intellisense.fsx" 
+// #if !FAKE
+//   #r "netstandard"
+// #endif
 
 //#r "packages/FSharp.Data/lib/netstandard2.0/FSharp.Data.dll"
+#load ".paket/load/netstandard2.1/full/FSharp.Data.fsx"
 #r "System.Xml.Linq"
 open System
 open FSharp.Data

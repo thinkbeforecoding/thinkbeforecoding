@@ -7,4 +7,6 @@ deployment/
 .vscode/
 */bin/
 */obj/
+.ionide/
+.paket/
 
