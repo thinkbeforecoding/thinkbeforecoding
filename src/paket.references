@@ -1,5 +1,4 @@
 group func
 Microsoft.NET.Sdk.Functions
-Microsoft.AspNetCore
 TaskBuilder.fs
 FSharp.Core
