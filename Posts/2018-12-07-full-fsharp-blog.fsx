@@ -1,6 +1,7 @@
 (**
 *this post is part of the [F# Advent Calendar 2018](https://sergeytihon.com/2018/10/22/f-advent-calendar-in-english-2018/)*
 
+*Updated 2020-09-23 to use official FSharp.Formatting release*
 
 Christmas arrived early this year: my [pull request](https://github.com/fsprojects/FSharp.Formatting/pull/480) to update 
 FSharp.Formatting to netstandard2.0 was accepted on Oct 22 <i class="fas fa-grin-stars"></i>.
@@ -99,10 +100,11 @@ fsx like this:
 *)
 (*** hide ***)
 #r "netstandard"
-#I @"..\packages\full\FSharp.Literate\lib\netstandard2.0\"
-#r "FSharp.Literate"
-#r "FSharp.Markdown"
-#r "FSharp.CodeFormat"
+#I @"..\packages\full\FSharp.Formatting\lib\netstandard2.0"
+#r "FSharp.Formatting.Common.dll"
+#r "FSharp.Formatting.Markdown.dll"
+#r "FSharp.Formatting.Literate.dll"
+#r "FSharp.Formatting.CodeFormat.dll"
 #r @"..\packages\full\Fable.React\lib\netstandard2.0\Fable.React.dll"
 #I @"..\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\"
 #r "System.Security.Cryptography.Csp"
@@ -139,12 +141,12 @@ so for my build script I use the following references:
     nuget Fake.Core.Trace
     nuget FSharp.Data
     nuget Fable.React
-    nuget FSharp.Literate //" 
+    nuget FSharp.Formatting //" 
 
     #load "../.fake/blog.fsx/intellisense.fsx" 
 
 *)
-open FSharp.Literate
+open FSharp.Formatting.Literate
 
 (**
 ### Markdown
@@ -155,7 +157,7 @@ using the TransformHtml function:
 *)
 let md = """# Markdown is cool
 especially with *FSharp.Formatting* ! """
-            |> FSharp.Markdown.Markdown.TransformHtml
+            |> FSharp.Formatting.Markdown.Markdown.ToHtml
 (** which returns: *)
 (*** include-value: md ***)
 
@@ -165,6 +167,7 @@ especially with *FSharp.Formatting* ! """
 
 We can also take a snipet of F# and convert it to HTML:
 *)
+open FSharp.Formatting.Literate.Evaluation
 let snipet  =
     """
     (** # *F# literate* in action *)
@@ -176,18 +179,15 @@ let parse source =
       let fcsDir = "-I:" + __SOURCE_DIRECTORY__ + @"\..\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\"
       let fcs = "-r:" + __SOURCE_DIRECTORY__ + @"\..\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\FSharp.Compiler.Service.dll"
  
-      let systemRuntime = "-r:System.Runtime"
       Literate.ParseScriptString(
                   source, 
-                  compilerOptions = String.concat " " [systemRuntime; fsharpCoreDir; fcsDir; fcs],
-                  fsiEvaluator = FSharp.Literate.FsiEvaluator([|fsharpCoreDir; fcsDir; fcs|]))
-    FSharp.Literate.Literate.FormatLiterateNodes(doc, OutputKind.Html, "", true, true)
-let format (doc: LiterateDocument) =
-    Formatting.format doc.MarkdownDocument true OutputKind.Html
+                  fscoptions = String.concat " " [ fsharpCoreDir; fcsDir; fcs ],
+                  fsiEvaluator = FsiEvaluator([|fsharpCoreDir; fcsDir; fcs|]))
+    Literate.FormatLiterateNodes(doc, OutputKind.Html, "", true, true)
 let fs =
     snipet 
     |> parse
-    |> format
+    |> Literate.ToHtml
 (** 
 The fsharpCoreDir and the -I options are necessary to help FSharp.Literate resolve
 the path to FSharp.Core. System.Runtime must also be referenced to get tooltips working
@@ -220,7 +220,7 @@ let v = square 3
 (** the value is: *)
 (*** include-value: v ***)"""
     |> parse
-    |> format
+    |> Literate.ToHtml
 (** and the result is: *)
 (*** include-value: values ***)
 (**
@@ -240,7 +240,7 @@ printfn "result: %d" (square 3)
 (** the value is: *)
 (*** include-output: result ***)"""
     |> parse
-    |> format
+    |> Literate.ToHtml
 
 (** Notice the presence of the printf output on the last line: *)
 (*** include-value: output ***)
@@ -257,7 +257,7 @@ start a HTML template:
 *)
 open Fable.React
 open Fable.React.Props
-open FSharp.Markdown
+open FSharp.Formatting.Markdown
 
 type Post = {
     title: string
@@ -285,7 +285,7 @@ let render html =
 (** let's use it : *)
 let myblog =
     { title = "super post"
-      content = Markdown.TransformHtml "# **interesting** things" }
+      content = Markdown.ToHtml "# **interesting** things" }
     |> template
     |> render 
 (** now we get the final page: *)

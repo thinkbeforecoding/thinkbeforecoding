@@ -1,16 +1,16 @@
 source https://www.nuget.org/api/v2
-framework: >= netstandard2.0
+framework: netcoreapp3.1
 
 nuget Fake
 nuget naudio
 
 group full
-framework: >= netstandard2.0
+framework: netcoreapp3.1, netstandard2.0
 generate_load_scripts: true
 source https://api.nuget.org/v3/index.json
 
 nuget FSharp.Core
-nuget FSharp.Literate
+nuget FSharp.Formatting
 nuget Fable.React
 nuget FSharp.Data
 nuget Fake.IO.FileSystem
@@ -20,9 +20,9 @@ nuget FSharp.Text.RegexProvider
 group func
 source https://api.nuget.org/v3/index.json
 storage: none
-framework:  netcoreapp3.0
+framework:  netcoreapp3.1
 generate_load_scripts: true
 
 nuget TaskBuilder.fs
 nuget FSharp.Core
-nuget Microsoft.NET.Sdk.Functions prerelease
+nuget Microsoft.NET.Sdk.Functions 

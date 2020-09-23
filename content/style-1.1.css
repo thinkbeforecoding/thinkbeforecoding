@@ -47,14 +47,19 @@ span.omitted {
 	padding:0px 0px 1px 0px;
 }
 /* tool tip */
-div.tip {
-	background:#475b5f;
-  border-radius:4px;
-  font:11pt 'Droid Sans', arial, sans-serif;
-	padding:6px 8px 6px 8px;
-	display:none;
-  color:#d1d1d1;
-  pointer-events:none;
+div.fsdocs-tip {
+	background: #475b5f;
+	border-radius: 4px;
+	font: 11pt 'Droid Sans', arial, sans-serif;
+	padding: 6px 8px 6px 8px;
+	display: none;
+	color: #d1d1d1;
+	pointer-events: none;
+}
+
+div.fsdocs-tip code {
+    color: #d1d1d1;
+    font: 11pt 'Droid Sans', arial, sans-serif;
 }
 table.pre pre {
   padding:0px;
@@ -63,9 +68,7 @@ table.pre pre {
 }
 table.pre, pre.fssnip, pre {
   line-height:13pt;
-  /*border:1px solid #d8d8d8;*/
   border:1px solid #000;
-  /* border: none; */
   border-collapse:separate;
   white-space:pre-wrap;
   font: 9pt 'Droid Sans Mono',consolas,monospace;
@@ -73,7 +76,7 @@ table.pre, pre.fssnip, pre {
   margin:10px 20px 20px 20px;
   background-color:#212d30;
   padding:10px;
-  /*border-radius:5px;*/
+  border-radius: 0.4em;
   color:#d1d1d1;
   max-width: none;
 }

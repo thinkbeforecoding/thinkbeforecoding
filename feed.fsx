@@ -6,7 +6,7 @@ open System
 // #endif
 
 //#r "packages/FSharp.Data/lib/netstandard2.0/FSharp.Data.dll"
-#load ".paket/load/netstandard2.1/full/FSharp.Data.fsx"
+#load ".paket/load/netcoreapp3.1/full/FSharp.Data.fsx"
 #r "System.Xml.Linq"
 open System
 open FSharp.Data

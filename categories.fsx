@@ -14,7 +14,7 @@ type Category =
     | Agile
     | NuRep
     | CQRS
-    | FSharp
+    | FS
     | EventSourcing
 
 module Categories =
@@ -22,14 +22,14 @@ module Categories =
   | DomainDrivenDesign -> "Domain Driven Desing"
   | NetFramework -> ".Net Framework"
   | AspNet -> "Asp.net"
-  | FSharp -> "F#"
+  | FS -> "F#"
   | EventSourcing -> "Event Sourcing"
   | c -> string c
 
   let name = function
   | NetFramework -> "Net-Framework"
   | AspNet -> "Aspnet" 
-  | FSharp -> "FSharp"
+  | FS -> "FSharp"
   | cat -> (title cat).Replace(" ","-") 
 
   let adapt = function

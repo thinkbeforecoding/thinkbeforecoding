@@ -1,27 +1,21 @@
-// #r "paket:
-// source https://api.nuget.org/v3/index.json
-// //source https://ci.appveyor.com/nuget/fsharp-formatting
-// source c:/Development/FSharp.Formatting/bin/
-// nuget Fake.IO.FileSystem
-// nuget Fake.Core.Trace
-// nuget FSharp.Data
-// nuget Fable.React
-// nuget FSharp.Literate
-// nuget FSharp.Compiler.Service //" 
-
-// #load "./.fake/blog.fsx/intellisense.fsx" 
-// #load ".paket/load/netstandard2.1/full/full.group.fsx"
-#load ".paket/load/netstandard2.1/full/FSharp.Literate.fsx"
-#load ".paket/load/netstandard2.1/full/Fable.React.fsx"
-#load ".paket/load/netstandard2.1/full/FSharp.Text.RegexProvider.fsx"
+#I ".paket/load/netcoreapp3.1/full"
+#I "packages/full/fsharp.formatting/lib/netstandard2.0"
+#load "FSharp.Compiler.Service.fsx"
+#r "FSharp.Formatting.Common.dll"
+#r "FSharp.Formatting.Markdown.dll"
+#r "FSharp.Formatting.Literate.dll"
+#r "FSharp.Formatting.CodeFormat.dll"
+#r "FSharp.Formatting.ApiDocs.dll"
+#load "Fable.React.fsx"
+#load "FSharp.Text.RegexProvider.fsx"
 #load "posts.fsx"
 #load "feed.fsx"
 
 let md5 = new System.Security.Cryptography.MD5CryptoServiceProvider()
 
 // #nowarn "86"
-open FSharp.Literate
-open FSharp.Markdown
+open FSharp.Formatting.Literate
+open FSharp.Formatting.Markdown
 
 open Fable.React
 open Fable.React.Props
@@ -141,7 +135,7 @@ let template template =
            | _ -> fragment [] [])
           scripts
           stylesheet "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css"
-          stylesheet "/content/style.css"
+          stylesheet "/content/style-1.1.css"
           script [ Defer true
                    Src "https://use.fontawesome.com/releases/v5.5.0/js/all.js"
                    Integrity "sha384-GqVMZRt5Gn7tB9D9q7ONtcp4gtHIUEW/yG7h98J7IpE3kpi+srfFyyB/04OV6pG0"
@@ -208,10 +202,10 @@ let processHtmlPost (post: Post)  =
     Next =  None
     Previous =None }
 
-FSharp.Formatting.Common.Log.SetupListener
-    Diagnostics.TraceOptions.None
-    Diagnostics.SourceLevels.All
-    (FSharp.Formatting.Common.Log.ConsoleListener())
+//FSharp.Formatting.Common.Log.SetupListener
+//    Diagnostics.TraceOptions.None
+//    Diagnostics.SourceLevels.All
+//    (FSharp.Formatting.Common.Log.ConsoleListener())
 
 open FSharp.Text.RegexProvider
 type RemoveNamespace = Regex< @"Microsoft\.FSharp\.Core\.(?<name>\w+)">
@@ -230,22 +224,22 @@ let processScriptPost (post: Post) =
     //                                 (FSharp.Formatting.Common.Log.ConsoleListener())
     // FSharp.Formatting.Common.Log.SetupSource [|listener|] (FSharp.Formatting.Common.Log.source)
     
+
     let doc = 
       let fsharpCoreDir = "-I:" + __SOURCE_DIRECTORY__ + @"\packages\full\FSharp.Core\lib\netstandard2.0\"
       let fcsDir = "-I:" + __SOURCE_DIRECTORY__ + @"\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\"
       let fcs = "-r:" + __SOURCE_DIRECTORY__ + @"\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\FSharp.Compiler.Service.dll"
-      let systemRuntime = "-r:System.Runtime"
-      let e = FsiEvaluator([|fsharpCoreDir; fcsDir; fcs ;  "-d:BLOG" |])
+      let e = Evaluation.FsiEvaluator([|fsharpCoreDir; fcsDir; fcs ;  "-d:BLOG" |])
       e.EvaluationFailed |> Event.add (fun e -> 
         eprintfn "%s" e.Text
         eprintfn "%O" e.Exception
         eprintfn "%s" e.StdErr)
-      Literate.ParseScriptFile(
+      Literate.ParseAndCheckScriptFile(
                   source , 
-                  compilerOptions = String.concat " " [systemRuntime; fsharpCoreDir; fcsDir; fcs ],
+                  fscoptions = String.concat " " [ fsharpCoreDir; fcsDir; fcs ],
                   fsiEvaluator = e)
     let doc' = Literate.FormatLiterateNodes(doc, OutputKind.Html, "", true, true)
-    let output = Formatting.format doc'.MarkdownDocument true OutputKind.Html
+    let output = Literate.ToHtml doc' 
     { Content = output
       Tooltips = RemoveNamespace().TypedReplace(doc'.FormattedTips, fun m -> m.name.Value)
       Link =  { Text = post.Title; Href = post.FullUrl }
@@ -264,7 +258,8 @@ let processMarkdownPost (post: Post) =
 
   let output = 
     IO.File.ReadAllText source
-    |> FSharp.Markdown.Markdown.TransformHtml
+    |> Literate.ParseMarkdownString
+    |> Literate.ToHtml
   { Content = output
     Tooltips = ""
     Link =  { Text = post.Title; Href = post.FullUrl }
