@@ -19,20 +19,8 @@ open Fable.React
 open Fable.React.Props
 open Posts
 open Categories
-// open Fake.IO
-// open Fake.Core
 open System
 open Printf
-
-// HACK: force usage of Fsharp.Compiler.Services
-// or the indirect reference from FSharp.Literate will fail to loadlet dummy (pos: FSharp.Compiler.Range.pos) =
-let dummy (pos: FSharp.Compiler.Range.pos) =
-    pos.Column
-FSharp.Compiler.Range.mkPos 1 1 |> dummy
-
-// HACK: Force usage of Fable.Core
-// or the indirect reference from Fable.React will fail to load
-typeof<Fable.Core.EraseAttribute>
 
 
 let (</>) x y =IO.Path.Combine(x,y)
@@ -153,8 +141,8 @@ let template template =
           metaf "twitter:creator" "@thinkbeforecoding"
 
           link [Rel "author"; Href "https://twitter.com/thinkbeforecoding" ]
-          link [Rel "icon"; Href "content/favicon.ico" ]
-          link [Rel "shortcut icon"; Href "content/favicon.ico" ]
+          link [Rel "icon"; Href "/content/favicon.ico" ]
+          link [Rel "shortcut icon"; Href "/content/favicon.ico" ]
           (match template.title,template.canonicalUrl with
            | Home, _ -> link [ Rel "canonical"; Href "https://thinkbeforecoding.com"  ]
            | _,Some url -> link [ Rel "canonical"; Href (string url)  ]
@@ -325,7 +313,7 @@ let templatePost categories recentPosts titler post =
           author ]
       raw post.Content
       if not (String.IsNullOrEmpty post.Tooltips) then
-        script' "content/tips.js"
+        script' "/content/tips.js"
 
       raw post.Tooltips
     ]

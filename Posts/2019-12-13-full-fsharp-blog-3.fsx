@@ -218,48 +218,66 @@ module LetsEncrypt =
     type [<Struct>] ResourceGroup = ResourceGroup of string
     type [<Struct>] Host = Host of string
 
-    let RenewCert (log: ILogger)  (ResourceGroup resourceGroup) (WebApp webApp) (Host host) =
+    let env name = Environment.GetEnvironmentVariable(name)
+    let basic username password = 
+        sprintf "%s:%s" username password
+        |> Encoding.UTF8.GetBytes
+        |> Convert.ToBase64String
+
+    let RenewCert (log: ILogger) (ResourceGroup resourceGroup) (WebApp webApp) (Host host) =
         task {
             try
-                let tenant = Environment.GetEnvironmentVariable("Tenant")
-                let subscriptionId = Environment.GetEnvironmentVariable("Subscription.Id")
+                let tenant = env "Tenant"
+                let subscriptionId = env "Subscription.Id"
 
-                let publishUrl = Environment.GetEnvironmentVariable("Publish.Url")
-                let username = Environment.GetEnvironmentVariable("Publish.UserName")
-                let password = Environment.GetEnvironmentVariable("Publish.Password")
+                let publishUrl = env "Publish.Url"
+                let username = env "Publish.UserName"
+                let password = env "Publish.Password"
 
-                let clientId = Environment.GetEnvironmentVariable("Client.Id")
-                let clientSecret = Environment.GetEnvironmentVariable("Client.Secret")
+                let clientId = env "Client.Id"
+                let clientSecret = env "Client.Secret"
 
-                let registrationEmail = Environment.GetEnvironmentVariable("Registration.Email")
-                let certificatePassword = Environment.GetEnvironmentVariable("Cert.Password")
+                let registrationEmail = env "Registration.Email"
+                let certificatePassword = env "Cert.Password"
                 use client = new HttpClient();
-                client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(sprintf "%s:%s" username password)))
+                client.DefaultRequestHeaders.TryAddWithoutValidation(
+                        "Authorization", 
+                        "Basic " + basic username password )
                 |> ignore
             
                 
                 let body = {
                     AzureEnvironment = 
-                        {   //AzureWebSitesDefaultDomainName = "string", //Defaults to azurewebsites.net
-                            //ServicePlanResourceGroupName = "string", //Defaults to ResourceGroupName
-                            //SiteSlotName = "string", //Not required if site slots isn't used
+                        {   //AzureWebSitesDefaultDomainName = "string", 
+                            //    Defaults to azurewebsites.net
+                            //ServicePlanResourceGroupName = "string",
+                            //    Defaults to ResourceGroupName
+                            //SiteSlotName = "string",
+                            //    Not required if site slots isn't used
                             WebAppName = webApp
-                            //AuthenticationEndpoint = "string", //Defaults to https://login.windows.net/
+                            //AuthenticationEndpoint = "string",
+                            //    Defaults to https://login.windows.net/
                             ClientId = clientId
                             ClientSecret = clientSecret
-                            //ManagementEndpoint = "string", //Defaults to https://management.azure.com
-                            ResourceGroupName = resourceGroup //Resource group of the web app 
+                            //ManagementEndpoint = "string", 
+                            //    Defaults to https://management.azure.com
+                            //Resource group of the web app 
+                            ResourceGroupName = resourceGroup 
                             SubscriptionId = subscriptionId
                             Tenant = tenant //Azure AD tenant ID 
-                            //TokenAudience = "string" //Defaults to https://management.core.windows.net/
+                            //TokenAudience = "string"
+                            //    Defaults to https://management.core.windows.net/
                         }
                     AcmeConfig = 
                         {   RegistrationEmail = registrationEmail
                             Host = host
                             AlternateNames =  [||]
                             RSAKeyLength = 2048
-                            PFXPassword = certificatePassword //Replace with your own 
-                            UseProduction = true // Replace with true if you want production certificate from Lets Encrypt 
+                            //Replace with your own
+                            PFXPassword = certificatePassword  
+                            UseProduction = true 
+                            // Replace with true if you want
+                            // production certificate from Lets Encrypt 
                         }
                     CertificateSettings = 
                         {   UseIPBasedSSL = false }
@@ -268,9 +286,11 @@ module LetsEncrypt =
                 }
 
                 log.LogInformation("Post request")
+                let uri = sprintf "https://%s/letsencrypt/api/certificates/challengeprovider/http/kudu/certificateinstall/azurewebapp?api-version=2017-09-01" publishUrl
                 let! res = client.PostAsync(
-                                sprintf "https://%s/letsencrypt/api/certificates/challengeprovider/http/kudu/certificateinstall/azurewebapp?api-version=2017-09-01" publishUrl, 
-                                new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json")) 
+                                uri, 
+                                new StringContent(JsonConvert.SerializeObject(body), 
+                                                  Encoding.UTF8, "application/json")) 
 
                 let! value = res.Content.ReadAsStringAsync()
                 let response  = value
@@ -329,9 +349,18 @@ module Renew =
     [<FunctionName("Renew")>]
     let Run([<TimerTrigger("0 3 2 24 * *") >] myTimer: TimerInfo,  log : ILogger) =
         task {
-            log.LogInformation(sprintf "Timer trigger function to renew myblog.com executed at: %O" DateTime.Now)
-            let! result = LetsEncrypt.RenewCert log (ResourceGroup "blog-resourcegroup") (WebApp "blog-func") (Host "myblog.com")
-            log.LogInformation ("Cert for myblog.com renewed")
+            sprintf "Timer function to renew myblog.com executed at: %O" DateTime.Now
+            |> log.LogInformation
+
+            let! result = 
+                LetsEncrypt.RenewCert 
+                            log 
+                            (ResourceGroup "blog-resourcegroup") 
+                            (WebApp "blog-func") 
+                            (Host "myblog.com")
+
+            log.LogInformation "Cert for myblog.com renewed"
+
             match result with
             | Ok success -> log.LogInformation(string success)
             | Error err -> log.LogError(string err)
