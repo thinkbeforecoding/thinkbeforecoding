@@ -1,14 +1,5 @@
 module Feed
 open System
-// #load "./.fake/blog.fsx/intellisense.fsx" 
-// #if !FAKE
-//   #r "netstandard"
-// #endif
-
-//#r "packages/FSharp.Data/lib/netstandard2.0/FSharp.Data.dll"
-#load ".paket/load/netcoreapp3.1/full/FSharp.Data.fsx"
-#r "System.Xml.Linq"
-open System
 open FSharp.Data
 open System.Security.Cryptography
 
@@ -71,7 +62,7 @@ let entry title link date content =
         title,
         Rss.Link2(link, "alternate", "text/html", title),
         md5,
-        DateTimeOffset.op_Implicit date,
+        date,
         Rss.Author2("Jérémie Chassaing"),
         [||],
         Rss.Content("html", content)

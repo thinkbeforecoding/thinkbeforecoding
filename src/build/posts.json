@@ -1,0 +1,41 @@
+{
+    "$schema": "./posts.schema.json",
+    "category-titles": {
+      "DDD": "Domain Driven Design",
+      ".net": ".Net Framework",
+      "EventSourcing": "Event Sourcing",
+      "AspNet": "Asp.net"
+    },
+    "category-names": {
+      "DDD": "Domain-Driven-Design",
+      ".net": "Net-Framework",
+      "AspNet": "Aspnet",
+      "F#": "FSharp",
+      "EventSourcing": "Event-Sourcing"
+    },
+    "posts": [
+      {
+        "title": "Back in the blogosphere !",
+        "category": "Personal",
+        "date": "2008-11-19T21:20:22Z",
+        "url": "Back-in-the-blogosphere"
+      },
+      {
+        "title": "'Save' is not a feature anymore",
+        "category": "Design",
+        "date": "2008-11-19T23:00:38Z",
+        "url": "Save-is-not-a-feature-anymore"
+      },
+      {
+        "title": "Must know English to be a programmer ?",
+        "category": "Personal",
+        "date": "2008-11-21T13:55:36Z",
+        "url": "Must-know-English-to-be-a-programmer"
+      },
+      {
+        "title": "Do you understand what it is all about ?",
+        "date": "2008-11-24T14:37:26Z",
+        "url": "Do-you-understand-what-it-is-all-about"
+      }
+    ]
+}

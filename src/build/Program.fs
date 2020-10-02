@@ -1,29 +1,29 @@
-#I ".paket/load/netcoreapp3.1/full"
-//#load "FSharp.Formatting.fsx"
-#I "packages/full/fsharp.formatting/lib/netstandard2.0"
-#load "FSharp.Compiler.Service.fsx"
-#r "FSharp.Formatting.Common.dll"
-#r "FSharp.Formatting.Markdown.dll"
-#r "FSharp.Formatting.Literate.dll"
-#r "FSharp.Formatting.CodeFormat.dll"
-#r "FSharp.Formatting.ApiDocs.dll"
-#load "Fable.React.fsx"
-#load "FSharp.Text.RegexProvider.fsx"
-#load "posts.fsx"
-#load "feed.fsx"
+﻿// Learn more about F# at http://fsharp.org
+
+// #I ".paket/load/netcoreapp3.1/full"
+// //#load "FSharp.Formatting.fsx"
+// #I "packages/full/fsharp.formatting/lib/netstandard2.0"
+// #load "FSharp.Compiler.Service.fsx"
+// #r "FSharp.Formatting.Common.dll"
+// #r "FSharp.Formatting.Markdown.dll"
+// #r "FSharp.Formatting.Literate.dll"
+// #r "FSharp.Formatting.CodeFormat.dll"
+// #r "FSharp.Formatting.ApiDocs.dll"
+// #load "Newtonsoft.Json.fsx"
+// #load "Fable.React.fsx"
+// #load "FSharp.Data.fsx"
+// #load "FSharp.Text.RegexProvider.fsx"
+// #load "feed.fsx"
 
 // #nowarn "86"
 open FSharp.Formatting.Literate
-
+open FSharp.Data
 open Fable.React
 open Fable.React.Props
-open Posts
-open Categories
 open System
 open Printf
+open Blog
 
-
-let (</>) x y =IO.Path.Combine(x,y)
 
 let (./) (x: string) (y: string) =
  match x.EndsWith("/"), y.StartsWith("/") with
@@ -195,22 +195,23 @@ let template template =
       ]
 
 type FormattedPost = {
+  MD5: string
   Link: Link
   Content: string
   Tooltips: string
-  Date: DateTime
+  Date: DateTimeOffset
   FileName: string
   Next:  Link option
   Previous: Link option 
 }
 
 
-let processHtmlPost (post: Post)  =
-  let source = Path.posts </> post.Filename + ".html"
+let processHtmlPost (post: Post) source md5 =
   let dest = post.Filename + ".html"
   let html = IO.File.ReadAllText source
   let document = html.Replace("http://www.thinkbeforecoding.com/","/")
-  { Content = document
+  { MD5 = md5
+    Content = document
     Tooltips = ""
     Link = { Text = post.Title; Href = post.FullUrl }
     Date = post.Date
@@ -222,9 +223,8 @@ let processHtmlPost (post: Post)  =
 open FSharp.Text.RegexProvider
 type RemoveNamespace = Regex< @"Microsoft\.FSharp\.Core\.(?<name>\w+)">
 
-let processScriptPost (post: Post) =
+let processScriptPost (post: Post) source md5 =
   try
-    let source = Path.posts </> post.Filename + ".fsx"
     let dest = post.Filename + ".html"
 
 
@@ -243,7 +243,8 @@ let processScriptPost (post: Post) =
                   fsiEvaluator = e)
     let doc' = Literate.FormatLiterateNodes(doc, OutputKind.Html, "", true, true)
     let output = Literate.ToHtml doc' 
-    { Content = output
+    { MD5 = md5 
+      Content = output
       Tooltips = RemoveNamespace().TypedReplace(doc'.FormattedTips, fun m -> m.name.Value)
       Link =  { Text = post.Title; Href = post.FullUrl }
       Date = post.Date 
@@ -255,15 +256,18 @@ let processScriptPost (post: Post) =
        eprintfn "%O" ex
        reraise()
 
-let processMarkdownPost (post: Post) =
-  let source = Path.posts </> post.Filename + ".md"
+
+    
+
+let processMarkdownPost (post: Post) source md5 =
   let dest = post.Filename + ".html"
 
   let output = 
     IO.File.ReadAllText source
     |> Literate.ParseMarkdownString
     |> Literate.ToHtml
-  { Content = output
+  { MD5 = md5
+    Content = output
     Tooltips = ""
     Link =  { Text = post.Title; Href = post.FullUrl }
     Date = post.Date 
@@ -271,15 +275,54 @@ let processMarkdownPost (post: Post) =
     Next = None
     Previous = None }
 
-let processPost post =
-  printfn "[Post] %s" post.Title
+type PostType =
+    | Script
+    | MD 
+    | Html 
 
-  if File.exists (Path.posts </> post.Filename + ".fsx") then
-    processScriptPost post
-  elif File.exists (Path.posts </> post.Filename + ".md") then
-    processMarkdownPost post
-  else
-    processHtmlPost post
+let findPostType (post: Post) =
+    let fsxPath = Path.posts </> post.Filename + ".fsx"
+    let mdPath = Path.posts </> post.Filename + ".md"
+    if File.exists fsxPath then
+      fsxPath, Script
+    elif File.exists mdPath then
+      mdPath, MD
+    else
+      Path.posts </> post.Filename + ".html", Html
+
+let tryLoadFormattedPost filename =
+    let fullPath = Path.tmp </> filename + ".post"
+    if File.exists fullPath then
+        IO.File.ReadAllText fullPath
+        |> Newtonsoft.Json.JsonConvert.DeserializeObject<FormattedPost>
+        |> Some
+    else
+        None
+
+let saveFormattedPost filename (post: FormattedPost) =
+    let fullPath = Path.tmp </> filename + ".post"
+    post
+    |> Newtonsoft.Json.JsonConvert.SerializeObject
+    |> fun s -> IO.File.WriteAllText(fullPath, s)
+    post
+
+
+
+let processPost post =
+    let source, postType =  findPostType post
+    let md5 = md5 source
+    let existingPost = tryLoadFormattedPost post.Filename
+    match existingPost with
+    | Some p when p.MD5 = md5 -> 
+        logfn "[POST] %s" post.Title
+        p
+    | _ ->
+        tracefn "[POST] %s" post.Title
+        match postType with
+        | Script -> processScriptPost post source md5
+        | MD -> processMarkdownPost post source md5
+        | Html -> processHtmlPost post source md5
+        |> saveFormattedPost post.Filename
 
 open Entities
 
@@ -291,7 +334,7 @@ let copyright =
 let left = fragment [] [str "<"; nbsp]
 let pipe = str "|"
 let right = fragment [] [ nbsp; str ">"]
-let fmtDate (d:DateTime) = str (d.ToString("yyyy-MM-ddTHH:mm:ss"))
+let fmtDate (d:DateTimeOffset) = str (d.ToString("yyyy-MM-ddTHH:mm:ss"))
 let author = str " / jeremie chassaing"
 let templatePost categories recentPosts titler post =
   let link l = a [Href l.Href] [ str l.Text]
@@ -372,7 +415,7 @@ let listPage outputDir categoriesHtml recentPosts name title (posts: Post list) 
         ul [Class "category"]
           [ for p in catPosts ->
                li [] [ 
-                    str (p.Date.ToString("yyyy-MM-ddTHH:mm:ss"))
+                    str (p.Date.ToLocalTime().ToString("yyyy-MM-ddTHH:mm:ss"))
                     str " |> "
                     a [Href ( p.FullUrl) ] [str p.Title] ] ]
       ]
@@ -399,13 +442,13 @@ module Categories =
         for c in categories ->
           li [] [
             span [Class "o"] [str "| "]
-            a [Href <| "/category/" + Categories.name c ] [str (Categories.title c)]
+            a [Href <| "/category/" + Category.name c ] [str (Category.title c)]
           ] ] ]
  
   let processCategory outputDir recentPosts cat =
     posts
-    |> List.filter (fun p -> p.Category = cat)
-    |> listPage outputDir categoriesHtml recentPosts (Categories.name cat) (Categories.title cat) 
+    |> List.filter (fun p -> p.Category = Some cat)
+    |> listPage outputDir categoriesHtml recentPosts (Category.name cat) (Category.title cat) 
 
 
 let prevnext f l =
@@ -419,54 +462,61 @@ let prevnext f l =
   | [ c ] -> [f None c None]
   | c :: n :: tail -> loop c  [f None c (Some n)] (n :: tail) 
 
-let formattedPosts =
-  posts
-  |> List.sortByDescending (fun p -> p.Date) 
-  |> List.map processPost
-  |> prevnext (fun p c n -> { c with Next = n |> Option.map (fun n -> n.Link); Previous = p |> Option.map (fun p -> p.Link)})
-  
-
-try
-  Directory.delete Path.out
-with
-| ex -> printfn "Could not delete out dir"
-Directory.ensure Path.outPosts
-formattedPosts
-|> List.iter (fun p ->
-  p
-  |> templatePost Categories.categoriesHtml recentPosts Post
-  |> savePost Path.outPosts p)
 
 
-Directory.ensure Path.feed
-formattedPosts
-|> List.truncate 5
-|> List.map (fun p -> Feed.entry p.Link.Text ("https://thinkbeforecoding.com/" ./ p.Link.Href) p.Date p.Content)
-|> Feed.feed
-|> string
-|> fun f -> IO.File.WriteAllText(Path.atom, f)
 
+[<EntryPoint>]
+let main argv =
+    
+    Directory.ensure Path.tmp
+    let formattedPosts =
+      posts
+      |> List.sortByDescending (fun p -> p.Date) 
+      |> List.map processPost
+      |> prevnext (fun p c n -> { c with Next = n |> Option.map (fun n -> n.Link); Previous = p |> Option.map (fun p -> p.Link)})
+      
 
-Directory.delete Path.categories
-Directory.ensure Path.categories
-Categories.categories
-|> List.iter (Categories.processCategory Path.categories recentPosts)
-
-listPage Path.categories Categories.categoriesHtml recentPosts "all" "All posts so far" posts
-
-
-printfn "[Media] copy dir"
-Directory.copy Path.media Path.outmedia
-printfn "[Content] copy dir"
-Directory.ensure Path.outcontent
-Directory.copy Path.content Path.outcontent
-
-formattedPosts
-|> List.tryHead
-|> Option.iter (fun p -> 
+    try
+      Directory.delete Path.out
+    with
+    | ex -> printfn "Could not delete out dir"
+    Directory.ensure Path.outPosts
+    formattedPosts
+    |> List.iter (fun p ->
       p
-      |> templatePost Categories.categoriesHtml recentPosts (fun _ -> Home)
-      |> Html.save (Path.out </> "index.html") )
+      |> templatePost Categories.categoriesHtml recentPosts Post
+      |> savePost Path.outPosts p)
 
 
+    Directory.ensure Path.feed
+    formattedPosts
+    |> List.truncate 5
+    |> List.map (fun p -> Feed.entry p.Link.Text ("https://thinkbeforecoding.com/" ./ p.Link.Href) p.Date p.Content)
+    |> Feed.feed
+    |> string
+    |> fun f -> IO.File.WriteAllText(Path.atom, f)
 
+
+    Directory.delete Path.categories
+    Directory.ensure Path.categories
+
+    categories
+    |> List.iter (Categories.processCategory Path.categories recentPosts)
+
+    listPage Path.categories Categories.categoriesHtml recentPosts "all" "All posts so far" posts
+
+
+    printfn "[Media] copy dir"
+    Directory.copy Path.media Path.outmedia
+    printfn "[Content] copy dir"
+    Directory.ensure Path.outcontent
+    Directory.copy Path.content Path.outcontent
+
+    formattedPosts
+    |> List.tryHead
+    |> Option.iter (fun p -> 
+          p
+          |> templatePost Categories.categoriesHtml recentPosts (fun _ -> Home)
+          |> Html.save (Path.out </> "index.html") )
+
+    0 // return an integer exit code

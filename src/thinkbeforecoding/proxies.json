@@ -54,6 +54,16 @@
                 "response.headers.Location": "/category/FSharp"
             }
         },
+        "category-ddd": {
+            "matchCondition": {
+                "route": "/category/Domain-Driven-Desing"
+            },
+            "responseOverrides": {
+                "response.statusCode": "301",
+                "response.statusReason": "Redirect",
+                "response.headers.Location": "/category/Domain-Driven-Design"
+            }
+        },
         "feed": {
             "matchCondition": {
                 "route": "/feed/atom",

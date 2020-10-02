@@ -1,0 +1,546 @@
+{
+  "$schema": "./src/build/posts.schema.json",
+  "category-titles": {
+    "DDD": "Domain Driven Design",
+    ".net": ".Net Framework",
+    "EventSourcing": "Event Sourcing",
+    "AspNet": "Asp.net"
+  },
+  "category-names": {
+    "DDD": "Domain-Driven-Design",
+    ".net": "Net-Framework",
+    "AspNet": "Aspnet",
+    "F#": "FSharp",
+    "EventSourcing": "Event-Sourcing"
+  },
+  "posts": [
+    {
+      "title": "Back in the blogosphere !",
+      "category": "Personal",
+      "date": "2008-11-19T21:20:22Z",
+      "url": "Back-in-the-blogosphere"
+    },
+    {
+      "title": "'Save' is not a feature anymore",
+      "category": "Design",
+      "date": "2008-11-19T23:00:38Z",
+      "url": "Save-is-not-a-feature-anymore"
+    },
+    {
+      "title": "Must know English to be a programmer ?",
+      "category": "Personal",
+      "date": "2008-11-21T13:55:36Z",
+      "url": "Must-know-English-to-be-a-programmer"
+    },
+    {
+      "title": "Do you understand what it is all about ?",
+      "category": "Design",
+      "date": "2008-11-24T14:37:26Z",
+      "url": "Do-you-understand-what-it-is-all-about"
+    },
+    {
+      "title": "Coincidences just happen...",
+      "category": "Design",
+      "date": "2008-11-24T14:51:47Z",
+      "url": "Coincidences-just-happen"
+    },
+    {
+      "title": "CSS is too Tricky",
+      "category": "Design",
+      "date": "2008-11-25T15:47:49Z",
+      "url": "CSS-is-too-Tricky"
+    },
+    {
+      "title": "Ubiquity of language... lost in translation ?",
+      "category": "DDD",
+      "date": "2008-12-01T09:49:41Z",
+      "url": "Ubiquity-of-language-lost-in-translation"
+    },
+    {
+      "title": "Problem with the Select N+1 problem",
+      "category": "Design",
+      "date": "2008-12-01T15:17:04Z",
+      "url": "Problem-with-the-Select-N1-problem"
+    },
+    {
+      "title": "Domain Driven Design",
+      "category": "DDD",
+      "date": "2008-12-02T13:41:52Z",
+      "url": "Domain-Driven-Design"
+    },
+    {
+      "title": "Wow - Book review - Domain Driven Design!",
+      "category": "DDD",
+      "date": "2008-12-10T11:46:02Z",
+      "url": "Wow-Book-review-Domain-Driven-Design"
+    },
+    {
+      "title": "Coding and writing - The form",
+      "category": "Design",
+      "date": "2008-12-19T15:26:43Z",
+      "url": "Coding-and-writing-The-form"
+    },
+    {
+      "title": "DDD: Specifications",
+      "category": "DDD",
+      "date": "2008-12-22T15:42:41Z",
+      "url": "DDD:-Specifications"
+    },
+    {
+      "title": "Data Structures and Algorithms",
+      "category": ".net",
+      "date": "2008-12-24T10:05:06Z",
+      "url": "Data-Structures-and-Algorithms"
+    },
+    {
+      "title": "Asp.Net authentication cookie oddities...",
+      "category": "AspNet",
+      "date": "2008-12-29T17:24:12Z",
+      "url": "AspNet-authentication-cookie-oddities"
+    },
+    {
+      "title": "Asp.net MVC binding security issue",
+      "category": "AspNet",
+      "date": "2009-01-08T16:58:04Z",
+      "url": "Aspnet-MVC-binding-security-issue"
+    },
+    {
+      "title": "Repositories and IQueryable, the paging case.",
+      "category": "DDD",
+      "date": "2009-01-19T10:50:56Z",
+      "url": "Repositories-and-IQueryable-the-paging-case"
+    },
+    {
+      "title": "Mixing IEnumerable and IQueryable",
+      "category": "DDD",
+      "date": "2009-01-21T16:12:22Z",
+      "url": "Mixing-IEnumerable-and-IQueryable"
+    },
+    {
+      "title": "Lazy load and persistence ignorance",
+      "category": "DDD",
+      "date": "2009-02-07T13:44:51Z",
+      "url": "Lazy-load-and-persistence-ignorance"
+    },
+    {
+      "title": "Lazy loads and persistence ignorance (Part 2)",
+      "category": "DDD",
+      "date": "2009-02-08T12:17:31Z",
+      "url": "Lazy-loads-and-persistence-ignorance-Part-2"
+    },
+    {
+      "title": "Implement Linq to Objects in C# 2.0",
+      "category": "Linq",
+      "date": "2009-02-17T14:55:15Z",
+      "url": "Implement-Linq-to-Objects-in-CSharp-2"
+    },
+    {
+      "title": "Maintenance",
+      "date": "2009-02-22T22:31:05Z",
+      "url": "Maintenance"
+    },
+    {
+      "title": "Back on track",
+      "date": "2009-02-23T08:55:26Z",
+      "url": "Back-on-track"
+    },
+    {
+      "title": "Domain Driven Design Step By Step",
+      "category": "DDD",
+      "date": "2009-02-24T14:57:58Z",
+      "url": "Domain-Driven-Design-Step-By-Step"
+    },
+    {
+      "title": "How *not* to inject services in entities",
+      "category": "DDD",
+      "date": "2009-03-04T15:01:53Z",
+      "url": "How-not-to-inject-services-in-entities"
+    },
+    {
+      "title": "QCon London 2009",
+      "category": "DDD",
+      "date": "2009-03-12T15:21:23Z",
+      "url": "QCon-London-2009"
+    },
+    {
+      "title": "Back on Repositories and Paging. Introducing reporting.",
+      "category": "DDD",
+      "date": "2009-04-08T12:10:43Z",
+      "url": "Back-on-Repositories-and-Paging-Introducing-reporting"
+    },
+    {
+      "title": "TDD becomes Design By Example",
+      "category": "Agile",
+      "date": "2009-04-18T08:22:08Z",
+      "url": "TDD-becomes-Design-By-Example"
+    },
+    {
+      "title": "Geek balance... or not !",
+      "category": "Personal",
+      "date": "2009-04-28T21:04:53Z",
+      "url": "Geek-balancehellip-or-not"
+    },
+    {
+      "title": "Strategic Design",
+      "category": "DDD",
+      "date": "2009-04-28T21:34:37Z",
+      "url": "Strategic-Design"
+    },
+    {
+      "title": "Decimal, what are those trailing zeros ?",
+      "category": ".net",
+      "date": "2009-05-07T10:24:17Z",
+      "url": "Decimal-what-are-those-trailing-zeros"
+    },
+    {
+      "title": "IOC Container, Go Hide !",
+      "category": "Design",
+      "date": "2009-05-15T10:10:28Z",
+      "url": "IOC-container-go-hide"
+    },
+    {
+      "title": "IOC Container, Go Hide (part 2)",
+      "category": "Design",
+      "date": "2009-05-19T13:29:11Z",
+      "url": "IOC-Container-Go-Hide-part-2"
+    },
+    {
+      "title": "Met Eric Evans at ParisJug",
+      "category": "DDD",
+      "date": "2009-06-16T21:58:28Z",
+      "url": "Met-Eric-Evans-at-ParisJug"
+    },
+    {
+      "title": "When DDD should be considered ?",
+      "category": "DDD",
+      "date": "2009-06-16T22:11:23Z",
+      "url": "When-DDD-should-be-considered"
+    },
+    {
+      "title": "Which model is best ? Thats not the question.",
+      "category": "DDD",
+      "date": "2009-06-17T13:56:52Z",
+      "url": "Which-model-is-best-Thats-not-the-question"
+    },
+    {
+      "title": "Strategic Design at DDD Exchange",
+      "category": "DDD",
+      "date": "2009-06-19T12:05:27Z",
+      "url": "Strategic-Design-at-DDD-Exchange"
+    },
+    {
+      "title": "Where are my Entities and my Repositories ?",
+      "category": "DDD",
+      "date": "2009-06-23T12:20:11Z",
+      "url": "Where-are-my-Entities-and-my-Repositories"
+    },
+    {
+      "title": "Distributed Domain Driven Design and Aggregates",
+      "category": "DDD",
+      "date": "2009-06-23T14:59:07Z",
+      "url": "Distributed-Domain-Driven-Design-and-Aggregates"
+    },
+    {
+      "title": "DDD and Code ReUse",
+      "category": "DDD",
+      "date": "2009-07-24T14:34:22Z",
+      "url": "DDD-and-Code-ReUse"
+    },
+    {
+      "title": "C# Static interfaces",
+      "category": ".net",
+      "date": "2009-10-21T12:46:26Z",
+      "url": "CSharp-Static-interfaces"
+    },
+    {
+      "title": "C# Static interfaces - Take 2",
+      "category": ".net",
+      "date": "2009-10-22T13:11:07Z",
+      "url": "CSharp-Static-interfaces-Take-2"
+    },
+    {
+      "title": "Uniqueness validation in CQRS Architecture",
+      "category": "DDD",
+      "date": "2009-10-28T14:05:36Z",
+      "url": "Uniqueness-validation-in-CQRS-Architecture"
+    },
+    {
+      "title": "Event Sourcing and CQRS, Now !",
+      "category": "DDD",
+      "date": "2009-10-30T14:53:50Z",
+      "url": "Event-Sourcing-and-CQRS-Now"
+    },
+    {
+      "title": "Event Sourcing and CQRS, Let's use it.",
+      "category": "DDD",
+      "date": "2009-11-02T14:45:16Z",
+      "url": "Event-Sourcing-and-CQRS-Lets-use-it"
+    },
+    {
+      "title": "Event Sourcing and CQRS, Dispatch options.",
+      "category": "DDD",
+      "date": "2009-11-03T14:41:10Z",
+      "url": "Event-Sourcing-and-CQRS-Dispatch-options"
+    },
+    {
+      "title": "Event Sourcing and CQRS, Serialization",
+      "category": "DDD",
+      "date": "2009-11-05T13:00:38Z",
+      "url": "Event-Sourcing-and-CQRS-Serialization"
+    },
+    {
+      "title": "Udi Dahan talks on CQRS at Zenika",
+      "category": "DDD",
+      "date": "2009-11-16T10:08:51Z",
+      "url": "Udi-Dahan-talks-on-CQRS-at-Zenika"
+    },
+    {
+      "title": "Udi Dahan talks on CQRS in Paris",
+      "category": "DDD",
+      "date": "2009-11-17T15:37:23Z",
+      "url": "Udi-Dahan-talks-on-CQRS-in-Paris"
+    },
+    {
+      "title": "Udi Dahan's post on CQRS",
+      "category": "DDD",
+      "date": "2009-12-10T09:15:48Z",
+      "url": "Udi-Dahan-post-on-CQRS"
+    },
+    {
+      "title": "Business Errors are Just Ordinary Events",
+      "category": "DDD",
+      "date": "2009-12-10T13:31:24Z",
+      "url": "Business-Errors-are-Just-Ordinary-Events"
+    },
+    {
+      "title": "Event Sourcing and CQRS, Snapshots !",
+      "category": "DDD",
+      "date": "2010-02-25T09:38:23Z",
+      "url": "Event-Sourcing-and-CQRS-Snapshots"
+    },
+    {
+      "title": "Event Sourcing and CQRS, Bounded Contexts",
+      "category": "DDD",
+      "date": "2010-04-17T13:21:42Z",
+      "url": "Event-Sourcing-and-CQRS-Bounded-Contexts"
+    },
+    {
+      "title": "Event Sourcing and CQRS, Events Deserialization",
+      "category": "DDD",
+      "date": "2010-04-25T20:51:14Z",
+      "url": "Event-Sourcing-and-CQRS-Events-Deserialization"
+    },
+    {
+      "title": "DDD Exchange 2010",
+      "category": "DDD",
+      "date": "2010-06-14T08:58:29Z",
+      "url": "DDD-Exchange-2010"
+    },
+    {
+      "title": "Duck : Delete Update Create Killer",
+      "date": "2010-10-18T23:49:18Z",
+      "category": "Duck",
+      "url": "Duck-Delete-Update-Create-Killer"
+    },
+    {
+      "title": "Code code code",
+      "category": ".net",
+      "date": "2011-01-20T11:07:57Z",
+      "url": "Code-code-code"
+    },
+    {
+      "title": "SmtpListener",
+      "category": ".net",
+      "date": "2011-01-21T13:45:00Z",
+      "url": "SmtpListener"
+    },
+    {
+      "title": "Switching keyboard language in WP7",
+      "date": "2011-01-24T10:36:24Z",
+      "category": "WP7",
+      "url": "Switching-keyboard-language-in-WP7"
+    },
+    {
+      "title": "Time",
+      "category": "DDD",
+      "date": "2011-06-08T22:54:17Z",
+      "url": "Time"
+    },
+    {
+      "title": "DDDx 2011",
+      "category": "DDD",
+      "date": "2011-06-14T08:30:46Z",
+      "url": "DDDx-2011"
+    },
+    {
+      "title": "Event Sourcing and CQRS, Dispatch options 2",
+      "category": "DDD",
+      "date": "2011-06-21T08:38:57Z",
+      "url": "Event-Sourcing-and-CQRS,-Dispatch-options-2"
+    },
+    {
+      "title": "I love SQL Server and cultures... NOT !",
+      "category": ".net",
+      "date": "2011-12-02T10:14:15Z",
+      "url": "I-love-SQL-Server-and-cultures-NOT"
+    },
+    {
+      "title": "NuRep your local NuGet+symbols+source repository",
+      "date": "2012-02-26T10:25:03Z",
+      "category": "NuRep",
+      "url": "NuRep-your-local-NuGetsymbolssource-repository"
+    },
+    {
+      "title": "Caching done right",
+      "category": "CQRS",
+      "date": "2012-03-05T12:49:38Z",
+      "url": "Caching-done-right"
+    },
+    {
+      "title": "Make it simpler : get rid of Mocking Fx",
+      "category": "Design",
+      "date": "2012-06-14T12:32:45Z",
+      "url": "Make-it-simpler-:-get-rid-of-Mocking-Fx"
+    },
+    {
+      "title": "SimpleCQRS the F# version",
+      "category": "CQRS",
+      "date": "2012-06-21T21:57:27Z",
+      "url": "SimpleCQRS-the-F-version"
+    },
+    {
+      "title": "Entities and Repository injection - follow up",
+      "category": "DDD",
+      "date": "2013-03-03T21:27:37Z",
+      "url": "Entities-and-Repository-injection-ndash;-follow-up"
+    },
+    {
+      "title": "Time is Money! DevoxxFr",
+      "date": "2013-04-03T08:24:43Z",
+      "url": "Time-is-Money!-DevoxxFr"
+    },
+    {
+      "title": "C# Static interfaces - Take 3",
+      "category": "F#",
+      "date": "2013-04-03T22:09:52Z",
+      "url": "C-Static-interfaces-Take-3"
+    },
+    {
+      "title": "C# Static interfaces - Take 3 - redirect",
+      "category": "F#",
+      "date": "2013-04-04T12:37:56Z",
+      "url": "C-Static-interfaces-ndash;-Take-3"
+    },
+    {
+      "title": "Event Sourcing vs Command Sourcing",
+      "category": "EventSourcing",
+      "date": "2013-07-27T23:00:11Z",
+      "url": "Event-Sourcing-vs-Command-Sourcing"
+    },
+    {
+      "title": "Command Events and Context",
+      "category": "DDD",
+      "date": "2013-07-28T22:12:13Z",
+      "url": "Command-Events-and-Context"
+    },
+    {
+      "title": "Generalized Conway's law",
+      "category": "Design",
+      "date": "2013-12-17T09:09:51Z",
+      "url": "Generalized-Conway-s-law"
+    },
+    {
+      "title": "Event Sourcing. Draw it",
+      "category": "EventSourcing",
+      "date": "2014-01-04T21:58:05Z",
+      "url": "Event-Sourcing.-Draw-it"
+    },
+    {
+      "title": "Monoidal Event Sourcing",
+      "category": "EventSourcing",
+      "date": "2014-04-11T02:34:48Z",
+      "url": "Monoidal-Event-Sourcing"
+    },
+    {
+      "title": "Monoidal Event Sourcing Examples",
+      "category": "EventSourcing",
+      "date": "2014-04-27T00:16:49Z",
+      "url": "Monoidal-Event-Sourcing-Examples"
+    },
+    {
+      "title": "Speaking computers for more fun !",
+      "category": "F#",
+      "date": "2014-12-23T10:17:32Z",
+      "url": "Speaking-computers-for-more-fun-!"
+    },
+    {
+      "title": "Ukulele Fun for XMas !",
+      "category": "F#",
+      "date": "2015-12-17T09:44:43Z",
+      "url": "Ukulele-Fun-for-XMas-!"
+    },
+    {
+      "title": "fck: Fake Construction Kit",
+      "category": "F#",
+      "date": "2016-12-04T09:34:56Z",
+      "url": "fck:-Fake-Construction-Kit"
+    },
+    {
+      "title": "Back to blogging",
+      "category": "Personal",
+      "date": "2018-01-20T22:04:08Z",
+      "url": "back-to-blogging"
+    },
+    {
+      "title": "Functional Core",
+      "category": "Design",
+      "date": "2018-01-25T21:41:12Z",
+      "url": "functional-core"
+    },
+    {
+      "title": "Functional Core - Part 2",
+      "category": "Design",
+      "date": "2018-02-01T21:09:13Z",
+      "url": "functional-core-2"
+    },
+    {
+      "title": "Information Space-Time",
+      "category": "Design",
+      "date": "2018-03-11T14:33:56Z",
+      "url": "information-space-time"
+    },
+    {
+      "title": "OpenFSharp 2018",
+      "category": "F#",
+      "date": "2018-09-28T21:14:46Z",
+      "url": "openfsharp-2018"
+    },
+    {
+      "title": "10 years",
+      "category": "Personal",
+      "date": "2018-11-19T13:40:02Z",
+      "url": "10-years"
+    },
+    {
+      "title": "Full F# Blog",
+      "category": "F#",
+      "date": "2018-12-07T08:04:00Z",
+      "url": "full-fsharp-blog"
+    },
+    {
+      "title": "Full F# Blog - Part 2",
+      "category": "F#",
+      "date": "2018-12-09T15:30:06Z",
+      "url": "full-fsharp-blog-2"
+    },
+    {
+      "title": "Full F# Blog - Part 3",
+      "category": "F#",
+      "date": "2019-12-13T17:50:54Z",
+      "url": "full-fsharp-blog-3"
+    }
+
+  ]
+
+
+}

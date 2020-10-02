@@ -19,7 +19,6 @@ nuget FSharp.Text.RegexProvider
 
 nuget TaskBuilder.fs
 nuget WindowsAzure.Storage
-nuget TaskBuilder.fs
 nuget Fake.Core
 
 group func

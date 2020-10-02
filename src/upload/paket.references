@@ -1,0 +1,6 @@
+group full
+    TaskBuilder.fs
+    WindowsAzure.Storage
+    Fake.IO.FileSystem
+    Fake.Core
+    FSharp.Data

@@ -168,7 +168,7 @@ especially with *FSharp.Formatting* ! """
 We can also take a snipet of F# and convert it to HTML:
 *)
 open FSharp.Formatting.Literate.Evaluation
-let snipet  =
+let snipet =
     """
     (** # *F# literate* in action *)
     printfn "Hello"

@@ -1,2 +1,2 @@
 @echo off
-dotnet fsi upload.fsx %*
+dotnet run -p src/upload %*

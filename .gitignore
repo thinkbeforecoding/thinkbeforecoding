@@ -5,8 +5,10 @@ paket-files/
 .fake/
 deployment/
 .vscode/
-*/bin/
-*/obj/
+**/bin/
+**/obj/
 .ionide/
 .paket/
-
+tmp/
+output/
+prep/

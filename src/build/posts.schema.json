@@ -1,0 +1,63 @@
+{
+  "title": "Post definition schema",
+  "description": "JSON Schema for API Builder's api.json format from https://app.apibuilder.io/doc/apiJson",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "string"
+    },
+    "category-names": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/definitions/post/properties/category" },
+      "additionalProperties": { "type": "string" }
+    },
+    "category-titles": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/definitions/post/properties/category" },
+      "additionalProperties": { "type": "string" }
+    },
+    "posts": {
+      "type": "array",
+      "description": "The human readable name of this service. Used for display, and as the basis for generating a unique key for URL.",
+      "items": { "$ref": "#/definitions/post" }
+
+    }
+  },
+  "definitions": {
+    "cats" : { "enum": [ "Personal", "DDD", "Design", ".net", "F#", "AspNet", "CQRS", "EventSourcing", "Agile", "Linq", "Duck", "WP7", "NuRep" ] },
+    "post": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Specifies the version of the API Builder specification that this file is written for. The latest version can be found by visiting /apicollective/apibuilder-spec."
+        },
+        "category": {
+          "type": "string",
+          "$ref": "#/definitions/cats"
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_:,;!\\.-]*$"
+        }
+      },
+      "required": [
+        "title",
+        "date",
+        "url"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "posts",
+    "category-names",
+    "category-titles"
+  ],
+  "additionalProperties": false
+}

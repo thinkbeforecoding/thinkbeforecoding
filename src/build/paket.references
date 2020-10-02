@@ -1,0 +1,6 @@
+group Full
+    nuget FSharp.Formatting
+    nuget Newtonsoft.Json
+    nuget Fable.React
+    nuget FSharp.Data
+    nuget FSharp.Text.RegexProvider
