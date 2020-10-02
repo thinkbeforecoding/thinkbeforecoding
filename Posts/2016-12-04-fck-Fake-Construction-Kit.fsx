@@ -3,7 +3,7 @@ Yeah it's christmas time again, and santa's elves are quite busy.
 
 And when I say busy, I don't mean:
 
-![Santa's elves](https://s.hswstatic.com/gif/santa-claus-stories-ga-the-tiny-elf-8b.jpg)
+![Santa's elves](https://cdn.hswstatic.com/gif/santa-claus-stories-ga-the-tiny-elf-8b.jpg)
 
 
 I mean busy like this:
