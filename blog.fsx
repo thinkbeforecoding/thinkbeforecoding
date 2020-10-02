@@ -1,4 +1,5 @@
 #I ".paket/load/netcoreapp3.1/full"
+//#load "FSharp.Formatting.fsx"
 #I "packages/full/fsharp.formatting/lib/netstandard2.0"
 #load "FSharp.Compiler.Service.fsx"
 #r "FSharp.Formatting.Common.dll"
@@ -11,11 +12,8 @@
 #load "posts.fsx"
 #load "feed.fsx"
 
-let md5 = new System.Security.Cryptography.MD5CryptoServiceProvider()
-
 // #nowarn "86"
 open FSharp.Formatting.Literate
-open FSharp.Formatting.Markdown
 
 open Fable.React
 open Fable.React.Props
@@ -24,6 +22,7 @@ open Categories
 // open Fake.IO
 // open Fake.Core
 open System
+open Printf
 
 // HACK: force usage of Fsharp.Compiler.Services
 // or the indirect reference from FSharp.Literate will fail to loadlet dummy (pos: FSharp.Compiler.Range.pos) =
@@ -100,17 +99,13 @@ open Html
 
 let blogTitle = fragment [] [str "//"; Entities.nbsp; str"thinkbeforecoding"]
 
-let scripts =
-  fragment [] [
-      // script' "//code.jquery.com/jquery-1.8.0.js"
-      // script' "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"
-      // script' "//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
-      script' "/content/tips.js"
-  ]
-
 type Title =
   | Home
   | Post of string
+
+type Link = {
+  Text: string
+  Href: string }
 
 [<NoComparison>]
 type Template = {
@@ -119,7 +114,17 @@ type Template = {
     categories: ReactElement
     recentPosts: ReactElement
     footer: ReactElement
-    canonicalUrl: Uri option } 
+    canonicalUrl: Uri option
+    Previous: Link option
+    Next: Link option
+    
+    } 
+
+let metaf name fmt =
+  kprintf (fun s -> meta [Name name; HTMLAttr.Content s]) fmt
+let metafb name fmt =
+  kprintf (fun s -> meta [Property name; HTMLAttr.Content s]) fmt
+
 
 let template template =
   html [ Lang "en"]
@@ -129,24 +134,51 @@ let template template =
              <| match template.title with
                 | Post title -> [str ("// thinkbeforecoding -> " + title) ]
                 | Home -> [str "// thinkbeforecoding"]
-          meta [Name "viewport"; HTMLAttr.Content "width=device-width, initial-scale=1.0"]
-          (match template.canonicalUrl with
-           | Some url -> link [ Rel "canonical"; Href (string url)  ]
-           | _ -> fragment [] [])
-          scripts
+
+          metaf "viewport" "width=device-width, initial-scale=1.0"
+          metaf "author" "Jérémie Chassaing"
+          metaf "keywords" "programming, F#, Event Sourcing, DDD"
+          metafb "description" "think - code - repeat"
+          metafb "og:title" "// thinkbeforecoding"
+          metafb "og:type" "website"
+          metafb "og:url" "https://thinkbeforecoding.com"
+          metafb "og:image" "https://thinkbeforecoding.com/content/thinkbeforecoding-social.jpg"
+          metafb "og:description" "think - code - repeate - Jérémie Chassaing"
+          metafb "og:locale" "en_US"
+          metaf "twitter:card" "summary_large_image"
+          metaf "twitter:image" "https://thinkbeforecoding.com/content/thinkbeforecoding-twitter.jpg"
+          metaf "twitter:description" "think - code - repeat - Jérémie Chassaing"
+          metaf "twitter:title" "// thinkbeforecoding"
+          metaf "twitter:site" "@thinkbeforecoding" 
+          metaf "twitter:creator" "@thinkbeforecoding"
+
+          link [Rel "author"; Href "https://twitter.com/thinkbeforecoding" ]
+          link [Rel "icon"; Href "content/favicon.ico" ]
+          link [Rel "shortcut icon"; Href "content/favicon.ico" ]
+          (match template.title,template.canonicalUrl with
+           | Home, _ -> link [ Rel "canonical"; Href "https://thinkbeforecoding.com"  ]
+           | _,Some url -> link [ Rel "canonical"; Href (string url)  ]
+           | _ -> null)
           stylesheet "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css"
           stylesheet "/content/style-1.1.css"
           script [ Defer true
                    Src "https://use.fontawesome.com/releases/v5.5.0/js/all.js"
                    Integrity "sha384-GqVMZRt5Gn7tB9D9q7ONtcp4gtHIUEW/yG7h98J7IpE3kpi+srfFyyB/04OV6pG0"
                    CrossOrigin "anonymous"] []
-          // script' "https://use.fontawesome.com/5477943014.js"
 
 
           link [ Rel "alternate"
                  HTMLAttr.Type "application/atom+xml"
                  Title "Atom 1.0"
                  Href "/feed/atom" ]
+
+          match template.Next with
+          | Some next -> link [ Rel "next"; Href next.Href ]
+          | None -> null
+          match template.Previous with
+          | Some prev -> link [ Rel "prev"; Href prev.Href ]
+          | None -> null
+
         ]
       body [] 
         [ div [Class "container"] 
@@ -183,10 +215,6 @@ type FormattedPost = {
   Next:  Link option
   Previous: Link option 
 }
-and Link = {
-  Text: string
-  Href: string
-}
 
 
 let processHtmlPost (post: Post)  =
@@ -202,10 +230,6 @@ let processHtmlPost (post: Post)  =
     Next =  None
     Previous =None }
 
-//FSharp.Formatting.Common.Log.SetupListener
-//    Diagnostics.TraceOptions.None
-//    Diagnostics.SourceLevels.All
-//    (FSharp.Formatting.Common.Log.ConsoleListener())
 
 open FSharp.Text.RegexProvider
 type RemoveNamespace = Regex< @"Microsoft\.FSharp\.Core\.(?<name>\w+)">
@@ -215,15 +239,6 @@ let processScriptPost (post: Post) =
     let source = Path.posts </> post.Filename + ".fsx"
     let dest = post.Filename + ".html"
 
-
-    // Trace.tracefn "Parsing script %s" source
-    // let listener = 
-    //   FSharp.Formatting.Common.Log.SetupListener 
-    //                                 (Diagnostics.TraceOptions()) 
-    //                                 (Diagnostics.SourceLevels.All)
-    //                                 (FSharp.Formatting.Common.Log.ConsoleListener())
-    // FSharp.Formatting.Common.Log.SetupSource [|listener|] (FSharp.Formatting.Common.Log.source)
-    
 
     let doc = 
       let fsharpCoreDir = "-I:" + __SOURCE_DIRECTORY__ + @"\packages\full\FSharp.Core\lib\netstandard2.0\"
@@ -309,6 +324,9 @@ let templatePost categories recentPosts titler post =
         [ fmtDate post.Date
           author ]
       raw post.Content
+      if not (String.IsNullOrEmpty post.Tooltips) then
+        script' "content/tips.js"
+
       raw post.Tooltips
     ]
   let footer =
@@ -321,7 +339,9 @@ let templatePost categories recentPosts titler post =
     categories = categories
     recentPosts = recentPosts
     footer = footer
-    canonicalUrl = Some (Uri ("https://thinkbeforecoding.com/" ./ post.Link.Href)) }
+    canonicalUrl = Some (Uri ("https://thinkbeforecoding.com/" ./ post.Link.Href)) 
+    Next = post.Previous
+    Previous = post.Next }
   |> template  
 
 let savePost outputDir post html =
@@ -375,6 +395,8 @@ let listPage outputDir categoriesHtml recentPosts name title (posts: Post list) 
       recentPosts = recentPosts
       footer = footer
       canonicalUrl = None
+      Previous = None
+      Next = None
        }
     |> template
     |> Html.save dest

@@ -1,17 +1,8 @@
-#r "paket:
-framework: netstandard2.0
-source https://api.nuget.org/v3/index.json
+#I ".paket/load/netcoreapp3.1/full"
+#load "TaskBuilder.fs.fsx"
+#load "WindowsAzure.Storage.fsx"
+#load "Fake.IO.FileSystem.fsx"
 
-nuget Fake.Core
-nuget Fake.Core.Trace
-nuget Fake.IO.FileSystem
-nuget WindowsAzure.Storage
-nuget TaskBuilder.fs // "
-#if !FAKE
-#r "netstandard"
-#endif
-
-#load ".fake/upload.fsx/intellisense.fsx"
 
 #load "Categories.fsx"
 #load "posts.fsx"
@@ -27,10 +18,27 @@ open Microsoft.WindowsAzure.Storage
 open Microsoft.WindowsAzure.Storage.Blob
 open FSharp.Control.Tasks.V2.ContextInsensitive
 
+let cprintf color fmt = 
+    Printf.kprintf (fun s ->
+        Console.ForegroundColor <- color
+        Console.WriteLine(s)
+        Console.ResetColor()
+    ) fmt
+
+let tracefn fmt = cprintf ConsoleColor.Green fmt
+let logfn fmt = cprintf ConsoleColor.Gray fmt
+
+let container =
+   match fsi.CommandLineArgs with
+   | [| _; container |] -> 
+        tracefn "Uploading to container %s" container
+        container
+
+   | _ -> failwith "provide a container name"
 
 let account = Microsoft.WindowsAzure.Storage.CloudStorageAccount.Parse "***"
 let blobClient = account.CreateCloudBlobClient()
-let blog = blobClient.GetContainerReference("blog")
+let blog = blobClient.GetContainerReference(container)
 
 let toUri (u: string) = u.Replace(@".\","").Replace(@"\","/")
 let md5 path = 
@@ -44,10 +52,8 @@ type Encoding =
   | Flat of string
   | NoEncoding 
 
-          
-
 let contentType uri = 
-  match IO.Path.GetExtension uri with
+  match IO.Path.GetExtension(uri: string) with
   | ".css" -> Gzip "text/css"
   | ".js" -> Gzip "application/javascript"
   | ".jpeg" 
@@ -73,7 +79,7 @@ let uploadMedia tag (blog: CloudBlobContainer) path =
     let blob = blog.GetBlockBlobReference(uri)
     let! exists = blob.ExistsAsync() 
     if not exists then
-        Trace.tracefn "[%s] %s is new" tag uri
+        tracefn "[%s] %s is new" tag uri
         blob.Properties.CacheControl <- cachecontrol
         match contentType uri with
         | Flat contentType ->
@@ -100,7 +106,7 @@ let uploadMedia tag (blog: CloudBlobContainer) path =
               | _ -> ""
 
         if blobMd5 <> fileMd5 || blob.Properties.CacheControl <> cachecontrol  then
-            Trace.tracefn "[%s] %s has changed" tag uri
+            tracefn "[%s] %s has changed" tag uri
             blob.Properties.CacheControl <- cachecontrol
             match contentType uri with
             | Flat contentType ->
@@ -122,7 +128,7 @@ let uploadMedia tag (blog: CloudBlobContainer) path =
               blob.Properties.ContentEncoding <- "gzip"
             do! blob.SetPropertiesAsync()
           else
-            Trace.logfn "[%s] Skipping %s" tag uri
+            logfn "[%s] Skipping %s" tag uri
   }
 
 let removeFirstSlash (url: string) =
@@ -147,13 +153,13 @@ let upload (blog: CloudBlobContainer) tag path blobPath name contentType cache =
         | _ -> ""
 
       if blobMd5 <> fileMd5 then
-        Trace.tracefn "[%s] %s has changed" tag name 
+        tracefn "[%s] %s has changed" tag name 
         return true
       else
-        Trace.logfn "[%s] Skipping %s" tag name
+        logfn "[%s] Skipping %s" tag name
         return false
     else
-      Trace.tracefn "[%s] %s is new" tag name
+      tracefn "[%s] %s is new" tag name
       return true }
   let cachectl = if cache then cachecontrol else null
   if upload || blob.Properties.CacheControl <> cachectl  then
@@ -200,7 +206,7 @@ let run =
     let! _ = blog.CreateIfNotExistsAsync(BlobContainerPublicAccessType.Blob, null, null)
 
       
-    Trace.tracefn "Upload media"
+    tracefn "Upload media"
     let media =
       !! (Path.outmedia </> "**/*.*")
       |> Seq.toList
@@ -215,7 +221,7 @@ let run =
     for c in content do
       do! uploadMedia "Content" blog c
 
-    Trace.tracefn "Upload posts"
+    tracefn "Upload posts"
     for post in posts do
       do! uploadPost blog post
 

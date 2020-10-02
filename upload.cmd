@@ -1,2 +1,2 @@
 @echo off
-fake run upload.fsx
+dotnet fsi upload.fsx %*
