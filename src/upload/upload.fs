@@ -1,11 +1,11 @@
-#I ".paket/load/netcoreapp3.1/full"
-#load "TaskBuilder.fs.fsx"
-#load "WindowsAzure.Storage.fsx"
-#load "Fake.IO.FileSystem.fsx"
+// #I ".paket/load/netcoreapp3.1/full"
+// #load "TaskBuilder.fs.fsx"
+// #load "WindowsAzure.Storage.fsx"
+// #load "Fake.IO.FileSystem.fsx"
 
 
-#load "Categories.fsx"
-#load "posts.fsx"
+// #load "Categories.fsx"
+// #load "posts.fsx"
 
 open System
 open Fake.Core

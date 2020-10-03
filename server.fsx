@@ -26,7 +26,7 @@ open FSharp.Control.Tasks.V2.ContextInsensitive
 let (</>) x y = System.IO.Path.Combine(x,y)
 
 let root = __SOURCE_DIRECTORY__
-let posts = root </> "out" </> "post"
+let posts = root </> "output" </> "post"
 
 let setContentType ctype: HttpHandler =
   fun nxt ctx ->
@@ -61,8 +61,8 @@ let configureApp (app : IApplicationBuilder) =
       |> ignore
     
     staticFiles (root </> "content/") "/content"
-    staticFiles (root </> "out/public") "/public"
-    staticFiles (root </> "out/post") "/post"
+    staticFiles (root </> "output/public") "/public"
+    staticFiles (root </> "output/post") "/post"
     
        
         
@@ -75,6 +75,6 @@ WebHost.CreateDefaultBuilder()
         .UseKestrel()
         .Configure(System.Action<_> configureApp)
         .ConfigureServices(configureServices)
-        .UseSetting("contentRoot", __SOURCE_DIRECTORY__ + "/out" )
+        .UseSetting("contentRoot", __SOURCE_DIRECTORY__ + "/output" )
         .Build()
         .Run()
