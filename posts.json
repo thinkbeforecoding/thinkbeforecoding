@@ -538,9 +538,12 @@
       "category": "F#",
       "date": "2019-12-13T17:50:54Z",
       "url": "full-fsharp-blog-3"
+    },
+    {
+      "title": "Applicatives IRL",
+      "category": "F#",
+      "date": "2020-10-03T16:33:28.5620501+00:00",
+      "url": "applicatives-irl"
     }
-
   ]
-
-
 }
