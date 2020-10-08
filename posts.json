@@ -544,6 +544,18 @@
       "category": "F#",
       "date": "2020-10-03T16:33:28.5620501+00:00",
       "url": "applicatives-irl"
+    },
+    {
+      "title": "Applicative Computation Expressions",
+      "category": "F#",
+      "date": "2020-10-07T18:55:59.8453833+00:00",
+      "url": "applicative-computation-expressions"
+    },
+    {
+      "title": "Applicative Computation Expressions - 2",
+      "category": null,
+      "date": "2020-10-08T08:18:10.7839774+00:00",
+      "url": "applicative-computation-expressions-2"
     }
   ]
 }

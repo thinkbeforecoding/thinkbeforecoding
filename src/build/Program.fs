@@ -232,7 +232,7 @@ let processScriptPost (post: Post) source md5 =
       let fsharpCoreDir = "-I:" + __SOURCE_DIRECTORY__ + @"\..\..\packages\full\FSharp.Core\lib\netstandard2.0\"
       let fcsDir = "-I:" + __SOURCE_DIRECTORY__ + @"\..\..\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\"
       let fcs = "-r:" + __SOURCE_DIRECTORY__ + @"\..\..\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\FSharp.Compiler.Service.dll"
-      let e = Evaluation.FsiEvaluator([|fsharpCoreDir; fcsDir; fcs ;  "-d:BLOG" |])
+      let e = Evaluation.FsiEvaluator([|fsharpCoreDir; fcsDir; fcs ;  "-d:BLOG"; "--langversion:preview" |])
       e.EvaluationFailed |> Event.add (fun e -> 
         eprintfn "%s" e.Text
         eprintfn "%O" e.Exception
