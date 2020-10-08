@@ -6,7 +6,9 @@ type Post = {
     Title: string
     Category: string option
     Date: DateTimeOffset
-    Url: string}
+    Url: string
+    Hashtags: string list
+    }
     with
     member this.Filename =
       this.Date.ToLocalTime().ToString("yyyy-MM-dd-") + this.Url.Replace(":","")
@@ -23,7 +25,9 @@ let posts =
         Title = p.Title
         Category = p.Category
         Date = p.Date
-        Url = p.Url })
+        Url = p.Url
+        Hashtags = p.Hashtags |> Array.toList
+        })
     |> Seq.toList
 
 let categories =

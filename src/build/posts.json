@@ -35,7 +35,8 @@
       {
         "title": "Do you understand what it is all about ?",
         "date": "2008-11-24T14:37:26Z",
-        "url": "Do-you-understand-what-it-is-all-about"
+        "url": "Do-you-understand-what-it-is-all-about",
+        "hashtags": [ "fsharp" ]
       }
     ]
 }

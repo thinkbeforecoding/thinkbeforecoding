@@ -44,6 +44,10 @@
         "url": {
           "type": "string",
           "pattern": "^[a-zA-Z0-9_:,;!\\.-]*$"
+        },
+        "hashtags": {
+          "type": "array",
+          "items":  { "type":  "string" }
         }
       },
       "required": [

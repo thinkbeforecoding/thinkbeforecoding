@@ -68,6 +68,14 @@ module Entities =
   let copy = raw "&copy;"
 
 
+type Title =
+  | Home
+  | Post of string
+
+type Link = {
+  Text: string
+  Href: string }
+
 module Html =
   let script' src = script [ HTMLAttr.Type "text/javascript"; Src src ] []
   let stylesheet src = link [ HTMLAttr.Type "text/css"; Rel "stylesheet"; Href src ]
@@ -83,17 +91,26 @@ module Html =
       |> Fable.ReactServer.renderToString 
     IO.File.WriteAllText(path, content)
 
+type TwitterLink = 
+    { Link: Link
+      Via: string
+      Hashtags: string list}
+module Twitter =
+    open System.Web
+    let linkUrl link =
+        sprintf "https://twitter.com/intent/tweet?text=%s&url=%s&via=%s&hashtags=%s"
+            (HttpUtility.UrlEncode (link.Link.Text + "\n"))
+            (HttpUtility.UrlEncode link.Link.Href)
+            (HttpUtility.UrlEncode link.Via)
+            (HttpUtility.UrlEncode (String.concat "," link.Hashtags))
+
+
+            
+
 open Html
 
 let blogTitle = fragment [] [str "//"; Entities.nbsp; str"thinkbeforecoding"]
 
-type Title =
-  | Home
-  | Post of string
-
-type Link = {
-  Text: string
-  Href: string }
 
 [<NoComparison>]
 type Template = {
@@ -203,6 +220,7 @@ type FormattedPost = {
   FileName: string
   Next:  Link option
   Previous: Link option 
+  Hashtags: string list
 }
 
 
@@ -216,8 +234,9 @@ let processHtmlPost (post: Post) source md5 =
     Link = { Text = post.Title; Href = post.FullUrl }
     Date = post.Date
     FileName = dest
-    Next =  None
-    Previous =None }
+    Next = None
+    Previous = None
+    Hashtags = post.Hashtags }
 
 
 open FSharp.Text.RegexProvider
@@ -250,7 +269,8 @@ let processScriptPost (post: Post) source md5 =
       Date = post.Date 
       FileName = dest
       Next = None
-      Previous = None }
+      Previous = None
+      Hashtags = post.Hashtags }
     with
     | ex -> 
        eprintfn "%O" ex
@@ -273,7 +293,9 @@ let processMarkdownPost (post: Post) source md5 =
     Date = post.Date 
     FileName = dest
     Next = None
-    Previous = None }
+    Previous = None
+    Hashtags = post.Hashtags
+     }
 
 type PostType =
     | Script
@@ -348,12 +370,19 @@ let templatePost categories recentPosts titler post =
       | Some p, Some n -> [ left; p ; nbsp; pipe; nbsp; n; right ]
       |> fragment []
 
+  let toAbsolute (link: Link) =
+    { link with Href = "https://thinkbeforecoding.com" + link.Href}
   let content =
     fragment [] [
       h1 [Class "title"] [ link post.Link ]
       div [Class "date"] 
         [ fmtDate post.Date
           author ]
+      div [ Class "share-twitter"]
+          [ a [ Href (Twitter.linkUrl { Link = toAbsolute post.Link; Via = "thinkb4coding"; Hashtags = post.Hashtags } )] 
+              [ i [ Class "fab fa-twitter-square"] []
+                nbsp
+                str "Share on twitter" ] ]  
       raw post.Content
       if not (String.IsNullOrEmpty post.Tooltips) then
         script' "/content/tips.js"

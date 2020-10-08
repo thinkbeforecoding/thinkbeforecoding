@@ -477,7 +477,8 @@
       "title": "Ukulele Fun for XMas !",
       "category": "F#",
       "date": "2015-12-17T09:44:43Z",
-      "url": "Ukulele-Fun-for-XMas-!"
+      "url": "Ukulele-Fun-for-XMas-!",
+      "hashtags": ["fsharp"]
     },
     {
       "title": "fck: Fake Construction Kit",
@@ -495,25 +496,29 @@
       "title": "Functional Core",
       "category": "Design",
       "date": "2018-01-25T21:41:12Z",
-      "url": "functional-core"
+      "url": "functional-core",
+      "hashtags": ["fp"]
     },
     {
       "title": "Functional Core - Part 2",
       "category": "Design",
       "date": "2018-02-01T21:09:13Z",
-      "url": "functional-core-2"
+      "url": "functional-core-2",
+      "hashtags": ["fp"]
     },
     {
       "title": "Information Space-Time",
       "category": "Design",
       "date": "2018-03-11T14:33:56Z",
-      "url": "information-space-time"
+      "url": "information-space-time",
+      "hashtags": ["dddesign"]
     },
     {
       "title": "OpenFSharp 2018",
       "category": "F#",
       "date": "2018-09-28T21:14:46Z",
-      "url": "openfsharp-2018"
+      "url": "openfsharp-2018",
+      "hashtags": [ "openfsharp", "fsharp" ]
     },
     {
       "title": "10 years",
@@ -525,37 +530,44 @@
       "title": "Full F# Blog",
       "category": "F#",
       "date": "2018-12-07T08:04:00Z",
-      "url": "full-fsharp-blog"
+      "url": "full-fsharp-blog",
+      "hashtags": [ "fsharp" ]
     },
     {
       "title": "Full F# Blog - Part 2",
       "category": "F#",
       "date": "2018-12-09T15:30:06Z",
-      "url": "full-fsharp-blog-2"
+      "url": "full-fsharp-blog-2",
+      "hashtags": [ "fsharp" ]
     },
     {
       "title": "Full F# Blog - Part 3",
       "category": "F#",
       "date": "2019-12-13T17:50:54Z",
-      "url": "full-fsharp-blog-3"
+      "url": "full-fsharp-blog-3",
+      "hashtags": [ "fsharp" ]
     },
     {
       "title": "Applicatives IRL",
       "category": "F#",
       "date": "2020-10-03T16:33:28.5620501+00:00",
-      "url": "applicatives-irl"
+      "url": "applicatives-irl",
+      "hashtags": [ "fsharp" ]
     },
     {
       "title": "Applicative Computation Expressions",
       "category": "F#",
       "date": "2020-10-07T18:55:59.8453833+00:00",
-      "url": "applicative-computation-expressions"
+      "url": "applicative-computation-expressions",
+      "hashtags": ["fsharp"]
     },
     {
       "title": "Applicative Computation Expressions - 2",
-      "category": null,
+      "category": "F#",
       "date": "2020-10-08T08:18:10.7839774+00:00",
-      "url": "applicative-computation-expressions-2"
+      "url": "applicative-computation-expressions-2",
+      "hashtags": ["fsharp"]
+
     }
   ]
 }
