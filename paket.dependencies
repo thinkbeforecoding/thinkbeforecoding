@@ -3,6 +3,7 @@ framework: netcoreapp3.1
 
 nuget Fake
 nuget naudio
+nuget System.IO.Ports
 
 group full
 framework: netcoreapp3.1, netstandard2.0

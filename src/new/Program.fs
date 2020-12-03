@@ -40,7 +40,7 @@ let main argv =
             categoryTitles = Blog.json.CategoryTitles,
             posts =
                 [| yield! Blog.json.Posts
-                   yield PostJson.Post(title, None, date, url ) |]
+                   yield PostJson.Post(title, None, date, url, [||] ) |]
         )
         
     use file = IO.File.CreateText(Path.root </> "posts.json")
