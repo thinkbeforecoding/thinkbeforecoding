@@ -150,7 +150,17 @@
         "response.statusReason": "Redirect",
         "response.headers.Location": "/post/2009/03/04/How-not-to-inject-services-in-entities"
       }
+    },
+    "cmd-sourcing": {
+    "matchCondition": {
+      "route": "/prod/post/2013/07/28/Event-Sourcing-vs-Command-Sourcing%5D"
+    },
+    "responseOverrides": {
+      "response.statusCode": "301",
+      "response.statusReason": "Redirect",
+      "response.headers.Location": "/prod/post/2013%2F07%2F28%2FEvent-Sourcing-vs-Command-Sourcing"
     }
+  }
 
   }
 }
