@@ -4,7 +4,9 @@
 (** 
 *this post is part of the [F# Advent Calendar 2020](https://sergeytihon.com/2020/10/22/f-advent-calendar-in-english-2020/)*
 
-In this third installement of our series about applicative computation experessions, we'll jump to practice
+In this third installment of our series about [applicative](https://thinkbeforecoding.com/post/2020/10/03/applicatives-irl)
+[computation](https://thinkbeforecoding.com/post/2020/10/07/applicative-computation-expressions)
+[experessions](https://thinkbeforecoding.com/post/2020/10/08/applicative-computation-expressions-2), we'll jump to practice
 with Lego Mindstorm Ev3. This should demonstrate a non trivial, real life use case for applicatives.
 
 Even if you don't have a mindstorm set at home, follow this post. We'll mix binary protocols and category theory

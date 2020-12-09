@@ -53,9 +53,10 @@ let main argv =
     let cachecontrol = "public, max-age=31536000"
     let uploadMedia tag (blog: CloudBlobContainer) path =
       task {
+        let outPath = Path.out
         let uri =
             path 
-            |> Fake.IO.Path.toRelativeFrom Path.out
+            |> Fake.IO.Path.toRelativeFrom (Path.out)
             |> toUri
 
         let opts = 

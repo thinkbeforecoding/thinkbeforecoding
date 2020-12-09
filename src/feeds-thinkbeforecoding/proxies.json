@@ -1,0 +1,22 @@
+{
+    "$schema": "http://json.schemastore.org/proxies",
+    "proxies": {
+        "feed": {
+            "matchCondition": {
+                "route": "/thinkbeforecoding",
+                "methods": [
+                    "GET",
+                    "HEAD",
+                    "OPTIONS"
+                ]
+            },
+            "backendUri": "https://%Blog.Storage%.blob.core.windows.net/%Blog.Container%/feed/atom"
+        },
+        "letsencrypt": {
+            "matchCondition": {
+                "route": "/.well-known/acme-challenge/{*code}"
+            },
+            "backendUri": "https://localhost/api/acme-challenge/{code}"
+        }
+    }
+}

@@ -4,7 +4,7 @@ open System
 
 let (</>) x y =IO.Path.Combine(x,y)
 module Path =
-  let root = __SOURCE_DIRECTORY__ </> "../.."
+  let root = IO.Path.GetFullPath (__SOURCE_DIRECTORY__ </> ".." </> "..")
   let out = root </> "output"
 
   let outPosts = out </> "post"

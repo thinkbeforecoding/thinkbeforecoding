@@ -1,0 +1,149 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29409.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "thinkbeforecoding", "src\thinkbeforecoding\thinkbeforecoding.fsproj", "{62A45AD8-BEEE-4876-A932-7F012841CA11}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "feeds-thinkbeforecoding", "src\feeds-thinkbeforecoding\feeds-thinkbeforecoding.fsproj", "{00BB8E0F-75B5-4679-B968-5F80E2D8474F}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "build", "src\build\build.fsproj", "{5EBEA15D-56D7-4CEF-A3AB-42E153161572}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Blog", "Blog", "{871A2A8A-C69C-4479-8D87-5869ADE5D8F0}"
+	ProjectSection(SolutionItems) = preProject
+		posts.json = posts.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Posts", "Posts", "{263978F4-18F7-4F41-8F79-59629563351F}"
+	ProjectSection(SolutionItems) = preProject
+		Posts\2008-11-19-Back-in-the-blogosphere.html = Posts\2008-11-19-Back-in-the-blogosphere.html
+		Posts\2008-11-20-Save-is-not-a-feature-anymore.html = Posts\2008-11-20-Save-is-not-a-feature-anymore.html
+		Posts\2008-11-21-Must-know-English-to-be-a-programmer.html = Posts\2008-11-21-Must-know-English-to-be-a-programmer.html
+		Posts\2008-11-24-Coincidences-just-happen.html = Posts\2008-11-24-Coincidences-just-happen.html
+		Posts\2008-11-24-Do-you-understand-what-it-is-all-about.html = Posts\2008-11-24-Do-you-understand-what-it-is-all-about.html
+		Posts\2008-11-25-CSS-is-too-Tricky.html = Posts\2008-11-25-CSS-is-too-Tricky.html
+		Posts\2008-12-01-Problem-with-the-Select-N1-problem.html = Posts\2008-12-01-Problem-with-the-Select-N1-problem.html
+		Posts\2008-12-01-Ubiquity-of-language-lost-in-translation.html = Posts\2008-12-01-Ubiquity-of-language-lost-in-translation.html
+		Posts\2008-12-02-Domain-Driven-Design.html = Posts\2008-12-02-Domain-Driven-Design.html
+		Posts\2008-12-10-Wow-Book-review-Domain-Driven-Design.html = Posts\2008-12-10-Wow-Book-review-Domain-Driven-Design.html
+		Posts\2008-12-19-Coding-and-writing-The-form.html = Posts\2008-12-19-Coding-and-writing-The-form.html
+		Posts\2008-12-22-DDD-Specifications.html = Posts\2008-12-22-DDD-Specifications.html
+		Posts\2008-12-24-Data-Structures-and-Algorithms.html = Posts\2008-12-24-Data-Structures-and-Algorithms.html
+		Posts\2008-12-29-AspNet-authentication-cookie-oddities.html = Posts\2008-12-29-AspNet-authentication-cookie-oddities.html
+		Posts\2009-01-08-Aspnet-MVC-binding-security-issue.html = Posts\2009-01-08-Aspnet-MVC-binding-security-issue.html
+		Posts\2009-01-19-Repositories-and-IQueryable-the-paging-case.html = Posts\2009-01-19-Repositories-and-IQueryable-the-paging-case.html
+		Posts\2009-01-21-Mixing-IEnumerable-and-IQueryable.html = Posts\2009-01-21-Mixing-IEnumerable-and-IQueryable.html
+		Posts\2009-02-07-Lazy-load-and-persistence-ignorance.html = Posts\2009-02-07-Lazy-load-and-persistence-ignorance.html
+		Posts\2009-02-08-Lazy-loads-and-persistence-ignorance-Part-2.html = Posts\2009-02-08-Lazy-loads-and-persistence-ignorance-Part-2.html
+		Posts\2009-02-17-Implement-Linq-to-Objects-in-CSharp-2.html = Posts\2009-02-17-Implement-Linq-to-Objects-in-CSharp-2.html
+		Posts\2009-02-22-Maintenance.html = Posts\2009-02-22-Maintenance.html
+		Posts\2009-02-23-Back-on-track.html = Posts\2009-02-23-Back-on-track.html
+		Posts\2009-02-24-Domain-Driven-Design-Step-By-Step.html = Posts\2009-02-24-Domain-Driven-Design-Step-By-Step.html
+		Posts\2009-03-04-How-not-to-inject-services-in-entities.html = Posts\2009-03-04-How-not-to-inject-services-in-entities.html
+		Posts\2009-03-12-QCon-London-2009.html = Posts\2009-03-12-QCon-London-2009.html
+		Posts\2009-04-08-Back-on-Repositories-and-Paging-Introducing-reporting.html = Posts\2009-04-08-Back-on-Repositories-and-Paging-Introducing-reporting.html
+		Posts\2009-04-18-TDD-becomes-Design-By-Example.html = Posts\2009-04-18-TDD-becomes-Design-By-Example.html
+		Posts\2009-04-28-Geek-balancehellip-or-not.html = Posts\2009-04-28-Geek-balancehellip-or-not.html
+		Posts\2009-04-28-Strategic-Design.html = Posts\2009-04-28-Strategic-Design.html
+		Posts\2009-05-07-Decimal-what-are-those-trailing-zeros.html = Posts\2009-05-07-Decimal-what-are-those-trailing-zeros.html
+		Posts\2009-05-15-IOC-container-go-hide.html = Posts\2009-05-15-IOC-container-go-hide.html
+		Posts\2009-05-19-IOC-Container-Go-Hide-part-2.html = Posts\2009-05-19-IOC-Container-Go-Hide-part-2.html
+		Posts\2009-06-16-Met-Eric-Evans-at-ParisJug.html = Posts\2009-06-16-Met-Eric-Evans-at-ParisJug.html
+		Posts\2009-06-17-When-DDD-should-be-considered.html = Posts\2009-06-17-When-DDD-should-be-considered.html
+		Posts\2009-06-17-Which-model-is-best-Thats-not-the-question.html = Posts\2009-06-17-Which-model-is-best-Thats-not-the-question.html
+		Posts\2009-06-19-Strategic-Design-at-DDD-Exchange.html = Posts\2009-06-19-Strategic-Design-at-DDD-Exchange.html
+		Posts\2009-06-23-Distributed-Domain-Driven-Design-and-Aggregates.html = Posts\2009-06-23-Distributed-Domain-Driven-Design-and-Aggregates.html
+		Posts\2009-06-23-Where-are-my-Entities-and-my-Repositories.html = Posts\2009-06-23-Where-are-my-Entities-and-my-Repositories.html
+		Posts\2009-07-24-DDD-and-Code-ReUse.html = Posts\2009-07-24-DDD-and-Code-ReUse.html
+		Posts\2009-10-21-CSharp-Static-interfaces.html = Posts\2009-10-21-CSharp-Static-interfaces.html
+		Posts\2009-10-22-CSharp-Static-interfaces-Take-2.html = Posts\2009-10-22-CSharp-Static-interfaces-Take-2.html
+		Posts\2009-10-28-Uniqueness-validation-in-CQRS-Architecture.html = Posts\2009-10-28-Uniqueness-validation-in-CQRS-Architecture.html
+		Posts\2009-10-30-Event-Sourcing-and-CQRS-Now.html = Posts\2009-10-30-Event-Sourcing-and-CQRS-Now.html
+		Posts\2009-11-02-Event-Sourcing-and-CQRS-Lets-use-it.html = Posts\2009-11-02-Event-Sourcing-and-CQRS-Lets-use-it.html
+		Posts\2009-11-03-Event-Sourcing-and-CQRS-Dispatch-options.html = Posts\2009-11-03-Event-Sourcing-and-CQRS-Dispatch-options.html
+		Posts\2009-11-05-Event-Sourcing-and-CQRS-Serialization.html = Posts\2009-11-05-Event-Sourcing-and-CQRS-Serialization.html
+		Posts\2009-11-16-Udi-Dahan-talks-on-CQRS-at-Zenika.html = Posts\2009-11-16-Udi-Dahan-talks-on-CQRS-at-Zenika.html
+		Posts\2009-11-17-Udi-Dahan-talks-on-CQRS-in-Paris.html = Posts\2009-11-17-Udi-Dahan-talks-on-CQRS-in-Paris.html
+		Posts\2009-12-10-Business-Errors-are-Just-Ordinary-Events.html = Posts\2009-12-10-Business-Errors-are-Just-Ordinary-Events.html
+		Posts\2009-12-10-Udi-Dahan-post-on-CQRS.html = Posts\2009-12-10-Udi-Dahan-post-on-CQRS.html
+		Posts\2010-02-25-Event-Sourcing-and-CQRS-Snapshots.html = Posts\2010-02-25-Event-Sourcing-and-CQRS-Snapshots.html
+		Posts\2010-04-17-Event-Sourcing-and-CQRS-Bounded-Contexts.html = Posts\2010-04-17-Event-Sourcing-and-CQRS-Bounded-Contexts.html
+		Posts\2010-04-25-Event-Sourcing-and-CQRS-Events-Deserialization.html = Posts\2010-04-25-Event-Sourcing-and-CQRS-Events-Deserialization.html
+		Posts\2010-06-14-DDD-Exchange-2010.html = Posts\2010-06-14-DDD-Exchange-2010.html
+		Posts\2010-10-19-Duck-Delete-Update-Create-Killer.html = Posts\2010-10-19-Duck-Delete-Update-Create-Killer.html
+		Posts\2011-01-20-Code-code-code.html = Posts\2011-01-20-Code-code-code.html
+		Posts\2011-01-21-SmtpListener.html = Posts\2011-01-21-SmtpListener.html
+		Posts\2011-01-24-Switching-keyboard-language-in-WP7.html = Posts\2011-01-24-Switching-keyboard-language-in-WP7.html
+		Posts\2011-06-09-Time.html = Posts\2011-06-09-Time.html
+		Posts\2011-06-14-DDDx-2011.html = Posts\2011-06-14-DDDx-2011.html
+		Posts\2011-06-21-Event-Sourcing-and-CQRS,-Dispatch-options-2.html = Posts\2011-06-21-Event-Sourcing-and-CQRS,-Dispatch-options-2.html
+		Posts\2011-12-02-I-love-SQL-Server-and-cultures-NOT.html = Posts\2011-12-02-I-love-SQL-Server-and-cultures-NOT.html
+		Posts\2012-02-26-NuRep-your-local-NuGetsymbolssource-repository.html = Posts\2012-02-26-NuRep-your-local-NuGetsymbolssource-repository.html
+		Posts\2012-03-05-Caching-done-right.html = Posts\2012-03-05-Caching-done-right.html
+		Posts\2012-06-14-Make-it-simpler--get-rid-of-Mocking-Fx.html = Posts\2012-06-14-Make-it-simpler--get-rid-of-Mocking-Fx.html
+		Posts\2012-06-21-SimpleCQRS-the-F-version.html = Posts\2012-06-21-SimpleCQRS-the-F-version.html
+		Posts\2013-03-03-Entities-and-Repository-injection-ndash;-follow-up.html = Posts\2013-03-03-Entities-and-Repository-injection-ndash;-follow-up.html
+		Posts\2013-04-03-Time-is-Money!-DevoxxFr.html = Posts\2013-04-03-Time-is-Money!-DevoxxFr.html
+		Posts\2013-04-04-C-Static-interfaces-ndash;-Take-3.html = Posts\2013-04-04-C-Static-interfaces-ndash;-Take-3.html
+		Posts\2013-04-04-C-Static-interfaces-Take-3.html = Posts\2013-04-04-C-Static-interfaces-Take-3.html
+		Posts\2013-07-28-Event-Sourcing-vs-Command-Sourcing.html = Posts\2013-07-28-Event-Sourcing-vs-Command-Sourcing.html
+		Posts\2013-07-29-Command-Events-and-Context.html = Posts\2013-07-29-Command-Events-and-Context.html
+		Posts\2013-12-17-Generalized-Conway-s-law.html = Posts\2013-12-17-Generalized-Conway-s-law.html
+		Posts\2014-01-04-Event-Sourcing.-Draw-it.html = Posts\2014-01-04-Event-Sourcing.-Draw-it.html
+		Posts\2014-04-11-Monoidal-Event-Sourcing.html = Posts\2014-04-11-Monoidal-Event-Sourcing.html
+		Posts\2014-04-27-Monoidal-Event-Sourcing-Examples.html = Posts\2014-04-27-Monoidal-Event-Sourcing-Examples.html
+		Posts\2014-12-23-Speaking-computers-for-more-fun-!.html = Posts\2014-12-23-Speaking-computers-for-more-fun-!.html
+		Posts\2015-12-17-Ukulele-Fun-for-XMas-!.fsx = Posts\2015-12-17-Ukulele-Fun-for-XMas-!.fsx
+		Posts\2016-12-04-fck-Fake-Construction-Kit.fsx = Posts\2016-12-04-fck-Fake-Construction-Kit.fsx
+		Posts\2018-01-20-back-to-blogging.md = Posts\2018-01-20-back-to-blogging.md
+		Posts\2018-01-25-functional-core.fsx = Posts\2018-01-25-functional-core.fsx
+		Posts\2018-02-01-functional-core-2.md = Posts\2018-02-01-functional-core-2.md
+		Posts\2018-03-11-information-space-time.md = Posts\2018-03-11-information-space-time.md
+		Posts\2018-09-28-openfsharp-2018.md = Posts\2018-09-28-openfsharp-2018.md
+		Posts\2018-11-19-10-years.md = Posts\2018-11-19-10-years.md
+		Posts\2018-12-07-full-fsharp-blog.fsx = Posts\2018-12-07-full-fsharp-blog.fsx
+		Posts\2018-12-09-full-fsharp-blog-2.md = Posts\2018-12-09-full-fsharp-blog-2.md
+		Posts\2019-12-13-full-fsharp-blog-3.fsx = Posts\2019-12-13-full-fsharp-blog-3.fsx
+		Posts\2020-10-03-applicatives-irl.fsx = Posts\2020-10-03-applicatives-irl.fsx
+		Posts\2020-10-07-applicative-computation-expressions.fsx = Posts\2020-10-07-applicative-computation-expressions.fsx
+		Posts\2020-10-08-applicative-computation-expressions-2.fsx = Posts\2020-10-08-applicative-computation-expressions-2.fsx
+		Posts\2020-12-03-applicative-computation-expressions-3.fsx = Posts\2020-12-03-applicative-computation-expressions-3.fsx
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".build", ".build", "{26223D87-5562-47F8-90B2-45083EEF24B5}"
+	ProjectSection(SolutionItems) = preProject
+		paket.dependencies = paket.dependencies
+	EndProjectSection
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "upload", "src\upload\upload.fsproj", "{ACF04606-69D3-4B68-A083-E41FD3682BAF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{62A45AD8-BEEE-4876-A932-7F012841CA11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62A45AD8-BEEE-4876-A932-7F012841CA11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62A45AD8-BEEE-4876-A932-7F012841CA11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62A45AD8-BEEE-4876-A932-7F012841CA11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00BB8E0F-75B5-4679-B968-5F80E2D8474F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00BB8E0F-75B5-4679-B968-5F80E2D8474F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00BB8E0F-75B5-4679-B968-5F80E2D8474F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00BB8E0F-75B5-4679-B968-5F80E2D8474F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EBEA15D-56D7-4CEF-A3AB-42E153161572}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EBEA15D-56D7-4CEF-A3AB-42E153161572}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EBEA15D-56D7-4CEF-A3AB-42E153161572}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EBEA15D-56D7-4CEF-A3AB-42E153161572}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ACF04606-69D3-4B68-A083-E41FD3682BAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACF04606-69D3-4B68-A083-E41FD3682BAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACF04606-69D3-4B68-A083-E41FD3682BAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACF04606-69D3-4B68-A083-E41FD3682BAF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5C946E7E-E871-4D0A-A1E3-CE07DFD050B5}
+	EndGlobalSection
+EndGlobal
