@@ -1,12 +1,12 @@
 source https://www.nuget.org/api/v2
-framework: netcoreapp3.1
+framework: net6.0
 
 nuget Fake
 nuget naudio
 nuget System.IO.Ports
 
 group full
-framework: netcoreapp3.1, netstandard2.0
+framework: net6.0, netstandard2.0
 generate_load_scripts: true
 source https://api.nuget.org/v3/index.json
 

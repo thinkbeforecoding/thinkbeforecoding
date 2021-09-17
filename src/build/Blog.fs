@@ -63,7 +63,7 @@ module Category =
 
 
 let md5 path = 
-  use md5p = new System.Security.Cryptography.MD5CryptoServiceProvider()
+  use md5p = System.Security.Cryptography.MD5.Create()
   use stream = IO.File.OpenRead(path)
   md5p.ComputeHash(stream)
   |> Convert.ToBase64String

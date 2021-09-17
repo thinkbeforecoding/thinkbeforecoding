@@ -251,20 +251,21 @@ let processScriptPost (post: Post) source md5 =
       let fsharpCoreDir = "-I:" + __SOURCE_DIRECTORY__ + @"\..\..\packages\full\FSharp.Core\lib\netstandard2.0\"
       let fcsDir = "-I:" + __SOURCE_DIRECTORY__ + @"\..\..\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\"
       let fcs = "-r:" + __SOURCE_DIRECTORY__ + @"\..\..\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\FSharp.Compiler.Service.dll"
-      let e = Evaluation.FsiEvaluator([|fsharpCoreDir; fcsDir; fcs ;  "-d:BLOG"; "--langversion:preview" |])
+      let lang = "--preferreduilang:en-US"
+      let e = Evaluation.FsiEvaluator([|fsharpCoreDir; fcsDir; fcs ;  "-d:BLOG"; "--langversion:preview"; lang |])
       e.EvaluationFailed |> Event.add (fun e -> 
         eprintfn "%s" e.Text
         eprintfn "%O" e.Exception
         eprintfn "%s" e.StdErr)
       Literate.ParseAndCheckScriptFile(
-                  source , 
-                  fscoptions = String.concat " " [ fsharpCoreDir; fcsDir; fcs ],
+                  source, 
+                  fscOptions = String.concat " " [ fsharpCoreDir; fcsDir; fcs; lang ],
                   fsiEvaluator = e)
-    let doc' = Literate.FormatLiterateNodes(doc, OutputKind.Html, "", true, true)
-    let output = Literate.ToHtml doc' 
+    let output = Literate.ToHtml(doc, "", true, true)
+    
     { MD5 = md5 
       Content = output
-      Tooltips = RemoveNamespace().TypedReplace(doc'.FormattedTips, fun m -> m.name.Value)
+      Tooltips = RemoveNamespace().TypedReplace(doc.FormattedTips, fun m -> m.name.Value)
       Link =  { Text = post.Title; Href = post.FullUrl }
       Date = post.Date 
       FileName = dest
@@ -384,8 +385,8 @@ let templatePost categories recentPosts titler post =
                 nbsp
                 str "Share on twitter" ] ]  
       raw post.Content
-      if not (String.IsNullOrEmpty post.Tooltips) then
-        script' "/content/tips.js"
+      //if not (String.IsNullOrEmpty post.Tooltips) then
+      script' "/content/tips.js"
 
       raw post.Tooltips
     ]

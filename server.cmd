@@ -1,3 +1,3 @@
 @echo off
 start https://localhost:5001
-fake run server.fsx
+dotnet fake run server.fsx

@@ -1,3 +1,3 @@
 @echo off
 dotnet tool restore
-dotnet run -p src/build
+dotnet run --project src/build

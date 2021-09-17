@@ -51,7 +51,7 @@ let links: Rss.Link[] = [|
     |]
 
 let entry title link date content = 
-    let md5Csp = MD5CryptoServiceProvider.Create()
+    let md5Csp = MD5.Create()
     let md5 =
         md5Csp.ComputeHash(Text.Encoding.UTF8.GetBytes(content: string))
         |> Array.map (sprintf "%2x")
