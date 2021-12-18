@@ -27,7 +27,13 @@ let main argv =
 
        | _ -> failwith "provide a container name"
 
-    let account = Microsoft.WindowsAzure.Storage.CloudStorageAccount.Parse "***"
+    let result = 
+      CreateProcess.fromRawCommandLine  "op" "get item blog --fields credential"
+      |> CreateProcess.redirectOutput
+      |> Proc.run
+
+    let cnx = result.Result.Output.Trim('\n','\r',' ')
+    let account = Microsoft.WindowsAzure.Storage.CloudStorageAccount.Parse cnx
     let blobClient = account.CreateCloudBlobClient()
     let blog = blobClient.GetContainerReference(container)
 

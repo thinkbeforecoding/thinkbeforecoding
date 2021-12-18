@@ -1,6 +1,7 @@
 group full
-    TaskBuilder.fs
-    WindowsAzure.Storage
-    Fake.IO.FileSystem
-    Fake.Core
-    FSharp.Data
+TaskBuilder.fs
+WindowsAzure.Storage
+Fake.IO.FileSystem
+Fake.Core
+FSharp.Data
+Fake.Core.Process

@@ -21,6 +21,7 @@ nuget FSharp.Text.RegexProvider
 nuget TaskBuilder.fs
 nuget WindowsAzure.Storage
 nuget Fake.Core
+nuget Fake.Core.Process
 
 group func
 source https://api.nuget.org/v3/index.json
