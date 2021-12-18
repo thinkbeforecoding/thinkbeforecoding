@@ -597,8 +597,16 @@
       "date": "2020-12-03T09:21:51.2547358+00:00",
       "url": "applicative-computation-expressions-3",
       "hashtags": [
-        "fsharp", "fsadvent"
+        "fsharp",
+        "fsadvent"
       ]
+    },
+    {
+      "title": "Functional Event Sourcing Decider",
+      "category": "EventSourcing",
+      "date": "2021-12-17T08:55:54.2019611+00:00",
+      "url": "functional-event-sourcing-decider",
+      "hashtags": ["fsharp", "eventsourcing", "dddesign", "fsadvent"]
     }
   ]
 }

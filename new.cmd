@@ -1,2 +1,2 @@
 @echo off
-dotnet run -p src/new %*
+dotnet run --project src/new %*

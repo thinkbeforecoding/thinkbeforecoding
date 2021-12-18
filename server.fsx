@@ -34,18 +34,45 @@ let setContentType ctype: HttpHandler =
       ctx.SetContentType "ctype"
       return Some ctx }
 
+open System.Threading
+open System.Collections.Concurrent
+let mutable changed = ConcurrentBag<AutoResetEvent>()
+
+let setChanged : HttpHandler =
+  (fun nxt ctx ->
+    task {
+      let current = Interlocked.Exchange(&changed, ConcurrentBag())
+      for event in current do
+        event.Set() |> ignore
+        event.Dispose()
+      return Some ctx
+   })
+   >=> Giraffe.Core.setStatusCode 204
+
+let getChanged : HttpHandler =
+  fun nxt ctx ->
+    task {
+      let event = new AutoResetEvent(false)
+      changed.Add(event)
+      event.WaitOne() |> ignore
+      return! Giraffe.ResponseWriters.json {| hasChanged = true |} nxt ctx
+    }
 
 let service =
-  GET >=> choose [
-    route "/" >=> htmlFile "index.html"
-    routef "/post/%s" (fun url -> 
-      let file = posts </> url.Replace("/","-").Replace(":","") + ".html"
-      htmlFile file)
-      // |> List.tryFind (fun p -> p.Date.ToString("yyyy/MM/dd/") + p.Url = url)
-      // |> Option.map (fun p -> htmlFile ("posts/" + p.Date.ToString("yyyy-MM-dd-") + p.Url.Replace(":","") + ".html"))
-      // |> Option.defaultValue (RequestErrors.NOT_FOUND "Not found"))
-    routef "/category/%s" (fun c -> htmlFile ("category/" + c + ".html"))
-    route "/feed/atom" >=> htmlFile ("/feed/atom.xml") >=> setContentType "application/atom+xml"
+  choose [
+    GET >=> choose [
+      route "/" >=> htmlFile "index.html"
+      routef "/post/%s" (fun url -> 
+        let file = posts </> url.Replace("/","-").Replace(":","") + ".html"
+        htmlFile file)
+        // |> List.tryFind (fun p -> p.Date.ToString("yyyy/MM/dd/") + p.Url = url)
+        // |> Option.map (fun p -> htmlFile ("posts/" + p.Date.ToString("yyyy-MM-dd-") + p.Url.Replace(":","") + ".html"))
+        // |> Option.defaultValue (RequestErrors.NOT_FOUND "Not found"))
+      routef "/category/%s" (fun c -> htmlFile ("category/" + c + ".html"))
+      route "/feed/atom" >=> htmlFile ("/feed/atom.xml") >=> setContentType "application/atom+xml"
+      route "/watch" >=> getChanged
+    ]
+    POST >=> route "/watch" >=> setChanged
   ]
 
 let configureApp (app : IApplicationBuilder) =

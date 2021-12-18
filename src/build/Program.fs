@@ -1,22 +1,4 @@
-﻿// Learn more about F# at http://fsharp.org
-
-// #I ".paket/load/netcoreapp3.1/full"
-// //#load "FSharp.Formatting.fsx"
-// #I "packages/full/fsharp.formatting/lib/netstandard2.0"
-// #load "FSharp.Compiler.Service.fsx"
-// #r "FSharp.Formatting.Common.dll"
-// #r "FSharp.Formatting.Markdown.dll"
-// #r "FSharp.Formatting.Literate.dll"
-// #r "FSharp.Formatting.CodeFormat.dll"
-// #r "FSharp.Formatting.ApiDocs.dll"
-// #load "Newtonsoft.Json.fsx"
-// #load "Fable.React.fsx"
-// #load "FSharp.Data.fsx"
-// #load "FSharp.Text.RegexProvider.fsx"
-// #load "feed.fsx"
-
-// #nowarn "86"
-open FSharp.Formatting.Literate
+﻿open FSharp.Formatting.Literate
 open FSharp.Data
 open Fable.React
 open Fable.React.Props
@@ -122,7 +104,7 @@ type Template = {
     canonicalUrl: Uri option
     Previous: Link option
     Next: Link option
-    
+    HotReload: bool
     } 
 
 let metaf name fmt =
@@ -165,11 +147,52 @@ let template template =
            | _,Some url -> link [ Rel "canonical"; Href (string url)  ]
            | _ -> null)
           stylesheet "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css"
-          stylesheet "/content/style-1.1.css"
+          stylesheet "/content/style-1.3.css"
           script [ Defer true
                    Src "https://use.fontawesome.com/releases/v5.5.0/js/all.js"
                    Integrity "sha384-GqVMZRt5Gn7tB9D9q7ONtcp4gtHIUEW/yG7h98J7IpE3kpi+srfFyyB/04OV6pG0"
                    CrossOrigin "anonymous"] []
+
+          if template.HotReload then
+            script [ ] [
+              RawText """
+  
+function reload() {
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == XMLHttpRequest.DONE) {   // XMLHttpRequest.DONE == 4
+           if (xmlhttp.status == 200) {
+         j=JSON.parse(xmlhttp.responseText);
+         console.log(j);
+         //if file changed RESTULT is TRUE we issue a 
+
+         if (j.hasChanged)
+           { 
+           console.log("Changed!");
+             window.location.reload(false); //reload this page
+            }  
+         else
+        console.log("No Change:");
+ 
+         
+           }
+           else if (xmlhttp.status == 400) {
+              console.log('error 400');
+           }
+           else {
+               console.log('Error '+xmlhttp.status );
+           }
+          setTimeout(function() { reload(); }, 250);
+        }
+
+    };
+    xmlhttp.open("GET", "/watch", true);
+    xmlhttp.send();
+
+}
+setTimeout( function() { reload(); }, 250 );
+              """
+            ]
 
 
           link [ Rel "alternate"
@@ -261,7 +284,7 @@ let processScriptPost (post: Post) source md5 =
                   source, 
                   fscOptions = String.concat " " [ fsharpCoreDir; fcsDir; fcs; lang ],
                   fsiEvaluator = e)
-    let output = Literate.ToHtml(doc, "", true, true)
+    let output = Literate.ToHtml(doc, "", false, true)
     
     { MD5 = md5 
       Content = output
@@ -359,7 +382,7 @@ let pipe = str "|"
 let right = fragment [] [ nbsp; str ">"]
 let fmtDate (d:DateTimeOffset) = str (d.ToString("yyyy-MM-ddTHH:mm:ss"))
 let author = str " / jeremie chassaing"
-let templatePost categories recentPosts titler post =
+let templatePost hotReload categories recentPosts titler post =
   let link l = a [Href l.Href] [ str l.Text]
   let prev = post.Previous |> Option.map link
   let next = post.Next |> Option.map link
@@ -402,7 +425,8 @@ let templatePost categories recentPosts titler post =
     footer = footer
     canonicalUrl = Some (Uri ("https://thinkbeforecoding.com/" ./ post.Link.Href)) 
     Next = post.Previous
-    Previous = post.Next }
+    Previous = post.Next
+    HotReload = hotReload }
   |> template  
 
 let savePost outputDir post html =
@@ -434,7 +458,7 @@ let recentPosts =
       ]
     ]
 
-let listPage outputDir categoriesHtml recentPosts name title (posts: Post list) = 
+let listPage hotReload outputDir categoriesHtml recentPosts name title (posts: Post list) = 
     let dest = outputDir </> name + ".html"
     let catPosts =
       posts
@@ -458,6 +482,7 @@ let listPage outputDir categoriesHtml recentPosts name title (posts: Post list) 
       canonicalUrl = None
       Previous = None
       Next = None
+      HotReload = hotReload
        }
     |> template
     |> Html.save dest
@@ -475,10 +500,10 @@ module Categories =
             a [Href <| "/category/" + Category.name c ] [str (Category.title c)]
           ] ] ]
  
-  let processCategory outputDir recentPosts cat =
+  let processCategory hotReload outputDir recentPosts cat =
     posts
     |> List.filter (fun p -> p.Category = Some cat)
-    |> listPage outputDir categoriesHtml recentPosts (Category.name cat) (Category.title cat) 
+    |> listPage hotReload outputDir categoriesHtml recentPosts (Category.name cat) (Category.title cat) 
 
 
 let prevnext f l =
@@ -495,9 +520,9 @@ let prevnext f l =
 
 
 
-[<EntryPoint>]
-let main argv =
+
     
+let run hotReload = 
     Directory.ensure Path.tmp
     let formattedPosts =
       posts
@@ -514,7 +539,7 @@ let main argv =
     formattedPosts
     |> List.iter (fun p ->
       p
-      |> templatePost Categories.categoriesHtml recentPosts Post
+      |> templatePost hotReload Categories.categoriesHtml recentPosts Post
       |> savePost Path.outPosts p)
 
 
@@ -531,9 +556,9 @@ let main argv =
     Directory.ensure Path.categories
 
     categories
-    |> List.iter (Categories.processCategory Path.categories recentPosts)
+    |> List.iter (Categories.processCategory hotReload Path.categories recentPosts)
 
-    listPage Path.categories Categories.categoriesHtml recentPosts "all" "All posts so far" posts
+    listPage hotReload Path.categories Categories.categoriesHtml recentPosts "all" "All posts so far" posts
 
 
     printfn "[Media] copy dir"
@@ -546,7 +571,36 @@ let main argv =
     |> List.tryHead
     |> Option.iter (fun p -> 
           p
-          |> templatePost Categories.categoriesHtml recentPosts (fun _ -> Home)
+          |> templatePost hotReload Categories.categoriesHtml recentPosts (fun _ -> Home)
           |> Html.save (Path.out </> "index.html") )
 
+let watch() =
+  printfn "Start watch mode"
+  try
+    run true
+    Http.Request("http://localhost:5000/watch", httpMethod = "POST") |> ignore
+  with
+  | ex -> eprintf "%O" ex
+  use watcher = new IO.FileSystemWatcher(Path.posts)
+  let quit = new Threading.ManualResetEvent(false)
+  watcher.Changed |> Event.add (fun e ->
+    Threading.Thread.Sleep(250)
+    try
+      run true
+      Http.Request("http://localhost:5000/watch", httpMethod = "POST") |> ignore
+    with
+    | ex -> eprintfn "%O" ex
+  )
+  Console.CancelKeyPress   |> Event.add(fun _ -> quit.Set() |> ignore)
+  watcher.EnableRaisingEvents <- true
+
+  quit.WaitOne() |> ignore
+
+  
+
+[<EntryPoint>]
+let main argv =
+    match argv with
+    | [|"-w"|] -> watch()
+    | _ -> run false
     0 // return an integer exit code
