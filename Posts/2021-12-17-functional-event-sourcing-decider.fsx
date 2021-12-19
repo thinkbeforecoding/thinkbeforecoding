@@ -7,29 +7,29 @@ After years of talks and workshops about Functional Event Sourcing, I noticed th
 only 4 posts on the topic.
 
 The first of them is a [rant in 2013](/post/2013/07/28/Event-Sourcing-vs-Command-Sourcing) about [Martin Fowler's article from 2005](https://www.martinfowler.com/eaaDev/EventSourcing.html)
-describing something that could be called Command Sourcing and is misleading people into thinking the are doing Event Sourcing.
+describing something that could be called Command Sourcing and is misleading people into thinking they are doing Event Sourcing.
 
-The second is a [simple drawing](/post/2014/01/04/Event-Sourcing.-Draw-it) describing the flow of Functional Event Soucing. Really usefull, many people told
-me somthing clicked once they saw this picture. But still a bit short. I made a few wording change since then.
+The second is a [simple drawing](/post/2014/01/04/Event-Sourcing.-Draw-it) describing the flow of Functional Event Sourcing. Really useful, many people told
+me something clicked once they saw this picture. But still a bit short. I made a few wording changes since then.
 
 I then made two posts about [Monoidal](/post/2014/04/11/Monoidal-Event-Sourcing) [Event Sourcing](/post/2014/04/27/Monoidal-Event-Sourcing-Examples)
 trying theoretical ideas to change this [external monoid](http://thinkbeforecoding.github.io/FsUno.Prod/Dynamical%20Systems.html) to a plain monoid.
 
 It was accompanied by many samples on github like the many [FsUno](https://github.com/thinkbeforecoding/UnoCore) implementations, the [crazyeight](https://github.com/thinkbeforecoding/hackyourjob-crazyeights) workshop
 as well as the source code of [Crazy Farmers](https://github.com/thinkbeforecoding/crazy)' port for [Board Game Arena](https://boardgamearena.com/gamepanel?game=crazyfarmers) that is using both
-Server Side and Client Side event sourcing, the client side being transpiled to JS using Fable, and the server side to PhP using peeble.
+Server Side and Client Side event sourcing, the client side being transpiled to JS using Fable, and the server side to PHP using peeble.
 
-I'm currently working on a book about it, but writing books takes times. And digging
-the topic led me to discover new thinkgs that make it even longer to write.
+I'm currently working on a book about it, but writing books takes time. And digging
+the topic led me to discover new things that make it even longer to write.
 
-So here it is, a beginner introduction to Functional Event Sourcing and it's main
+So here it is, a beginner introduction to Functional Event Sourcing and its main
 pattern, the Decider.
 
 ## Anatomy of a Service
 
 Let's look at a System. Any System.
 
-Without interactions with the outside, such system would be pretty useless.
+Without interactions with the outside, such a system would be pretty useless.
 We can represent these interactions in a generic way as inputs and outputs
 
     [lang=txt]
@@ -41,7 +41,7 @@ We can represent these interactions in a generic way as inputs and outputs
                   │                    │
                   └────────────────────┘
 
-A system that accepts inputs but produce no outputs would be akind of black hole.
+A system that accepts inputs but produces no outputs would be a kind of black hole.
 
     [lang=txt]
                   ┌────────────────────┐
@@ -54,7 +54,7 @@ A system that accepts inputs but produce no outputs would be akind of black hole
 
 this is not totally useless (cf /dev/null), but quite limited.
 
-On the other hand, a system that produce outputs without inputs seems also very simplistic.
+On the other hand, a system that produces outputs without inputs seems also very simplistic.
 Without introducing time, it would necessarily be a constant:
 
     [lang=txt]
@@ -78,7 +78,7 @@ So let's introduce time. Lets add a clock to our system.
                   └────────────────────┘
 
 The problem of clock is that is is changing over time (obviously), so let's
-refactor to treat clock as an input (it also becommes a trigger):
+refactor to treat clock as an input (it also becomes a trigger):
 
     [lang=txt]
                   ┌────────────────────┐
@@ -90,7 +90,7 @@ refactor to treat clock as an input (it also becommes a trigger):
                   │  └──────────────┘  │
                   └────────────────────┘
 
-Here, our system is a pure function of time. This can be usefull, but most of the
+Here, our system is a pure function of time. This can be useful, but most of the
 systems we deal with are a bit more complicated.
 
 As we wanted interactions, we can reintroduce inputs as triggers. For instance a user action.
@@ -112,7 +112,7 @@ code execution can be considered as instant. To be executed the code needs some 
 A user action can be such a trigger, in this case, current time can be seen as one parameter of the action.
     
 The trigger can also be the clock (a timer, an alarm..) but still the code is called for some reason 
-(it's time for the Market to close, a check must be made every 5 mintes...). In this case, this is a scheduled
+(it's time for the Market to close, a check must be made every 5 minutes...). In this case, this is a scheduled
 automatic action, but it's still an action with current time as additional data.
 
 
@@ -121,8 +121,8 @@ Most of the time, the output not only depends on the input action, but also on w
 The system needs a way to keep a trace of the effects of previous action to react accordingly.
 
 Without such memory, the system is always reacting the same way to the same input action, regardless of
-anything that happened in the past. Some systems behave like this, but is a constrained case of more
-general systems  that keep a trace of past actions.
+anything that happened in the past. Some systems behave like this, but are a constrained case of more
+general systems that keep a trace of past actions.
 
 This memory is called state and is accessed and modified by the system code. It can be stored
 in memory (RAM) or saved to a database. Reading it can be considered a sort of input, changing it a sort of output:
@@ -143,19 +143,19 @@ in memory (RAM) or saved to a database. Reading it can be considered a sort of i
                   └───────────────────┘
 
 
-This is a useful step. The subsystem can be cleard of a lot of technical concerns.
-The input interfaces can be abstracted (HTTP API, message queue, UI events, command line argumes,
+This is a useful step. The subsystem can be cleared of a lot of technical concerns.
+The input interfaces can be abstracted (HTTP API, message queue, UI events, command line arguments,
 timers or alarms...) and parameters can be passed to the subsystem directly.
 The output interaction can also be abstracted and hidden behind interfaces (Outbound HTTP calls,
-messages or notification sending...). State loding an saving can also be hidden behind an interface
+messages or notification sending...). State loading and saving can also be hidden behind an interface
 to protect the subsystem from implementation details.
 
-Once carrfully cleared from technical concers, the code in the subsystem is merely composed
+Once carefully cleared from technical concerns, the code in the subsystem is merely composed
 of the system logic. What we commonly call the business logic, or Domain. We call the rest of the code the
 Application layer.
 
 We described here the hexagonal architecture where the application core, the Domain, is loosely
-coupled to it's environment through port interfaces, implemented as adapters to the technical infrastructure. 
+coupled to its environment through port interfaces, implemented as adapters to the technical infrastructure. 
 
 ## Functional Core
 
@@ -180,7 +180,7 @@ type Output = Output
 let subsystem (action: Action) (state: State) : State * Output list =
     state, []
 (**
-This is here, obsviously a system that does nothing. By returning a new state,
+This is here, obviously a system that does nothing. By returning a new state,
 it will be persisted for the next call, and by returning output, it will be able to product other side effects.
 
 
@@ -193,8 +193,8 @@ A command is an action on the system with an intention to change it. A user plac
 cancels a subscription, books a hotel room. It can succeed of fail, but should have an effect on the system.
 
 On the other side, something can happen outside of the system that should have an effect on it. The weather changed,
-a customer checked out, a cargo leaved a harbor, a scheduled alarm expired. Those things
-happened and there's nothing we can do about it. This can trigger a change in the system. We call the External Events.
+a customer checked out, a cargo left a harbor, a scheduled alarm expired. Those things
+happened and there's nothing we can do about it. This can trigger a change in the system. We call them External Events.
 
 Our Functional Core domain could directly take External Events as an input, be we can find in the Domain
 internal Commands associated. The WeatherChanged event leads to a PrepareForRain command. It's 4PM, the market bell rang, 
@@ -236,10 +236,10 @@ cannot always give definitive answers.
 ### Against log
 
 This often leads to bloating the code with logs. Logs are initially useful, but they don't age well. They are added
-on second thought, and seldom tested. Like commands, after a few refactorings, the most often end up outdated, reporting
+on second thought, and seldom tested. Like commands, after a few refactorings, they most often end up outdated, reporting
 incorrect and/or partial traces. Having up to date correct logs requires to be careful. On the first carelessness occurrence the
 data in the log will become unreliable. This becomes quickly a time hog during diagnosis, especially when unexpected cases happen,
-everything need to be double checked, in the traces and in the code that mey have changed in-between.
+everything needs to be double checked, in the traces and in the code that may have changed in-between.
 
 As an afterthought, their operation is also not designed with care. Log retention is costly, and
 choosing the right log level is difficult. Too verbose, logs storage price can become prohibitive, forcing a short retention period.
@@ -249,15 +249,15 @@ becomes useless anyway if the log cannot be trusted.
 
 ### Events
 
-To avoid this, we decide to untagle decision taking and state changing. We'll be explicit about
-what happens by materlializing decisions outcome before changing state, and changing state only
+To avoid this, we decide to untangle decision taking and state changing. We'll be explicit about
+what happens by materializing decisions outcome before changing state, and changing state only
 using data from this decision.
 
-We will express these Commands processing outcomes as Events expressing as past tense verbs what just happend to the system, 
+We will express these Commands processing outcomes as Events expressing as past tense verbs what just happened to the system, 
 leading to a new state.
 
 A Switch Light On Command will produce Light Switched On Event if any. 
-A Transfer Money Command will produce a Money Transfered Event, or a Money Transfer Rejected Event due to insufficient funds.
+A Transfer Money Command will produce a Money Transferred Event, or a Money Transfer Rejected Event due to insufficient funds.
 
 Decision then just take this simple form:
 
@@ -293,7 +293,7 @@ The first point is really interesting for testing and reasoning about the code.
 Given current State and Command, the resulting Event list is always the same. This is true whatever the day and time and whatever
 the current state anywhere else. It eases the tests that will never be
 dependent on external concerns. It also eases debugging since if we logged the Command
-data and are able to know State at that point in time - which we’ll do - there is only a single possible outcome. This force us to
+data and are able to know State at that point in time - which we’ll do - there is only a single possible outcome. This forces us to
 not depend on any external data that is not already in State or Command parameters, as current time or external data retrieval.
 
 The second point stems from our choice to make decision explicit. If the function produces any side effect, it will break our
@@ -310,7 +310,7 @@ In summary decision function is a way to write:
 ## Evolution
 
 We’ve decided to split taking decision and applying resulting changes. The goal was to make the actual decision
-taken more explicit in the code base. So in previous part, we devised a decide function that returns Events but do
+taken more explicit in the code base. So in previous part, we devised a decide function that returns Events but does
 not actually change State. Now, let’s see how to apprehend change in a simple and highly testable way. This will
 actually be quite straight forward.
 
@@ -320,7 +320,7 @@ We could modify current State to mutate it so it becomes the new State, but this
 Mutation will not automatically lead you to bad code and bugs, but we can consider it a premature optimization at this point.
 If you’re not familiar with Functional Programming, immutability can seem very costly and inefficient, and this can be correct in some contexts.
 But most modern languages, functional or not, are fast enough in immutable scenarios compared to querying a database or making a network call.
-The result is  that the overhead of immutability at the level of domain code can often be ignored. We’ll see how immutable data structure for state helps reasoning about the code,
+The result is that the overhead of immutability at the level of domain code can often be ignored. We’ll see how immutable data structure for state helps reasoning about the code,
 and how it has interesting composition properties. So let’s just go on with immutable State, and you’ll decide of your implementation based
 on your own stack constraints later.
 
@@ -338,9 +338,9 @@ Let’s call this function evolve, its signature is:
 *)
 type Evolve = State -> Event -> State
 (**
-It takes a State and an Event and returns a State. It's meaning is: Given current State, when Event occurs, here is the new State.
+It takes a State and an Event and returns a State. Its meaning is: Given current State, when Event occurs, here is the new State.
 
-The code of the evolve function should be extremely simple. Decision as already been taken.
+The code of the evolve function should be extremely simple. Decision has already been taken.
 It should probably not be more that setting a field, adding a element to a list, or incrementing a value, or setting/reseting a flag.
 
 The evolve function is core to Event Sourcing but it will rarely be more complicated than a few lines of codes.
@@ -348,24 +348,24 @@ The evolve function is core to Event Sourcing but it will rarely be more complic
 ## Initial State
 
 For the first Command, we find ourselves in a specific situation. We have a Command and a decide function.
-But the decide function need an input state, and we have not State for now that we can pass as a parameter.
+But the decide function needs an input state, and we have no State for now that we can pass as a parameter.
 Same thing with the evolve function on the first Event.
 
 If we consider the state returned by the evolve function and this first Event, we can obviously say that it's the State
-after the first Event occurs. Se the input state is the State before the first Event occurs, when nothing occured yet. We will call it
+after the first Event occurs. So the input state is the State before the first Event occurs, when nothing occurred yet. We will call it
 Initial State.
 
-Initial State is important as it has to be explicitly defined. Some times it can be chosen between possible futher States.
-For a light, for instance, it could be On or Off. For an account, it could be defined with a 0 balance. It will just use specific values for the proporties,
- and it is totally possible that it wil be back in the same state later. The light will be Off again, and the account could return to a 0 balance in the future.
+Initial State is important as it has to be explicitly defined. Some times it can be chosen between possible further States.
+For a light, for instance, it could be On or Off. For an account, it could be defined with a 0 balance. It will just use specific values for the properties,
+ and it is totally possible that it will be back in the same state later. The light will be Off again, and the account could return to a 0 balance in the future.
 
  However, the first Event is sometime irreversible. For a card game, before the first event happens,
   the game is not yet started. After the first event, it is started, it will eventually end, bit will not be in the "not started yet state" anymore.
-  This situation often arise when some initial properties have to be defined, when an initial actions sets the system up.
-  In a card game, the dealer will put the first card on the table. This is anction that can only happen at the beginning, it's the game setup.
-  It marks the actual start of the game, before that, not other action can take place.
+  This situation often arises when some initial properties have to be defined, when an initial actions sets the system up.
+  In a card game, the dealer will put the first card on the table. This is action that can only happen at the beginning, it's the game setup.
+  It marks the actual start of the game, before that, no other action can take place.
 
-  In this case, the initial State has not other property than beeing the action Initial State.
+  In this case, the initial State has no other property than being the action Initial State.
   It doesn't need to contain more information. It is easy to represent such state in languages with sum types or
   discriminated unions:
 *)
@@ -394,7 +394,7 @@ module CardGame2 =
     { Started = false
       TopCard = Unchecked.defaultof<Card> }
 (**
-You can notice here that two problem arise. First, we have to be careful not to use the TopCard property
+You can notice here that two problems arise. First, we have to be careful not to use the TopCard property
 when Started is false. Should we use an exception or a similar error mechanism to prevent this from happening?
 Probably, but it would be far better to not be able to write such code in a first place. Second, what is a good
 value for TopCard in the initial state when Started is false ? Here I chose a club three which can seems a bit arbitrary,
@@ -407,10 +407,10 @@ On the pro side, this makes state more compact, and avoids requiring a check on 
 leading to consistency problems. On the cons, the initial state is less explicit. The code doesn’t express clearly when it is valid
 to have a TopCard or not.
 
-## Stiching it together
+## Stitching it together
 
 Now we have all the parts needed for Event Sourcing. Let's use them together.
-We have three types and tree elements described in the previous chapters that have tye following signatures:
+We have three types and three elements described in the previous chapters that have the following signatures:
 
     type Command
     type Event
@@ -444,7 +444,7 @@ It will return the outcomes of the Command as a list of Event, the things that h
 If the output Event list is empty, nothing happened, no need to compute a new state, we are ready for the next Command.
 This should not happen frequently for at least two reasons. A system that does mostly nothing is not very interesting and
 may probably be implemented without Event Sourcing... But doing nothing can also make some
-situation harder to diagnose. When a Command was intended to something but resulted in no change, it can be interesting
+situation harder to diagnose. When a Command was intended to do something but resulted in no change, it can be interesting
 to know the reasons. Emitting no Events will make the distinction between an infrastructure problem and a 
 motivated decision to do nothing harder to find. Did the system crash, or did it just decide to do nothing?
 
@@ -467,7 +467,7 @@ This could give something like:
     let newState2 = evolve newState1 event2
     let newState3 = evolve newState2 event3
 
-We can do better, be we now have the next current State and we are ready to process the next Command.
+We can do better, but we now have the next current State and we are ready to process the next Command.
 
 ## Fold
 
@@ -484,8 +484,8 @@ let computeNextState currentState events =
         state <- evolve state event
     state
 (**
-As you can see, F# makes mutability explicit through the mutable keyworkd. Without it, state cannot be
-assigned to a new value... It also use this backward looking left arrow `<-` which seems to suffest that we're
+As you can see, F# makes mutability explicit through the mutable keyword. Without it, state cannot be
+assigned to a new value... It also uses this backward looking left arrow `<-` which seems to suggest that we're
 going in the wrong direction. F# IDEs also tend to display mutable variables in oranges to signal them as a kind
 of warning...
 
@@ -504,7 +504,7 @@ let rec fold state events =
 
 (**
 When the list is empty [] we just return input state. When the list is not empty, we deconstruct the list as event :: rest,
-calling event the first Event, and rest the rest of the list. We can then compute the new intermediated State using evolve
+calling event the first Event, and rest the rest of the list. We can then compute the new intermediate State using evolve
 and call fold again with this newState and the remaining events rest until we processed them all.
 *)
 
@@ -569,7 +569,7 @@ Which is equivalent to:
 
     events |> List.fold (fun state event -> List.append state [event]) []
 
-This rebuilds an exact copy of the initial events list ! We can just pass the events list directly to the decide function.
+This rebuilds an exact copy of the initial events list! We can just pass the events list directly to the decide function.
 
 In that setting, there is just a decide function with the following signature:
 
@@ -583,12 +583,12 @@ This can definitely be of use in context with few events, or when performance do
 
 State built by the evolve function is just a projection to compact the information contained in the events to make it easier and/or faster for the decide function to take decision. If it does not make it easier/faster, just use the raw event list. 
 
-The full list of past Event is the the form of the State that contains maximal information. This represents the full history.
+The full list of past Event is the form of the State that contains maximal information. This represents the full history.
 
 
 ## Terminal State
 
-For now our systems has an Initial State to start and some functions, decide and evolve, to change over time.
+For now our system has an Initial State to start and some functions, decide and evolve, to change over time.
 
 At first it seems enough, but this is due to one of our typical engineer’s bias… We’re very good at setting things up,
 but bad at disposing them. I’ve seen many systems where loads of data remained in the system mostly because nobody knew
@@ -616,7 +616,7 @@ It could lead to data dangling forever. To avoid this, you have to determine a p
 It probably already exists in the domain, for instance, lost shipment cases are considered closed after 1 month in absence of reclamation.
 Or you could establish a new one. For a card game, players have a maximum time to play. It could range from a few hours for a real time game,
 to a few weeks for turn by turn. A process could be put in place to alert users, but after this delay a command is sent to the system to close it,
-and it then transition to a terminal state.
+and it then transitions to a terminal state.
 
 
 The question is more tricky for systems whose behavior can span continuously over many years with no foreseeable end. But this is something that has already been solved by accountants.
@@ -626,10 +626,10 @@ This is where accountants define an accounting period. At the end of the period,
 The current book is closed and a new one is opened, starting from previous book balance. This way once a book is closed, it is never changed anymore and can
 be archived for reference. If an error is found after closing the book, a compensation is recorded in the current book.
 
-It is highly advised to put such mechanism in place for your own system, especially if you keep data over time, like saving events.
+It is highly advised to put such mechanisms in place for your own system, especially if you keep data over time, like saving events.
 Even if storage is going cheaper over time, your system will evolve, and since data that is considered hot can change at any time, it must be migrated and evolved in a transactional
-or high availability, zero downtime way. This place a high burden on operations. For streams of events, recomputing current state with such strategy will be done in a time dependent
-on your business size. Without it will be dependent on both business size and time since it started (it’s actually a integral of business size over time).
+or high availability, zero downtime way. This places a high burden on operations. For streams of events, recomputing current state with such strategy will be done in a time dependent
+on your business size. Without it it will be dependent on both business size and time since it started (it’s actually an integral of business size over time).
 
 Once we’ve defined a condition for disposability, we can implement it with a simple function:
 
@@ -650,7 +650,7 @@ We will call a Decider the combination of the seven elements we’ve identified 
 * A State type that represents all possible states of the Decider (can just be the list of all events)
 * An Initial State that is the state of the Decider before anything happened to it
 * A decide function that takes a Command and a State and returns a list of Event
-* An evolve function that takes a State and an Event an returns a new State
+* An evolve function that takes a State and an Event and returns a new State
 * An isTerminal function that takes a State and returns a boolean value
 
 
@@ -663,7 +663,7 @@ type Decider<'c,'e,'s> =
       isTerminal: 's -> bool }
 
 (**
-The Decider is a conceptual way to think about systems that change in time. An concepty interface between the Application layer
+The Decider is a conceptual way to think about systems that change in time. A concepty interface between the Application layer
 and the Domain code. It has the advantage to create extremely low friction between them.
 
 ## Run in memory
@@ -679,12 +679,12 @@ module InMemory =
             state <- List.fold decider.evolve state events
             events
 (**
-For any decider we can no call the start method function. It will return a function which
+For any decider we can now call the start method function. It will return a function which
 given a command, returns the list of Events and is ready for the next command.
 
 ## Run on a database
 
-The previous implementation is not persistent, and will loose any state once closed. We can
+The previous implementation is not persistent, and will lose any state once closed. We can
 persist state in a database like any classic application:
 *)
 (*** hide ***)
@@ -735,7 +735,7 @@ module PersistenceWithEtag =
                     handle()
             handle()            
 (**
-This version will stubornly retry until we avoid the concurrency problem.
+This version will stubbornly retry until we avoid the concurrency problem.
 
 It is also possible to keep state in memory to avoid loading state on each call. However in case of conflict,
 we will reload the state as well as the current ETag
@@ -763,7 +763,7 @@ module PersistenceWithEtagAndRetry =
                     etagAndState <- (newEtag, newState)
                     events
                 | None ->
-                    // a conflic occured, reload etag and state
+                    // a conflict occurred, reload etag and state
                     // from database and retry
                     handle (StorageWithEtagAndRetry.loadState(id))
             handle etagAndState
@@ -798,9 +798,9 @@ module WithEventStore =
             events
 
 (**
-This version is reloading all the events from the begining on each command. This
+This version is reloading all the events from the beginning on each command. This
 is totally acceptable for short streams. Since events are usually small in size, loading
-less that 100 events is very fast and folding them, almost instance (think of it as a loop of 100 iteration
+less that 100 events is very fast and folding them, almost instant (think of it as a loop of 100 iterations
 that do a few basic operations). 
 
 As for the database backed version, we can protect it against concurrent appends to the stream. Here we use
@@ -912,7 +912,7 @@ module WithSnapshots =
                     events
                 | Error(newVersion, newEvents) ->
                     // there was a concurrent write
-                    // catchup missing events and retry
+                    // catch-up missing events and retry
                     let newState = List.fold decider.evolve state newEvents
                     handle (newVersion, newState)
 
@@ -924,16 +924,16 @@ module WithSnapshots =
 
 (**
 Here again we have the problem of snapshot invalidation. The easiest way to deal with it
-is to store all snapshot for a same version of the code in a same collection, container or database, and 
-change it when snapshot are not valid anymore. This happens when the structure of the state change after a 
+is to store all snapshots for a same version of the code in a same collection, container or database, and 
+change it when snapshots are not valid anymore. This happens when the structure of the state changes after a 
 refactoring. The saved snapshots won't have the expected shape which could cause some errors. 
 
 You can just change the collection/container/database name when this happen. The collection will be empty on start
-and snapshot will be recomputed. You can also recompute snapshots in advance before deploying a new version.
+and snapshots will be recomputed. You can also recompute snapshots in advance before deploying a new version.
 
 Once deployed and checked that old version is not needed anymore, you can just delete the old collection.
 
-Ideally you would compute the collection name has a hash of the evolve function, this way, snapshots will be automatically
+Ideally you would compute the collection name as a hash of the evolve function, this way, snapshots will be automatically
 discarded when the evolve function changes (which always happens when the state structure changes)
 *)
 (*** hide ***)
@@ -978,7 +978,7 @@ module WithSnapshotsInContainers =
                     events
                 | Error(newVersion, newEvents) ->
                     // there was a concurrent write
-                    // catchup missing events and retry
+                    // catch-up missing events and retry
                     let newState = List.fold decider.evolve state newEvents
                     handle (newVersion, newState)
 
@@ -999,7 +999,7 @@ The other interesting point is that decider can be run in many ways. Purely in m
 a database or an event store. No change on the domain code was required. This indicates a high level
 of independence on infrastructure.
 
-You can write the Domain code as Deciders, and chose afterward which kind of persistence you want to use, if any.
+You can write the Domain code as Deciders, and choose afterward which kind of persistence you want to use, if any.
 
 The last interesting point, is that Deciders can be composed. But that's another story.
 
