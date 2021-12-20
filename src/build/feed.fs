@@ -67,10 +67,10 @@ let entry title link date content =
         [||],
         Rss.Content("html", content)
         )
-let feed entries =
+let feed (entries: Rss.Entry list) =
     Rss.Feed("en", 
         Rss.Title("html","thinkbeforecoding"), 
-        links,DateTimeOffset.UtcNow, 
+        links, (entries |> List.map (fun e -> e.Updated) |> List.max ) , 
         Rss.Author("Jérémie Chassaing"),
         "urn:md5:18477",
         Rss.Generator("https://fsharp.org","F# script"),

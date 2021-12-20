@@ -84,9 +84,9 @@ refactor to treat clock as an input (it also becomes a trigger):
                  .────────────────────.
                  │  Clock    System   │
                  │   │                │
-                 │   ▼                │    Outputs
-                 │  .──────────────.  │
-                 │  │  Subsystem   │───────────────►
+                 │   ▼                │    
+                 │  .──────────────.  │     Outputs
+                 │  │  Subsystem   │──────────────►
                  │  '──────────────'  │
                  '────────────────────'
 
@@ -99,9 +99,9 @@ As we wanted interactions, we can reintroduce inputs as triggers. For instance a
                  .───────────────────.
                  │  Clock    System  │
                  │   │               │
-    Actions      │   ▼               │    Outputs
-                 │  .─────────────.  │
-       ────────────►│  Subsystem  │───────────────►
+                 │   ▼               │    
+    Actions      │  .─────────────.  │     Outputs
+       ────────────►│  Subsystem  │──────────────►
                  │  '─────────────'  │
                  '───────────────────'
 
@@ -131,9 +131,9 @@ in memory (RAM) or saved to a database. Reading it can be considered a sort of i
                  .───────────────────.
                  │  Clock    System  │
                  │   │               │
-    Actions      │   ▼               │    Outputs
-                 │  .─────────────.  │
-       ────────────►│  Subsystem  │───────────────►
+                 │   ▼               │    
+    Actions      │  .─────────────.  │     Outputs
+       ────────────►│  Subsystem  │──────────────►
                  │  '─────────────'  │
                  │     ▲        │    │
                  │     │        ▼    │
