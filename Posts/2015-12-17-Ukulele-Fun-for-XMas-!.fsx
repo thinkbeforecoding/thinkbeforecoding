@@ -18,6 +18,7 @@ F is 7, A is 9, B is 11, and we reach next octave at 12, which is C 1 :
 *)
 open System
 
+
 let C n = 12 * n
 let D n = C n + 2
 let E n = C n + 4
@@ -288,7 +289,7 @@ You can find NAudio on nuget.org
 
 For simplicity I will use the midi synthetizer:
 *)
-#r @"../packages\NAudio\lib\net35\NAudio.dll"
+#r @"../packages\NAudio\lib\netstandard2.0\NAudio.dll"
 
 open NAudio.Midi
 let device = new MidiOut(0)

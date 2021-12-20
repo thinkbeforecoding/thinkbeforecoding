@@ -147,7 +147,7 @@ let template template =
            | _,Some url -> link [ Rel "canonical"; Href (string url)  ]
            | _ -> null)
           stylesheet "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css"
-          stylesheet "/content/style-1.3.css"
+          stylesheet "/content/style-1.4.css"
           script [ Defer true
                    Src "https://use.fontawesome.com/releases/v5.5.0/js/all.js"
                    Integrity "sha384-GqVMZRt5Gn7tB9D9q7ONtcp4gtHIUEW/yG7h98J7IpE3kpi+srfFyyB/04OV6pG0"
@@ -265,10 +265,71 @@ let processHtmlPost (post: Post) source md5 =
 open FSharp.Text.RegexProvider
 type RemoveNamespace = Regex< @"Microsoft\.FSharp\.Core\.(?<name>\w+)">
 
+open System.Xml.Linq
+let svgns = XNamespace.Get "http://www.w3.org/2000/svg"
+let patchSvg (svg: string) =
+   let doc = XDocument.Parse svg 
+   let style = doc.Root.Element(svgns + "style")
+   let styleTxt = style.Value
+   style.Value <- styleTxt.Replace("black", "#d1d1d1").Replace("white","#212d30")
+   string doc
+
+
+
+let prepareDiagrams (post: Post) source =
+    let lines = IO.File.ReadAllLines(source) |> Array.toList
+
+    let rec findDiag (lines: string list) result diags =
+        match lines with
+        | [] -> List.rev result, List.rev diags
+        | line :: rest when line.Contains("[lang=diag]") ->
+            takeDiag rest ( $"![Diagram](/public/{post.Url}/diagram-{List.length diags}.svg)" :: result) diags []
+        | line :: rest -> 
+            findDiag rest (line :: result) diags
+    and takeDiag lines result diags diag =
+        match lines with
+        | [] -> List.rev result, List.rev ((List.rev diag) :: diags)
+        | line :: _ when line.Length = 0 || line[0] <> ' ' ->
+            findDiag lines result ((List.rev diag) :: diags)
+        | line :: rest -> 
+            takeDiag rest result diags (line :: diag)
+
+    let scriptLines, diags = findDiag lines [] []
+
+    let diagDir = Path.tmp </> "public" </> post.Url
+
+    for i,diag in Seq.indexed diags do
+        Directory.ensure diagDir
+        tracefn "[DIAG]%d" i
+        let diag = 
+            if diag |> List.forall (fun l -> l.StartsWith "    ") then
+                diag |> List.map (fun l -> l.Substring 4)
+            else
+                diag
+                
+        let diagTxt = String.concat "\n" diag
+        
+        let result = 
+            Fake.Core.CreateProcess.fromRawCommandLine "docker" $"""run --rm ghcr.io/gtramontina/svgbob:0.5.3 -s "{diagTxt}" """
+            |> Fake.Core.CreateProcess.redirectOutput
+            |> Fake.Core.Proc.run
+        if result.ExitCode <> 0 then
+            failwithf $"Error while converting diagram. Make sure docker is running: {result.Result.Error}" 
+        let svg = patchSvg result.Result.Output
+        let path = diagDir </> $"diagram-{i}.svg"
+        IO.File.WriteAllText(path, svg)
+
+
+    scriptLines |> String.concat "\n"
+
+        
+
+
 let processScriptPost (post: Post) source md5 =
   try
     let dest = post.Filename + ".html"
 
+    let script = prepareDiagrams post source
 
     let doc = 
       let fsharpCoreDir = "-I:" + __SOURCE_DIRECTORY__ + @"\..\..\packages\full\FSharp.Core\lib\netstandard2.0\"
@@ -280,7 +341,8 @@ let processScriptPost (post: Post) source md5 =
         eprintfn "%s" e.Text
         eprintfn "%O" e.Exception
         eprintfn "%s" e.StdErr)
-      Literate.ParseAndCheckScriptFile(
+      Literate.ParseScriptString(
+                  script,
                   source, 
                   fscOptions = String.concat " " [ fsharpCoreDir; fcsDir; fcs; lang ],
                   fsiEvaluator = e)
@@ -535,12 +597,24 @@ let run hotReload =
       Directory.delete Path.out
     with
     | ex -> printfn "Could not delete out dir"
+
+    printfn "[Media] copy dir"
+    Directory.copy Path.media Path.outmedia
+
     Directory.ensure Path.outPosts
     formattedPosts
     |> List.iter (fun p ->
       p
       |> templatePost hotReload Categories.categoriesHtml recentPosts Post
       |> savePost Path.outPosts p)
+
+    posts
+    |> List.iter (fun p ->
+        let srcPath = Path.tmp </> "public" </> p.Url
+        let dstPath = Path.outmedia </> p.Url
+        if IO.Directory.Exists srcPath then
+            Directory.copy srcPath dstPath
+    )
 
 
     Directory.ensure Path.feed
@@ -561,8 +635,6 @@ let run hotReload =
     listPage hotReload Path.categories Categories.categoriesHtml recentPosts "all" "All posts so far" posts
 
 
-    printfn "[Media] copy dir"
-    Directory.copy Path.media Path.outmedia
     printfn "[Content] copy dir"
     Directory.ensure Path.outcontent
     Directory.copy Path.content Path.outcontent
