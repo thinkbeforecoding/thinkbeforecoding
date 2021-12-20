@@ -244,7 +244,7 @@ everything needs to be double checked, in the traces and in the code that may ha
 As an afterthought, their operation is also not designed with care. Log retention is costly, and
 choosing the right log level is difficult. Too verbose, and the expense of log storage can become prohibitive, forcing a short retention period.
 Not verbose enough, and critical information can be missing. Cleaning logs is also difficult because not all logs are of equal importance, nor is
-everything equally relevant over the same timespan. Sadly ,log systems rarely give much flexibility in the cleaning/archiving process. All this
+everything equally relevant over the same timespan. Sadly, log systems rarely give much flexibility in the cleaning/archiving process. All this
 becomes useless anyway if the log cannot be trusted.
 
 ### Events
@@ -448,7 +448,7 @@ situations harder to diagnose. When a Command was intended to do something but r
 to know the reasons. Emitting no Events will make the distinction between an infrastructure problem and a
 motivated decision to do nothing harder to find. Did the system crash, or did it just decide to do nothing?
 
-It is still possible to know by taking a copy og the Command that has been persisted for diagnostic purposes, and a State reconstructed from past Events, passing them to the decide function and examining the result, but
+It is still possible to know by taking a copy of the Command that has been persisted for diagnostic purposes, and a State reconstructed from past Events, passing them to the decide function and examining the result, but
 it will require careful code analysis or creating a new test with this specific data. This drains developers time and is better avoided.
 
 If the decision to do nothing results from a business rule, it is advised to make it explicit, returning an Event that will
@@ -588,7 +588,7 @@ The full list of past Events is the form of the State that contains maximal info
 
 ## Terminal State
 
-For now our system has an Initial State to start, and the decide and evolve fucntions, to handle change over time.
+For now our system has an Initial State to start, and the decide and evolve functions, to handle change over time.
 
 At first it seems enough, but this is due to one of our typical engineer’s bias… We’re very good at setting things up,
 but bad at disposing them. I’ve seen many systems where loads of data remained in the system mostly because nobody knew
@@ -804,7 +804,7 @@ that does a few basic operations).
 
 As with the database-backed version, we can protect it against concurrent appends to the stream. Here we use
 stream version which is usually provided by the Event Store. The appendEvents function now takes
- an expected version and will reject if the stream version is not matching. If it is not matching it will
+ an expected version and will reject append if the stream version is not matching. If it is not matching it will
  return the new version as well as events that have been appended since the one anticipated.
 *)
 (*** hide ***)
@@ -1003,4 +1003,5 @@ You can write the Domain code as Deciders, and choose afterward which kind of pe
 The last interesting point, is that Deciders can be composed. But that's another story...
 
 
+*Credits: Special thanks to Greg Yound and Ruben Bartelink, Adam Dymitruk and Mathias Verraes for their time and insight on the topic.*
 *)
