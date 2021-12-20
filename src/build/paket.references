@@ -5,3 +5,5 @@ Fable.React
 FSharp.Data
 FSharp.Text.RegexProvider
 Fake.Core.Process
+SixLabors.ImageSharp
+SixLabors.ImageSharp.Drawing

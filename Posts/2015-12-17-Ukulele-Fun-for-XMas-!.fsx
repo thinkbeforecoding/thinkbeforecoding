@@ -289,7 +289,9 @@ You can find NAudio on nuget.org
 
 For simplicity I will use the midi synthetizer:
 *)
-#r @"../packages\NAudio\lib\netstandard2.0\NAudio.dll"
+#r @"../packages/NAudio/lib/netstandard2.0/NAudio.dll"
+#r @"../packages/NAudio.Core/lib/netstandard2.0/NAudio.Core.dll"
+#r @"../packages/NAudio.Midi/lib/netstandard2.0/NAudio.Midi.dll"
 
 open NAudio.Midi
 let device = new MidiOut(0)

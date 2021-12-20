@@ -13,6 +13,7 @@ let (./) (x: string) (y: string) =
  | true, true -> x + y.Substring(1)
  | _ -> x + y
 
+
 module File =
   let exists path = IO.File.Exists(path)
 
@@ -42,6 +43,7 @@ module Directory =
 
     loop srcDir dstDir
 
+
     
 
 let raw value = Fable.React.RawText value :> ReactElement
@@ -52,7 +54,7 @@ module Entities =
 
 type Title =
   | Home
-  | Post of string
+  | Post of string * string option
 
 type Link = {
   Text: string
@@ -119,7 +121,7 @@ let template template =
         [ meta [CharSet "utf-8"]
           Fable.React.Standard.title [] 
              <| match template.title with
-                | Post title -> [str ("// thinkbeforecoding -> " + title) ]
+                | Post (title , _)-> [str ("// thinkbeforecoding -> " + title) ]
                 | Home -> [str "// thinkbeforecoding"]
 
           metaf "viewport" "width=device-width, initial-scale=1.0"
@@ -133,9 +135,21 @@ let template template =
           metafb "og:description" "think - code - repeate - Jérémie Chassaing"
           metafb "og:locale" "en_US"
           metaf "twitter:card" "summary_large_image"
-          metaf "twitter:image" "https://thinkbeforecoding.com/content/thinkbeforecoding-twitter.jpg"
-          metaf "twitter:description" "think - code - repeat - Jérémie Chassaing"
-          metaf "twitter:title" "// thinkbeforecoding"
+
+          match template.title with
+          | Home ->
+                metaf "twitter:description" "think - code - repeat - Jérémie Chassaing"
+                metaf "twitter:image" "https://thinkbeforecoding.com/content/thinkbeforecoding-twitter.jpg"
+                metaf "twitter:title" "// thinkbeforecoding"
+          | Post(title, Some url) -> 
+                metaf "twitter:description" $"{title} - Jérémie Chassaing"
+                metaf "twitter:image" $"https://thinkbeforecoding.com/public/{Path.clean url}/thinkbeforecoding-twitter.jpg"
+                metaf "twitter:title" $"// {title} - thinkbeforecoding"
+          | Post(title, None)->
+              metaf "twitter:description" $"{title} - Jérémie Chassaing"
+              metaf "twitter:image" "https://thinkbeforecoding.com/content/thinkbeforecoding-twitter.jpg"
+              metaf "twitter:title" $"// {title} - thinkbeforecoding"
+
           metaf "twitter:site" "@thinkbeforecoding" 
           metaf "twitter:creator" "@thinkbeforecoding"
 
@@ -236,6 +250,7 @@ setTimeout( function() { reload(); }, 250 );
 
 type FormattedPost = {
   MD5: string
+  TitleUrl: string
   Link: Link
   Content: string
   Tooltips: string
@@ -246,12 +261,46 @@ type FormattedPost = {
   Hashtags: string list
 }
 
+open FSharp.Text.RegexProvider
+type RemoveNamespace = Regex< @"Microsoft\.FSharp\.Core\.(?<name>\w+)">
+#if INTERACTIVE
+#r "nuget: FSharp.Data"
+#r "nuget: SixLabors.ImageSharp"
+#r "nuget: SixLabors.ImageSharp.Drawing, Version=*-*"
+#load "Path.fs"
+#load "Blog.fs"
+open Blog
+open System.IO
+open System
+#endif
+open SixLabors.ImageSharp
+open SixLabors.ImageSharp.Processing
+open SixLabors.ImageSharp.Drawing.Processing
+open SixLabors.Fonts
+
+
+let prepareCard (post: Post) =
+   let img = Image.Load(Path.content </> "thinkbeforecoding-twitter.jpg")
+   let fonts = FontCollection()
+   fonts.Install(Path.fonts </> "OpenSans-Regular.ttf") |> ignore
+   let font  = fonts.CreateFont("Open Sans", 24.f)
+   let color = Color.FromRgb(0x33uy,0x33uy,0x33uy)
+
+   let options = DrawingOptions()
+   options.TextOptions.HorizontalAlignment <- HorizontalAlignment.Center
+   let mid = single img.Width / 2.f
+   img.Mutate(fun x -> x.DrawText(options,post.Title, font, color , PointF(mid,220.f)) |> ignore)
+   let path = Path.tmp </> "public" </> Path.clean post.Url
+   Directory.ensure path
+   img.SaveAsJpeg(path </> "thinkbeforecoding-twitter.jpg" )
 
 let processHtmlPost (post: Post) source md5 =
+  prepareCard post
   let dest = post.Filename + ".html"
   let html = IO.File.ReadAllText source
   let document = html.Replace("http://www.thinkbeforecoding.com/","/")
   { MD5 = md5
+    TitleUrl = post.Url
     Content = document
     Tooltips = ""
     Link = { Text = post.Title; Href = post.FullUrl }
@@ -261,9 +310,6 @@ let processHtmlPost (post: Post) source md5 =
     Previous = None
     Hashtags = post.Hashtags }
 
-
-open FSharp.Text.RegexProvider
-type RemoveNamespace = Regex< @"Microsoft\.FSharp\.Core\.(?<name>\w+)">
 
 open System.Xml.Linq
 let svgns = XNamespace.Get "http://www.w3.org/2000/svg"
@@ -275,7 +321,6 @@ let patchSvg (svg: string) =
    string doc
 
 
-
 let prepareDiagrams (post: Post) source =
     let lines = IO.File.ReadAllLines(source) |> Array.toList
 
@@ -283,7 +328,7 @@ let prepareDiagrams (post: Post) source =
         match lines with
         | [] -> List.rev result, List.rev diags
         | line :: rest when line.Contains("[lang=diag]") ->
-            takeDiag rest ( $"![Diagram](/public/{post.Url}/diagram-{List.length diags}.svg)" :: result) diags []
+            takeDiag rest ( $"![Diagram](/public/{Path.clean post.Url}/diagram-{List.length diags}.svg)" :: result) diags []
         | line :: rest -> 
             findDiag rest (line :: result) diags
     and takeDiag lines result diags diag =
@@ -296,7 +341,7 @@ let prepareDiagrams (post: Post) source =
 
     let scriptLines, diags = findDiag lines [] []
 
-    let diagDir = Path.tmp </> "public" </> post.Url
+    let diagDir = Path.tmp </> "public" </> Path.clean post.Url
 
     for i,diag in Seq.indexed diags do
         Directory.ensure diagDir
@@ -326,6 +371,7 @@ let prepareDiagrams (post: Post) source =
 
 
 let processScriptPost (post: Post) source md5 =
+  prepareCard post
   try
     let dest = post.Filename + ".html"
 
@@ -349,6 +395,7 @@ let processScriptPost (post: Post) source md5 =
     let output = Literate.ToHtml(doc, "", false, true)
     
     { MD5 = md5 
+      TitleUrl = post.Url
       Content = output
       Tooltips = RemoveNamespace().TypedReplace(doc.FormattedTips, fun m -> m.name.Value)
       Link =  { Text = post.Title; Href = post.FullUrl }
@@ -366,6 +413,7 @@ let processScriptPost (post: Post) source md5 =
     
 
 let processMarkdownPost (post: Post) source md5 =
+  prepareCard post
   let dest = post.Filename + ".html"
 
   let output = 
@@ -373,6 +421,7 @@ let processMarkdownPost (post: Post) source md5 =
     |> Literate.ParseMarkdownString
     |> Literate.ToHtml
   { MD5 = md5
+    TitleUrl = post.Url
     Content = output
     Tooltips = ""
     Link =  { Text = post.Title; Href = post.FullUrl }
@@ -480,7 +529,7 @@ let templatePost hotReload categories recentPosts titler post =
       div [Class "links"] [links]
       copyright
     ]
-  { title = titler post.Link.Text
+  { title = titler (post.Link.Text, (Some post.TitleUrl))
     content = content
     categories = categories
     recentPosts = recentPosts
@@ -537,7 +586,7 @@ let listPage hotReload outputDir categoriesHtml recentPosts name title (posts: P
       ]
     let footer = copyright
     { content = content
-      title = Post title
+      title = Post (title, None)
       categories = categoriesHtml
       recentPosts = recentPosts
       footer = footer

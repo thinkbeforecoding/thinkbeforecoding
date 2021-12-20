@@ -1002,6 +1002,5 @@ You can write the Domain code as Deciders, and choose afterward which kind of pe
 
 The last interesting point, is that Deciders can be composed. But that's another story...
 
-
-*Credits: Special thanks to Greg Yound and Ruben Bartelink, Adam Dymitruk and Mathias Verraes for their time and insight on the topic.*
+*Credits: Special thanks to Greg Young and Ruben Bartelink, Adam Dymitruk and Mathias Verraes for their time and insight on the topic.*
 *)

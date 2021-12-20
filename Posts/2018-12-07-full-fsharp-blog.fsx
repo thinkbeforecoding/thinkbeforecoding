@@ -100,7 +100,7 @@ fsx like this:
 *)
 (*** hide ***)
 #r "netstandard"
-#I @"..\packages\full\FSharp.Formatting\lib\netstandard2.0"
+#I @"..\packages\full\FSharp.Formatting\lib\netstandard2.1"
 #r "FSharp.Formatting.Common.dll"
 #r "FSharp.Formatting.Markdown.dll"
 #r "FSharp.Formatting.Literate.dll"
@@ -174,20 +174,21 @@ let snipet =
     printfn "Hello"
     """
 let parse source =
-    let doc = 
-      let fsharpCoreDir = "-I:" + __SOURCE_DIRECTORY__ + @"\..\packages\full\FSharp.Core\lib\netstandard2.0\"
-      let fcsDir = "-I:" + __SOURCE_DIRECTORY__ + @"\..\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\"
-      let fcs = "-r:" + __SOURCE_DIRECTORY__ + @"\..\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\FSharp.Compiler.Service.dll"
- 
-      Literate.ParseScriptString(
-                  source, 
-                  fscoptions = String.concat " " [ fsharpCoreDir; fcsDir; fcs ],
-                  fsiEvaluator = FsiEvaluator([|fsharpCoreDir; fcsDir; fcs|]))
-    Literate.FormatLiterateNodes(doc, OutputKind.Html, "", true, true)
+    let fsharpCoreDir = "-I:" + __SOURCE_DIRECTORY__ + @"\..\packages\full\FSharp.Core\lib\netstandard2.0\"
+    let fcsDir = "-I:" + __SOURCE_DIRECTORY__ + @"\..\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\"
+    let fcs = "-r:" + __SOURCE_DIRECTORY__ + @"\..\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\FSharp.Compiler.Service.dll"
+
+    Literate.ParseScriptString(
+                source, 
+                fscOptions = String.concat " " [ fsharpCoreDir; fcsDir; fcs ],
+                fsiEvaluator = FsiEvaluator([|fsharpCoreDir; fcsDir; fcs|]))
+    
 let fs =
-    snipet 
-    |> parse
-    |> Literate.ToHtml
+    let doc = 
+        snipet 
+        |> parse
+    Literate.ToHtml(doc, "", true, true)
+    
 (** 
 The fsharpCoreDir and the -I options are necessary to help FSharp.Literate resolve
 the path to FSharp.Core. System.Runtime must also be referenced to get tooltips working
@@ -355,7 +356,7 @@ let links: Rss.Link[] = [|
     |]
 
 let entry title link date content = 
-    let md5Csp = MD5CryptoServiceProvider.Create()
+    let md5Csp = MD5.Create()
     let md5 =
         md5Csp.ComputeHash(Text.Encoding.UTF8.GetBytes(content: string))
         |> Array.map (sprintf "%2x")
