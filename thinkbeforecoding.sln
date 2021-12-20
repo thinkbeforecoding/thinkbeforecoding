@@ -108,6 +108,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Posts", "Posts", "{263978F4
 		Posts\2020-10-07-applicative-computation-expressions.fsx = Posts\2020-10-07-applicative-computation-expressions.fsx
 		Posts\2020-10-08-applicative-computation-expressions-2.fsx = Posts\2020-10-08-applicative-computation-expressions-2.fsx
 		Posts\2020-12-03-applicative-computation-expressions-3.fsx = Posts\2020-12-03-applicative-computation-expressions-3.fsx
+		Posts\2021-12-17-functional-event-sourcing-decider.fsx = Posts\2021-12-17-functional-event-sourcing-decider.fsx
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".build", ".build", "{26223D87-5562-47F8-90B2-45083EEF24B5}"
