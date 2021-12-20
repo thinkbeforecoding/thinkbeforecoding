@@ -213,7 +213,7 @@ resources protected by access rights. Caller identity should also be used with c
 access-key, signature or login check.
 
 We will now consider any Domain input action as an internal Command containing all enrichment data
-and call it a Command from brevity. A Command can be implemented as a data structure with a name indicating its intent
+and call it a Command for brevity. A Command can be implemented as a data structure with a name indicating its intent
 and containing the associated data. Its name is always a verbal phrase in the imperative.
 
 ## Decision
@@ -948,7 +948,7 @@ module WithSnapshotsInContainers =
         let container = getContainerFromDecideHash(decider)
         // load state using snapshot if any
         let loadState stream =
-            // load snapshot.. it will not be found id container has
+            // load snapshot.. it will not be found if container has
             // changed since last run
             let snapVersion, snapState =
                 SnapshotsWithContainer.tryLoadSnapshot(stream, container)
