@@ -32,78 +32,78 @@ Let's look at a System. Any System.
 Without interactions with the outside, such a system would be pretty useless.
 We can represent these interactions in a generic way as inputs and outputs
 
-    [lang=txt]
-                  ┌────────────────────┐
-                  │                    │
-     Inputs       │                    │     Outputs
-        ─────────►│       System       │───────────►
-                  │                    │
-                  │                    │
-                  └────────────────────┘
+    [lang=diag]
+                 .────────────────────.
+                 │                    │
+    Inputs       │                    │     Outputs
+       ─────────►│       System       │───────────►
+                 │                    │
+                 │                    │
+                 '────────────────────'
 
 A system that accepts inputs but produces no outputs would be a kind of black hole.
 
-    [lang=txt]
-                  ┌────────────────────┐
-                  │       System       │
-     Inputs       │                    │
-        ─────────►│     (the void)     │
-                  │                    │
-                  │                    │
-                  └────────────────────┘
+    [lang=diag]
+                 .────────────────────.
+                 │       System       │
+    Inputs       │                    │  No Outputs
+       ─────────►│     (the void)     │
+                 │                    │
+                 │                    │
+                 '────────────────────'
 
 this is not totally useless (cf /dev/null), but quite limited.
 
 On the other hand, a system that produces outputs without inputs seems also very simplistic.
 Without introducing time, it would necessarily be a constant:
 
-    [lang=txt]
-                  ┌────────────────────┐
-                  │                    │  Constant
-                  │                    │     Outputs
-                  │       System       │───────────►
-                  │                    │
-                  │                    │
-                  └────────────────────┘
+    [lang=diag]
+                 .────────────────────.
+                 │                    │  Constant
+                 │                    │     Outputs
+                 │       System       │───────────►
+                 │                    │
+                 │                    │
+                 '────────────────────'
 
 So, let's introduce time; let's add a clock to our system:
 
-    [lang=txt]
-                  ┌────────────────────┐
-                  │  Clock             │
-                  │                    │     Outputs
-                  │       System       │───────────►
-                  │                    │
-                  │                    │
-                  └────────────────────┘
+    [lang=diag]
+                 .────────────────────.
+                 │  Clock             │
+                 │                    │     Outputs
+                 │       System       │───────────►
+                 │                    │
+                 │                    │
+                 '────────────────────'
 
 The problem with a clock is that it's (obviously) changing over time, so let's
 refactor to treat clock as an input (it also becomes a trigger):
 
-    [lang=txt]
-                  ┌────────────────────┐
-                  │  Clock    System   │
-                  │   │                │
-                  │   ▼                │    Outputs
-                  │  ┌──────────────┐  │
-                  │  │  Subsystem   │───────────────►
-                  │  └──────────────┘  │
-                  └────────────────────┘
+    [lang=diag]
+                 .────────────────────.
+                 │  Clock    System   │
+                 │   │                │
+                 │   ▼                │    Outputs
+                 │  .──────────────.  │
+                 │  │  Subsystem   │───────────────►
+                 │  '──────────────'  │
+                 '────────────────────'
 
 Here, our system is a pure function of time. This can be useful; however, most of the
 systems we deal with are a bit more complicated.
 
 As we wanted interactions, we can reintroduce inputs as triggers. For instance a user action.
 
-    [lang=txt]
-                  ┌───────────────────┐
-                  │  Clock    System  │
-                  │   │               │
-     Actions      │   ▼               │    Outputs
-                  │  ┌─────────────┐  │
-        ────────────►│  Subsystem  │───────────────►
-                  │  └─────────────┘  │
-                  └───────────────────┘
+    [lang=diag]
+                 .───────────────────.
+                 │  Clock    System  │
+                 │   │               │
+    Actions      │   ▼               │    Outputs
+                 │  .─────────────.  │
+       ────────────►│  Subsystem  │───────────────►
+                 │  '─────────────'  │
+                 '───────────────────'
 
 To go back on the question of time, some time is passed in the system during
 code execution. But at today’s execution speed, especially outside of inputs/outputs,
@@ -127,20 +127,20 @@ general systems that keep a trace of past actions.
 This memory is called state and is accessed and modified by the system code. It can be stored
 in memory (RAM) or saved to a database. Reading it can be considered a sort of input, changing it a sort of output:
 
-    [lang=txt]
-                  ┌───────────────────┐
-                  │  Clock    System  │
-                  │   │               │
-     Actions      │   ▼               │    Outputs
-                  │  ┌─────────────┐  │
-        ────────────►│  Subsystem  │───────────────►
-                  │  └─────────────┘  │
-                  │     ▲        │    │
-                  │     │        ▼    │
-                  │  ┌─────────────┐  │
-                  │  │    State    │  │
-                  │  └─────────────┘  │
-                  └───────────────────┘
+    [lang=diag]
+                 .───────────────────.
+                 │  Clock    System  │
+                 │   │               │
+    Actions      │   ▼               │    Outputs
+                 │  .─────────────.  │
+       ────────────►│  Subsystem  │───────────────►
+                 │  '─────────────'  │
+                 │     ▲        │    │
+                 │     │        ▼    │
+                 │  .─────────────.  │
+                 │  │    State    │  │
+                 │  '─────────────'  │
+                 '───────────────────'
 
 
 This is a useful step. The subsystem can be cleared of a lot of technical concerns.
@@ -261,12 +261,12 @@ A Transfer Money Command will produce a Money Transferred Event, or a Money Tran
 
 A Decision process then takes this simple form:
 
-    [lang=txt]
-     Command      ┌───────────────────┐
-        ─────────►│                   │    Events
-     State        │      Decide       │─────────►
-        ─────────►│                   │
-                  └───────────────────┘
+    [lang=diag]
+    Command      .───────────────────.
+       ─────────►│                   │    Events
+    State        │      Decide       │─────────►
+       ─────────►│                   │
+                 '───────────────────'
 
 If we use simple data structures for Commands, State and Events, the decision can be
 implemented as a function with the following signature:
@@ -423,18 +423,18 @@ The Command will come from the outside, but the State and Event list will be fed
 the evolve function input while the output State from the evolve function will be passed to the next call to the decide function.
 The same output State will also be used as an input parameter for the next call to the evolve function.
 
-    [lang=txt]
-             Command  ┌──────────────┐
-            ─────────►│              │ Events
-             State    │    decide    ├───────┐
-            ┌────────►│              │       │
-            │         └──────────────┘       │
-            │         ┌──────────────┐ Event │
-            │  State  │              │◄──────┘
-            ├───◄─────┤    evolve    │ State
-            │         │              │◄──────┐
-            │         └──────────────┘       │
-            └────────────────────────────────┘
+    [lang=diag]
+     Command  .──────────────.
+    ─────────►│              │ Events
+     State    │    decide    ├───────┐
+    ┌────────►│              │       │
+    │         '──────────────'       │
+    │         .──────────────. Event │
+    │  State  │              │◄──────┘
+    ├───◄─────┤    evolve    │ State
+    │         │              │◄──────┐
+    │         '──────────────'       │
+    └────────────────────────────────┘
 
 When processing in the system begins, it is in the Initial State. For now, nothing has happened yet.
 
@@ -1001,5 +1001,6 @@ of independence from infrastructure concerns.
 You can write the Domain code as Deciders, and choose afterward which kind of persistence you want to use, if any.
 
 The last interesting point, is that Deciders can be composed. But that's another story...
+
 
 *)

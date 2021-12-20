@@ -55,6 +55,7 @@ let main argv =
       | ".gif" -> Flat "image/gif"
       | ".htm"
       | ".html" -> Gzip "text/html"
+      | ".svg" -> Gzip "image/svg+xml"
       | _ -> NoEncoding
     let cachecontrol = "public, max-age=31536000"
     let uploadMedia tag (blog: CloudBlobContainer) path =
