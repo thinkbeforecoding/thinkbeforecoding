@@ -947,7 +947,7 @@ module WithSnapshotsInContainers =
         let container = getContainerFromDecideHash(decider)
         // load state using snapshot if any
         let loadState stream =
-            // load snapshot.. it will not be found id container has
+            // load snapshot.. it will not be found if container has
             // changed since last run
             let snapVersion, snapState =
                 SnapshotsWithContainer.tryLoadSnapshot(stream, container)
