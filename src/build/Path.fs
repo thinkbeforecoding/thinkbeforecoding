@@ -17,7 +17,7 @@ module Path =
   let feed = out </> "feed"
   let atom = feed </> "atom.xml"
   let tmp = root </> "tmp"
-  let fonts = root </> "fonts"
+  let fonts = content </> "fonts"
 
 
   let clean (str: string) = str.Replace(":","")

@@ -5,6 +5,7 @@ open Fable.React.Props
 open System
 open Printf
 open Blog
+open System.Text.RegularExpressions
 
 
 let (./) (x: string) (y: string) =
@@ -43,8 +44,6 @@ module Directory =
 
     loop srcDir dstDir
 
-
-    
 
 let raw value = Fable.React.RawText value :> ReactElement
 module Entities =
@@ -160,12 +159,10 @@ let template template =
            | Home, _ -> link [ Rel "canonical"; Href "https://thinkbeforecoding.com"  ]
            | _,Some url -> link [ Rel "canonical"; Href (string url)  ]
            | _ -> null)
-          stylesheet "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css"
-          stylesheet "/content/style-1.4.css"
-          script [ Defer true
-                   Src "https://use.fontawesome.com/releases/v5.5.0/js/all.js"
-                   Integrity "sha384-GqVMZRt5Gn7tB9D9q7ONtcp4gtHIUEW/yG7h98J7IpE3kpi+srfFyyB/04OV6pG0"
-                   CrossOrigin "anonymous"] []
+          //stylesheet "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css"
+          stylesheet "/content/bootstrap/5.0.2/bootstrap.min.css"
+          stylesheet "/content/style-1.6.css"
+          stylesheet "/content/fontawesome/5.15.4/css/all.min.css"
 
           if template.HotReload then
             script [ ] [
@@ -226,9 +223,9 @@ setTimeout( function() { reload(); }, 250 );
         [ div [Class "container"] 
             [ div [] [ h1 [ Class "header"] [ a [Href "/"] [ blogTitle ]] ]
               div [ Class "row" ] 
-                [ div [Class "span1"] []
-                  div [Class "span8"; Id "main"] [ template.content ]
-                  div [Class "span3 categories"] 
+                [ //div [Class "col-1"] []
+                  div [Class "col-12 col-md-8"; Id "main"] [ template.content ]
+                  div [Class "col-12 col-md-4 categories"] 
                       [ template.categories
                         div [Class "social"] [
                           a [ Href "/feed/atom"] 

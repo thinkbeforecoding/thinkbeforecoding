@@ -56,6 +56,8 @@ let main argv =
       | ".htm"
       | ".html" -> Gzip "text/html"
       | ".svg" -> Gzip "image/svg+xml"
+      | ".ttf" -> Gzip "application/x-font-ttf"
+      | ".woff2" -> Flat "font/woff2" // woff files are already compressed
       | _ -> NoEncoding
     let cachecontrol = "public, max-age=31536000"
     let uploadMedia tag (blog: CloudBlobContainer) path =

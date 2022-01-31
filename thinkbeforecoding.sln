@@ -118,6 +118,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".build", ".build", "{26223D
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "upload", "src\upload\upload.fsproj", "{ACF04606-69D3-4B68-A083-E41FD3682BAF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{5D5F10A6-184B-4F4E-AA8F-18CF6F5C4CAE}"
+	ProjectSection(SolutionItems) = preProject
+		content\style-1.1.css = content\style-1.1.css
+		content\style-1.2.css = content\style-1.2.css
+		content\style-1.3.css = content\style-1.3.css
+		content\style-1.4.css = content\style-1.4.css
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
