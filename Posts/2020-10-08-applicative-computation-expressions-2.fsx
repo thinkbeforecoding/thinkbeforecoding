@@ -9,7 +9,7 @@ let dist (lata: decimal,longa: decimal) (latb: decimal, longb: decimal) =
     let z = sqrt (x*x + y*y)
     z * 1.852 * 60. |> decimal
 
-/// Gets latitude/logitude for a returned zip info
+/// Gets latitude/longitude for a returned zip info
 let coord (zip: ZipCode.Root) =
     zip.Places.[0].Latitude, zip.Places.[0].Longitude
 
@@ -24,7 +24,7 @@ When using `let!` with two `and!`, it makes two calls to `MergeSources` to tuple
 arguments and one call to `BindReturn` to pass values to the function.
 
 This can be expensive, so you can provide specific implementations for given numbers
-of paramters to reduce the number of calls.
+of parameters to reduce the number of calls.
 
 For two arguments, you can implement `Bind2Return`:
 *)
@@ -65,9 +65,9 @@ async {
 (** To handle a `let! and! and!` case you have to provide a `Bind3Return` member that 
 takes 3 values and a function.
 You can also provide a `Bind4Return`, `Bind5Return`... and from my tests there is no limit
-in the number of arguments you can test. F# would happily call a Bind265Return if it had to.
+in the number of arguments you can test. F# would happily call a `Bind265Return` if it had to.
 
-Those additional functions are occasions to optimise the implementation by reducing the
+Those additional functions are occasions to optimize the implementation by reducing the
 number of intermediate allocations and function calls.
 
 Obviously, it's advised to provide only a few special cases and fall back to `BindReturn`

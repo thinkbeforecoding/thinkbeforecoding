@@ -31,7 +31,7 @@ go in more details.
 
 ### Request/Response
 
-The most interesting part is the Request/Response mechanisme used for
+The most interesting part is the Request/Response mechanism used for
 sensors. We write the request on the serial port by using `port.Write`, but get the
 response through an notification of the `port.DataReceived` event.
 
@@ -39,7 +39,7 @@ The request response is asynchronous, and it would be far easier to present it i
 as an Async construct.
 
 When sending a request, we must include a mandatory sequence number in int.
-This sequence number will the be transmited in the corresponding response for correlation.
+This sequence number will the be transmitted in the corresponding response for correlation.
 *)
 type Sequence = uint16
 (**
@@ -112,7 +112,7 @@ type Brick( name ) =
         port.Open()
         let reader = new IO.BinaryReader(port.BaseStream)
 
-        // register to recieve data notifications
+        // register to receive data notifications
         port.DataReceived |> Event.add (fun e ->
             if e.EventType = IO.Ports.SerialData.Chars then
                 //the response start with the size
@@ -245,7 +245,7 @@ type SystemOpcode =
 
 (**
 To help with the serialization in a Span<T> we define
-some inlines helpers:
+some inline helpers:
 *)
 
 
@@ -271,12 +271,12 @@ module Buffer =
         buffer.Slice(len)
 
 (**
-Each of these functions write a value at the beginning of the span
-and slice the appropriate size to return a new span starting just after the value
+Each of these functions writes a value at the beginning of the span
+and slices the appropriate size to return a new span starting just after the value
 that was just written.
 
 
-Using this was can write the serializeOpcode function:
+Using this we can write the serializeOpcode function:
 *)
 
 let serializeOpcode op buffer =
@@ -378,8 +378,8 @@ let length =
 The serialization is a bit more complicated if we want to loop on parameters
 using a recursive function. The reason is that F# doesn't currently support
 `Span<T> -> Span<T>` function parameters. This signature is used by our serializers
-that take a Span, write at the begining an returns a shorter span starting after
-writen bytes. To wrokaround this problem we have to use a plain delegate:
+that take a Span, write at the beginning an returns a shorter span starting after
+written bytes. To workaround this problem we have to use a plain delegate:
 *)
 
 type Serializer<'t> = delegate of 't * Span<byte> -> Span<byte>
@@ -457,7 +457,7 @@ let send commands =
 We're now ready to define commands in a more friendly way.
 
 For instance the `startMotor` command can be called
-with a list of output ports (the ones on the top of the brick calles A, B, C and D):
+with a list of output ports (the ones on the top of the brick calls A, B, C and D):
 *)
 
 type OutputPort =
@@ -516,7 +516,7 @@ let power p =
         invalidArg "p" "Power should be between -100 and 100"
     Power (uint8 p)
 
-/// wait for the end of prvious command
+/// wait for the end of previous command
 let outputReady ports =
     Direct(Opcode.OutputReady,
             [ Byte 0uy; port ports;])
@@ -538,7 +538,7 @@ let turnMotorAtSpeedForTime' ports speed msRampUp msConstant msRampDown brake =
 let turnMotorAtSpeedForTime ports speed msDuration brake =
     turnMotorAtSpeedForTime' ports speed 0u msDuration 0u brake
 
-// yes, you can also play musique :)
+// yes, you can also play music :)
 let playTone volume frequency duration =
     Direct(Opcode.Sound_Tone,
         [Byte volume
@@ -629,7 +629,7 @@ Other methods implement return!, for, combination sequenced calls, etc.
         async.Using(d, f ctx)
 
 (**
-The `run` functions takes a Lego<unit> function, starts it asynchronously and returns a cancelation
+The `run` functions takes a Lego<unit> function, starts it asynchronously and returns a cancellation
 token to stop it.
 *)
 let run brick (f: Lego<unit>) = 
@@ -674,7 +674,7 @@ let sample() =
 ## Sensors
 
 The Ev3 comes with 3 default sensors, Color, Touch and IR. Extra gyroscopic and ultrasound
-sensors can be acquierd separatly.
+sensors can be acquired separately.
 
 Sensors are connected to input ports (1 to 4). Motor ports (A to D) can also be read to get the
 rotation of the motors:
@@ -704,7 +704,7 @@ let inputPort = function
 (**
 Sensors can return different values 
 
-* Color, ambiant light, reflected light for the color sensor
+* Color, ambient light, reflected light for the color sensor
 * Touch can return pressed/released state or bumps
 * IR can return proximity, and remote buttons state...
 
@@ -753,17 +753,17 @@ let readDataTypeLen = function
 
 (**
 ## Read command
-Each of the datatypes correspond to a differents read opcode:
+Each of the datatypes corresponds to a different read opcode:
 *)
 let readOpcode = function
     | ReadDataType.SI -> Opcode.InputDevice_ReadySI
     | ReadDataType.Raw -> Opcode.InputDevice_ReadyRaw
-    | ReadDataType.RGB -> Opcode.InputDevice_ReadyRaw // rgb is a specifiv Raw read
+    | ReadDataType.RGB -> Opcode.InputDevice_ReadyRaw // rgb is a specific Raw read
     | ReadDataType.Percent -> Opcode.InputDevice_ReadyPct
 
 (**
 With this opcode we can create a read command as we did previously. The `position` parameter
-is the position of the corresponding value in the reponse bytes.
+is the position of the corresponding value in the response bytes.
 *)
 
 let readCommand (inPort, dataType, mode) position =
@@ -802,7 +802,7 @@ let request commands globalSize =
             let! response = brick.AsyncRequest(sequence, Memory.op_Implicit data.Memory)
             let replyType = enum<ReplyType> (int response.Span.[2])
             if replyType = ReplyType.DirectReplyError || replyType = ReplyType.SystemReplyError then
-                failwith "An error occured"
+                failwith "An error occurred"
             return response
         }
 (**
@@ -819,7 +819,7 @@ let readLength (_,dataType,_) = readDataTypeLen dataType
 
 (**
 We accumulate the sizes as offsets using a `mapFold`. The accumulator in mapFold takes a state
-(the offset) and an input (the sensor paramaters), and outputs a value (the the command built using the offset)
+(the offset) and an input (the sensor parameters), and outputs a value (the command built using the offset)
 and a new state (the new offset computed by adding the value length).
 
 This way we get a list of command with the rights offsets as well as the total length passed
@@ -872,7 +872,7 @@ let readAux brick inputs =
 ## Applicative
 
 We solved the problem of values offsets, but a few challenge remain. First the result is still in the form of a `ReadOnlyMemory<byte>`,
-and we should be carefull to read it accordingly to the requested data. Then we have to
+and we should be careful to read it accordingly to the requested data. Then we have to
 be sure we don't try to look for values in the result that we did not request.
 
 If you've read previous posts already, you'll recognize the `Query<'t>` applicative. Here
@@ -900,7 +900,7 @@ let input (req: InputRequest) =
 It indicates that it should request the given input and gets it from the map. The result
 will be a `ReadOnlyMemory<byte>`.
 
-Creating a `read` functions that takes a `Sensor<'t>` and calls `readAux` is straightforwad:
+Creating a `read` functions that takes a `Sensor<'t>` and calls `readAux` is straightforward:
 *)
 let read (sensor: Sensor<'t>)  =
     fun brick ->
@@ -955,7 +955,7 @@ let map2 f sx sy =
 
 (**
 We can use `map2` to `zip` sensors. It takes to sensors and create a single sensor
-that contains boths values as a tuple:
+that contains both values as a tuple:
 *)
 let zip sx sy = map2 (fun x y -> x,y) sx sy
 
@@ -1038,7 +1038,7 @@ module Sensors =
         let reflective port = inputPct port (ColorMode ColorMode.Reflective)
         let ambient port = inputPct port (ColorMode ColorMode.Ambient)
 
-        // here we use the the SI single result
+        // here we use the SI single result
         // and map it to a Color
         let color port =
             inputSi port (ColorMode ColorMode.Color)
@@ -1096,7 +1096,7 @@ let colorAndProximityIfPushed : Sensor<(Color * int) option> =
     <*> Sensors.IR.proximity In2
     <*> Sensors.Touch.button In3
 
-(** This is a composit sensors that gets the state from the Touch sensor in input 3,
+(** This is a composite sensor that gets the state from the Touch sensor in input 3,
 color from Color sensor in input 1, and proximity from IR sensor on input 2. It
 returns `None` when the button is released, and `Some(color, proximity)` when the button
 is pushed.
@@ -1176,7 +1176,7 @@ Take your time to extend it to send any command and combine any sensors in a fri
 readable way.
 
 The applicative computation expression for sensors provide a safe API over an error prone
-low level protocol. The syntax of computation expresions is also less obscure to
+low level protocol. The syntax of computation expressions is also less obscure to
 newcomers than the `<!>` and `<*>` operators that can be a bit hard to explain.
 
 Now you know what to ask Santa for Xmas ! Happy Xmas !

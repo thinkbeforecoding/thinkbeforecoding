@@ -33,24 +33,24 @@ option if any. If the option is `None`, it simply returns `None`.
      match x with
      | Some value -> Some (f value)
      | None -> None
-(** when looking at map as a function taking a single parameter its
+(** when looking at `map` as a function taking a single parameter its
 signature is 
 
     ('a -> 'b) -> (Option<'a> -> Option<'b>)
 
-`map` takes a `('a -> 'b)` function and change it in a `(Option<'a> -> Option<'b>)` function.
+`map` takes a `('a -> 'b)` function and changes it in a `(Option<'a> -> Option<'b>)` function.
 
 ### map2
 
-`map` takes a single argument function `f` and make it Option aware.
-But what about a function taking two arguments ?
+`map` takes a single argument function `f` and makes it `Option` aware.
+But what about a function taking two arguments?
 
-We can define a map2 function with the following signature:
+We can define a `map2` function with the following signature:
 
     ('a -> 'b -> 'c) -> (Option<'a> -> Option<'b> -> Option<'c>)
 
-It takes the function and calls it with the value of the two other
-Option parameter if they both have a value. It returns `None` if any is `None`.
+It takes the function and calls it with the values of the two other
+`Option` parameters if they both have a value. It returns `None` if any is `None`.
 *)
  let map2 (f: 'a -> 'b -> 'c) (x: Option<'a>) (y: Option<'b>) : Option<'c> =
      match x,y with
@@ -58,38 +58,38 @@ Option parameter if they both have a value. It returns `None` if any is `None`.
      | _ -> None
 (**
 ### map3, map4...
-For a 3 argument function, a 4 argument function we'd then have to write
+For a 3 arguments function, a 4 arguments function we'd then have to write
 extra `map` functions. That would be doable but tedious.
-And where should we stop ?
+And where should we stop?
 
-Let's take a simple two argument function and se what happens when
+Let's take a simple two arguments function and see what happens when
 we use `map` on it:
 *)
  let add x y = x + y
 
  let mappedAdd = map add
 (** Notice first that it compiles because `add` can be seen as
-a one argument function returning another 1 argument function:
+a one argument function returning another one argument function:
 
     let add x =
         fun y -> x + y
 
 So its signature can be read as `(int -> (int -> int))`
 
-Using map, it will become:
+Using `map`, it will become:
 
     Option<int> -> Option<int -> int>
 
 If you call it with the value `Some 3`, the result will be `Some` function
-that take an `int` and add 3 to it. Called with `None`, you get no function.
+that takes an `int` and adds 3 to it. Called with `None`, you get no function.
 
 Lets take the most basic function application: 
 *)
  let basicApply f x = f x
-(** `basicApply` is a function that take a function f, a value v, and
-pass the value v to the function f (this is the F# `<|` operator).
+(** `basicApply` is a function that takes a function f, a value v, and
+passes the value v to the function f (this is the F# `<|` operator).
 
-we can make it work with option using map2:
+we can make it work with `Option` using `map2`:
     
 *)
  let apply f x = map2 basicApply f x
@@ -97,15 +97,15 @@ we can make it work with option using map2:
 
     ('a -> 'b) -> 'a -> 'b
 
-and we can look at it as a 2 argument function:
+and we can look at it as a 2 arguments function:
     
     (('a -> 'b) -> 'a) -> 'b
 
-And map2 will change it to:
+And `map2` will change it to:
     
     (Option<'a -> 'b> -> Option<'a>) -> Option<'b>
 
-This is a function that take an optional function as first
+This is a function that takes an optional function as first
 argument and an optional value as a second argument. If both
 have a value, the value is passed to the function. If any is `None`
 the result is `None`.
@@ -113,8 +113,8 @@ the result is `None`.
  let partialAdd = map add (Some 3) // Some(fun y -> 3 + Y)
  apply partialAdd (Some 5) // Some(3 + 5) => Some 8
 (*** include-it ***)
-(** The nice thing is that it works for function with more than 2 arguments
-since any function can be considered as a function of 1 arguement.
+(** The nice thing is that it works for functions with more than 2 arguments
+since any function can be considered as a function of 1 argument.
 *)
  type User =
      { FirstName: string
@@ -132,7 +132,7 @@ since any function can be considered as a function of 1 arguement.
  let user''' = apply user'' (Some 42) // Option<string -> User>
  apply user''' (Some "F#") // Option<User>
 (*** include-it ***)
-(** Hopefully we can simplify the writing by defining two infix
+(** Luckily we can simplify the writing by defining two infix
 operators for `map` and `apply`.
 *)
  let (<!>) = map
@@ -146,9 +146,9 @@ operators for `map` and `apply`.
 
 (*** hide ***)
 module Results =
-(** this is very usefull with validation, and you can easily do the same thing for `Result<'a,string>`
+(** this is very useful with validation, and you can easily do the same thing for `Result<'a,string>`
 type, a type that has either a value of type `'a`, or an error message. 
-`map` is already defined and we have to write a map2: *)
+`map` is already defined and we have to write a `map2`: *)
  let map2 (f: 'a -> 'b -> 'c) 
           (xresult: Result<'a, string>)
           (yresult: Result<'b, string>) 
@@ -201,25 +201,25 @@ module Series =
  open System
 (** Now try to play with the input values and look at the 
   result. Instead of getting `Ok` with a typed user, you'll get
-  an error with a message describing why the user could ne be constructed. Neat!
+  an error with a message describing why the user could not be constructed. Neat!
 
 ## Series
 
-Applicatives can be defined on anything on which we can write a map2
-functions. Any construct that is **zippable**.
+Applicatives can be defined on anything on which we can write a `map2`
+function. Any construct that is **zippable**.
 
-A good example of zippable, non trivial stucture is time series.
+A good example of a zippable, non trivial structure is a time series.
 Let's define one: 
 *)
  type Series<'a> = Series of 'a * (DateTime * 'a) list
 (**
-It has a initial value of type `'a` and a list of changes
+It has an initial value of type `'a` and a list of changes
 consisting of the date of change and the new value.
 
 For instance we can easily build constant series like this:
 *)
  let always x = Series(x, [])
-(** it defines a `Series` with initial value x that never change.
+(** it defines a `Series` with initial value x that never changes.
 
 We can also define a `map`:
 *)
@@ -229,9 +229,9 @@ We can also define a `map`:
 
 `map2` is a bit more convoluted. The two series start with
 an initial value that can be fed to the given function.
-After that, one of the series change, and we call f with
-the initial value of the one that didn't change an the new value
-of the other one.. each time a value change, we use this value and the last known
+After that, one of the series changes, and we call f with
+the initial value of the one that didn't change and the new value
+of the other one.. each time a value changes, we use this value and the last known
 value of the other one. We use a recursive function for this.
 *)
  let map2 f (Series(ix, cx)) (Series(iy, cy)) =
@@ -304,8 +304,8 @@ We define `apply` and the two operators as we did for option:
 (** The result is a `Series` of `User` with the new values on each
 change.
 
-We can now take any function that work on non-`Series` values, and apply
-it to `Series` of values. This is especially useful whith hotels data.
+We can now take any function that works on non-`Series` values, and apply
+it to `Series` of values. This is especially useful with hotels data.
 Hotels define prices, availability, closures and all other properties for their
 rooms for each night in a calendar. Each property can be modeled as a Series.
 
@@ -361,14 +361,14 @@ For the demo we'll use a simple function:
         if Set.contains "favoritelanguage" properties then
             "favoritelanguage", "F#"
     ]
-(** The true one would take a document id and actually call the document database.
+(** The real one would take a document id and actually call the document database.
 
 Despite being very useful (we get only the properties we're interested in), this kind
 of interface often leads to irritating bugs. When accessing the result, we must be sure that
 all the properties we use have been correctly requested. And when we stop using a property,
 we should not forget to remove it from the query.
 
-That would be awsome if we could just use the properties and the query would
+That would be awesome if we could just use the properties and the query would
 magically know which one to fetch.
 
 Let's introduce the Query type:
@@ -378,7 +378,7 @@ Let's introduce the Query type:
       Get: Map<string,string> -> 't }
 
 (** This type is exactly here to do what we want. It contains a list
-of properties to query and a function that use the result to extract a value
+of properties to query and a function that uses the result to extract a value
 from it. We have to create simple ways to build it safely.
 
 The first thing is to be able to query a single property
@@ -419,7 +419,7 @@ a `map` function that will change the result using a given function
  let fullname firstname lastname =
      firstname + " " + lastname
 
-(** We need to retrieve both first name and last name and pass it to the function. 
+(** We need to retrieve both first name and last name and pass them to the function. 
 But we can also make a `map2`:
 *)
  let map2 (f: 'a -> 'b -> 'c) (x: Query<'a>) (y: Query<'b>) : Query<'c> =
@@ -432,9 +432,9 @@ But we can also make a `map2`:
 (** The result is a Query that:
 
 * has the union of the properties of both queries
-* get values from both and pass them to the given function
+* gets values from both and passes them to the given function
 
-With a map2, we can define apply and the opertor:
+With a `map2`, we can define `apply` and the operator:
 *)
  let apply f x = map2 basicApply f x
  let (<*>) = apply
@@ -458,26 +458,26 @@ With a map2, we can define apply and the opertor:
      <*> favoriteLanguage
 
  callService userQuery
-(** using userQuery, we just composed basic properties to form a
+(** using `userQuery`, we just composed basic properties to form a
 query for a larger structure, so we know that we cannot use a property without
 requesting it in the query.
 
 ## Other applicatives
 
-Applicatives can be found it a lot of places. 
+Applicatives can be found in a lot of places. 
 To zip lists, execute async computations in parallel.
 
 It can also be used to create formlets. A `Formlet<'t>` is a UX form to fill a `'t` structure.
 The simples formlet are input fields. A text input is a `Formlet<string>`, a checkbox a `Formlet<bool>`.
 A label function is a `(string -> Formlet<'a> -> Formlet<'a>)` function that adds a label to an existing formlet.
-A `map` function can change `Formlet<string>` to `Formlet<Address>` given a `(string -> Addess)` function. And we use `map2` and `apply` to take several
+A `map` function can change `Formlet<string>` to `Formlet<Address>` given a `(string -> Address)` function. And we use `map2` and `apply` to take several
 formlets and compose them in a `Formlet<User>` for instance.
 
 Once you start to see it, you'll spot them everywhere. 
 
 Be careful to not abuse it. For a single use, it's often better to compute the result directly.
 
-But when you have many places that are impacted, especially if the code change often, it can reduce
+But when you have many places that are impacted, especially if the code changes often, it can reduce
 code complexity by a fair amount.
 
 Don't hesitate to ping me [on twitter](https://twitter.com/thinkbeforecoding) if you find nice uses
