@@ -155,14 +155,14 @@ let template template =
           link [Rel "author"; Href "https://twitter.com/thinkbeforecoding" ]
           link [Rel "icon"; Href "/content/favicon.ico" ]
           link [Rel "shortcut icon"; Href "/content/favicon.ico" ]
+          link [Rel "me"; Href "https://mastodon.social/@thinkb4coding"]
           (match template.title,template.canonicalUrl with
            | Home, _ -> link [ Rel "canonical"; Href "https://thinkbeforecoding.com"  ]
            | _,Some url -> link [ Rel "canonical"; Href (string url)  ]
            | _ -> null)
-          //stylesheet "//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css"
           stylesheet "/content/bootstrap/5.0.2/bootstrap.min.css"
           stylesheet "/content/style-1.6.css"
-          stylesheet "/content/fontawesome/5.15.4/css/all.min.css"
+          stylesheet "/content/fontawesome/6.2.0/css/all.min.css"
 
           if template.HotReload then
             script [ ] [
@@ -232,9 +232,15 @@ setTimeout( function() { reload(); }, 250 );
                             [ i [ Class "fa fa-rss-square"] []
                               str " atom feed"]
                           br []
+                          a [ Href "https://mastodon.social/@thinkb4coding"]
+                            [ i [ Class "fa-brands fa-mastodon"] []
+                              str " @thinkb4coding@mastodon.social"]
+                          br []
                           a [ Href "https://twitter.com/thinkb4coding"] 
                             [ i [ Class "fab fa-twitter-square"] []
-                              str " @thinkb4coding" ] ]
+                              str " @thinkb4coding" ]
+                              
+                               ]
 
                         template.recentPosts
                       ]
