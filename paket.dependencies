@@ -35,3 +35,11 @@ generate_load_scripts: true
 nuget TaskBuilder.fs
 nuget FSharp.Core
 nuget Microsoft.NET.Sdk.Functions 
+
+group proxy
+source https://api.nuget.org/v3/index.json
+storage: none
+framework: auto-detect
+nuget FSharp.Core
+nuget Microsoft.NET.Build.Containers
+nuget Yarp.ReverseProxy

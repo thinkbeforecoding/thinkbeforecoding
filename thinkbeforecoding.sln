@@ -124,7 +124,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{5D5F
 		content\style-1.2.css = content\style-1.2.css
 		content\style-1.3.css = content\style-1.3.css
 		content\style-1.4.css = content\style-1.4.css
+		content\style-1.5.css = content\style-1.5.css
+		content\style-1.6.css = content\style-1.6.css
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1668C5D2-CBE7-4436-9580-DD2D58AA20BC}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "proxy", "src\proxy\proxy.fsproj", "{D02EC052-0D70-4D7E-83E1-04C525ED0234}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -148,11 +154,18 @@ Global
 		{ACF04606-69D3-4B68-A083-E41FD3682BAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ACF04606-69D3-4B68-A083-E41FD3682BAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ACF04606-69D3-4B68-A083-E41FD3682BAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D02EC052-0D70-4D7E-83E1-04C525ED0234}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D02EC052-0D70-4D7E-83E1-04C525ED0234}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D02EC052-0D70-4D7E-83E1-04C525ED0234}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D02EC052-0D70-4D7E-83E1-04C525ED0234}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5C946E7E-E871-4D0A-A1E3-CE07DFD050B5}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D02EC052-0D70-4D7E-83E1-04C525ED0234} = {1668C5D2-CBE7-4436-9580-DD2D58AA20BC}
 	EndGlobalSection
 EndGlobal
