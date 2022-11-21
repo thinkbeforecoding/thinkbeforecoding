@@ -11,7 +11,9 @@ open Microsoft.AspNetCore.Http.Extensions
 [<CLIMutable>]
 type Redirect =
     { Path: string
-      Target: string}
+      Target: string
+      Temporary: bool
+      }
 
 [<CLIMutable>]
 type HostRedirect =
@@ -39,6 +41,7 @@ let main args =
             d.Add(mapping.Host, mapping.Target)
         d
 
+    let robot = builder.Configuration.GetSection("Robot").Get<string>()
         
 
     builder.Services.AddReverseProxy()
@@ -51,8 +54,8 @@ let main args =
     for redirect in redirects do
         app.MapGet(redirect.Path, (fun c -> 
             task { 
-                c.Response.Headers.Add("Location", redirect.Target)
-                c.Response.StatusCode <- 301 } :> Task) ) |> ignore
+                c.Response.Redirect(redirect.Target, not redirect.Temporary)
+            } :> Task) ) |> ignore
 
     
 
@@ -65,9 +68,14 @@ let main args =
                 | false, _ -> do!  next.Invoke(context)
                 | true, target -> 
                     let location = UriBuilder(context.Request.GetEncodedUrl(), Host = target).Uri
-                    context.Response.Headers.Add("Location", string location )
-                    context.Response.StatusCode <- 301
+                    context.Response.Redirect( string location, true)
             } :> Task) |> ignore
+
+    if not (isNull robot) then
+           app.MapGet("/robot.txt", (fun c -> 
+            task { 
+                c.Response.Headers.ContentType <- "text/plain"
+                do! c.Response.WriteAsync(robot) } :> Task) ) |> ignore 
 
     app.Run()
 
