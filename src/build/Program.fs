@@ -152,7 +152,7 @@ let template template =
           metaf "twitter:site" "@thinkbeforecoding" 
           metaf "twitter:creator" "@thinkbeforecoding"
 
-          link [Rel "author"; Href "https://twitter.com/thinkbeforecoding" ]
+          link [Rel "author"; Href "https://mastodon.social/@thinkb4coding" ]
           link [Rel "icon"; Href "/content/favicon.ico" ]
           link [Rel "shortcut icon"; Href "/content/favicon.ico" ]
           link [Rel "me"; Href "https://mastodon.social/@thinkb4coding"]
@@ -235,12 +235,7 @@ setTimeout( function() { reload(); }, 250 );
                           a [ Href "https://mastodon.social/@thinkb4coding"]
                             [ i [ Class "fa-brands fa-mastodon"] []
                               str " @thinkb4coding@mastodon.social"]
-                          br []
-                          a [ Href "https://twitter.com/thinkb4coding"] 
-                            [ i [ Class "fab fa-twitter-square"] []
-                              str " @thinkb4coding" ]
-                              
-                               ]
+                          ]
 
                         template.recentPosts
                       ]
@@ -516,11 +511,6 @@ let templatePost hotReload categories recentPosts titler post =
       div [Class "date"] 
         [ fmtDate post.Date
           author ]
-      div [ Class "share-twitter"]
-          [ a [ Href (Twitter.linkUrl { Link = toAbsolute post.Link; Via = "thinkb4coding"; Hashtags = post.Hashtags } )] 
-              [ i [ Class "fab fa-twitter-square"] []
-                nbsp
-                str "Share on twitter" ] ]  
       raw post.Content
       //if not (String.IsNullOrEmpty post.Tooltips) then
       script' "/content/tips.js"

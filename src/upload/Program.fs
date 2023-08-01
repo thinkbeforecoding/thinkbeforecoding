@@ -28,7 +28,7 @@ let main argv =
        | _ -> failwith "provide a container name"
 
     let result = 
-      CreateProcess.fromRawCommandLine  "op" "get item blog --fields credential"
+      CreateProcess.fromRawCommandLine  "op" "item get blog --fields credential"
       |> CreateProcess.redirectOutput
       |> Proc.run
 
