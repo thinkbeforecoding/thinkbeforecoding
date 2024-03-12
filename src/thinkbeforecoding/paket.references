@@ -1,4 +1,0 @@
-group func
-Microsoft.NET.Sdk.Functions
-TaskBuilder.fs
-FSharp.Core

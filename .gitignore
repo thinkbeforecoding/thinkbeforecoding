@@ -12,3 +12,4 @@ deployment/
 tmp/
 output/
 prep/
+**/publish/

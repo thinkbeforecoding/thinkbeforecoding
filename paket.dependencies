@@ -1,5 +1,6 @@
 source https://www.nuget.org/api/v2
-framework: net6.0
+framework: net8.0
+storage: none
 
 nuget Fake
 nuget naudio
@@ -7,11 +8,12 @@ nuget naudio.midi
 nuget System.IO.Ports
 
 group full
-framework: net6.0, netstandard2.0, netstandard2.1
+framework: net8.0, netstandard2.0, netstandard2.1
 generate_load_scripts: true
 source https://api.nuget.org/v3/index.json
+storage: none
 
-nuget FSharp.Core
+nuget FSharp.Core 7.0.200
 nuget FSharp.Formatting
 nuget Fable.React
 nuget FSharp.Data
@@ -26,20 +28,9 @@ nuget WindowsAzure.Storage
 nuget Fake.Core
 nuget Fake.Core.Process
 
-group func
-source https://api.nuget.org/v3/index.json
-storage: none
-framework:  netcoreapp3.1
-generate_load_scripts: true
-
-nuget TaskBuilder.fs
-nuget FSharp.Core
-nuget Microsoft.NET.Sdk.Functions 
-
 group proxy
 source https://api.nuget.org/v3/index.json
 storage: none
 framework: auto-detect
 nuget FSharp.Core
-nuget Microsoft.NET.Build.Containers
 nuget Yarp.ReverseProxy
