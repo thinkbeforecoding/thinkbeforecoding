@@ -8,39 +8,12 @@ open Microsoft.AspNetCore.Http
 open System.Collections.Generic
 open Microsoft.AspNetCore.Http.Extensions
 
-[<CLIMutable;NoComparison;NoEquality>]
-type Redirect =
-    { Path: string
-      Target: string
-      Temporary: bool }
-
-[<CLIMutable;NoComparison;NoEqualityAttribute>]
-type HostRedirect =
-    { Host: string
-      Target: string }
-
+        
 
 [<EntryPoint>]
 let main args =
     let builder = WebApplication.CreateBuilder(args)
-
-    let redirects = 
-        match builder.Configuration.GetSection("Redirects").Get<Redirect[]>() with
-        | null -> Array.Empty()
-        | section -> section
-    
-    let hostRedirects = 
-        let mappings = 
-            match builder.Configuration.GetSection("HostRedirects").Get<HostRedirect[]>() with
-            | null -> Array.Empty()
-            | section -> section
-
-        let d = Dictionary(StringComparer.OrdinalIgnoreCase)
-        for mapping in mappings do
-            d.Add(mapping.Host, mapping.Target)
-        d
-
-    let robot = builder.Configuration.GetSection("Robot").Get<string>()
+    let robot = builder.Configuration["Robot"]
         
 
     builder.Services.AddReverseProxy()
@@ -50,16 +23,27 @@ let main args =
 
     let app = builder.Build()
 
-    for redirect in redirects do
-        app.MapGet(redirect.Path, (fun c -> 
-            c.Response.Redirect(redirect.Target, not redirect.Temporary)
-            Task.CompletedTask
-        )) |> ignore
+    match builder.Configuration.GetSection("Redirects") with
+    | null -> ()
+    | section ->
+        for redirect in section.GetChildren()  do
+            let target = redirect["Target"]
+            let path = redirect["Path"]
+            let permanent = match redirect["Temporary"] with | null -> false | b -> not (Boolean.Parse b)
+            app.MapGet(path, (fun c -> 
+                c.Response.Redirect(target, permanent)
+                Task.CompletedTask
+            )) |> ignore
 
-    
 
     app.MapReverseProxy() |> ignore
 
+    let hostRedirects = Dictionary(StringComparer.OrdinalIgnoreCase)
+    match builder.Configuration.GetSection("HostRedirects") with
+    | null -> ()
+    | section ->
+            for redirect in section.GetChildren() do
+                hostRedirects.Add(redirect["Host"], redirect["Target"])
     if hostRedirects.Count > 0 then
         app.Use(fun (context: HttpContext) (next: RequestDelegate) ->
                 match hostRedirects.TryGetValue(context.Request.Host.Host) with
