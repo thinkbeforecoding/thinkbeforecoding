@@ -12,7 +12,7 @@ open Microsoft.AspNetCore.Http.Extensions
 
 [<EntryPoint>]
 let main args =
-    let builder = WebApplication.CreateBuilder(args)
+    let builder = WebApplication.CreateSlimBuilder(WebApplicationOptions(Args = args))
     let robot = builder.Configuration["Robot"]
         
 

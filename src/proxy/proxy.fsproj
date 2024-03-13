@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <PublishAot>true</PublishAot>
     <OptimizationPreference>Size</OptimizationPreference>
+    <!--IlcDisableReflection>true</IlcDisableReflection-->
     <InvariantGlobalization>true</InvariantGlobalization>
     <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
     <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
@@ -12,7 +13,15 @@
     <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
     <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
     <StackTraceSupport>false</StackTraceSupport>
+    <UseNativeHttpHandler>true</UseNativeHttpHandler>
+    <IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
   </PropertyGroup>
+  <ItemGroup>
+    <TrimmableAssembly Include="proxy" /> 
+    <TrimmableAssembly Include="Yarp.ReverseProxy" /> 
+    <TrimmableAssembly Include="System.IO.Hashing" /> 
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.fs" />
     <Content Remove="publish/*.*" />
