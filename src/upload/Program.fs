@@ -188,7 +188,7 @@ let main argv =
 
     let uploadCategory blog category =
         let name = Category.name category
-        let path = Path.categories </> name + ".html"
+        let path = Path.categories </> name +  ".html"
         let blob = "category/" + name
         upload blog "Category" path blob name "text/html" false
 

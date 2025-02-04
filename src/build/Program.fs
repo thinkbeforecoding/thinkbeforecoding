@@ -72,6 +72,9 @@ module Html =
         raw "\n" 
         html ]
       |> Fable.ReactServer.renderToString 
+
+    let dir = System.IO.Path.GetDirectoryName(path: string)
+    Directory.ensure dir
     IO.File.WriteAllText(path, content)
 
 type TwitterLink = 
@@ -161,7 +164,7 @@ let template template =
            | _,Some url -> link [ Rel "canonical"; Href (string url)  ]
            | _ -> null)
           stylesheet "/content/bootstrap/5.0.2/bootstrap.min.css"
-          stylesheet "/content/style-1.6.css"
+          stylesheet "/content/style-1.8.css"
           stylesheet "/content/fontawesome/6.2.0/css/all.min.css"
 
           if template.HotReload then
@@ -209,7 +212,7 @@ setTimeout( function() { reload(); }, 250 );
           link [ Rel "alternate"
                  HTMLAttr.Type "application/atom+xml"
                  Title "Atom 1.0"
-                 Href "/feed/atom" ]
+                 Href "https://feeds.thinkbeforecoding.com" ]
 
           match template.Next with
           | Some next -> link [ Rel "next"; Href next.Href ]
@@ -280,21 +283,26 @@ open SixLabors.Fonts
 let prepareCard (post: Post) =
    let img = Image.Load(Path.content </> "thinkbeforecoding-twitter.jpg")
    let fonts = FontCollection()
-   fonts.Install(Path.fonts </> "OpenSans-Regular.ttf") |> ignore
-   let font  = fonts.CreateFont("Open Sans", 24.f)
+   fonts.Add(Path.fonts </> "OpenSans-Regular.ttf") |> ignore
+   let opensans = fonts.Get("Open Sans")
+   let font  = opensans.CreateFont(24.f)
    let color = Color.FromRgb(0x33uy,0x33uy,0x33uy)
 
-   let options = DrawingOptions()
-   options.TextOptions.HorizontalAlignment <- HorizontalAlignment.Center
+   //let options = DrawingOptions()
+   let rtOpts = RichTextOptions(font)
+   rtOpts.TextAlignment <- TextAlignment.Center
+  
+   //options.TextOptions.HorizontalAlignment <- HorizontalAlignment.Center
    let mid = single img.Width / 2.f
-   img.Mutate(fun x -> x.DrawText(options,post.Title, font, color , PointF(mid,220.f)) |> ignore)
+   img.Mutate(fun x -> 
+    x.DrawText(rtOpts,post.Title, color) |> ignore)
    let path = Path.tmp </> "public" </> Path.clean post.Url
    Directory.ensure path
    img.SaveAsJpeg(path </> "thinkbeforecoding-twitter.jpg" )
 
 let processHtmlPost (post: Post) source md5 =
   prepareCard post
-  let dest = post.Filename + ".html"
+  let dest = post.OutPath 
   let html = IO.File.ReadAllText source
   let document = html.Replace("http://www.thinkbeforecoding.com/","/")
   { MD5 = md5
@@ -371,14 +379,14 @@ let prepareDiagrams (post: Post) source =
 let processScriptPost (post: Post) source md5 =
   prepareCard post
   try
-    let dest = post.Filename + ".html"
+    let dest = post.OutPath
 
     let script = prepareDiagrams post source
 
     let doc = 
-      let fsharpCoreDir = "-I:" + __SOURCE_DIRECTORY__ + @"\..\..\packages\full\FSharp.Core\lib\netstandard2.0\"
-      let fcsDir = "-I:" + __SOURCE_DIRECTORY__ + @"\..\..\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\"
-      let fcs = "-r:" + __SOURCE_DIRECTORY__ + @"\..\..\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\FSharp.Compiler.Service.dll"
+      let fsharpCoreDir = "-I:" + __SOURCE_DIRECTORY__ + @"/../../packages/full/FSharp.Core/lib/netstandard2.0/"
+      let fcsDir = "-I:" + __SOURCE_DIRECTORY__ + @"/../../packages/full/FSharp.Compiler.Service/lib/netstandard2.0/"
+      let fcs = "-r:" + __SOURCE_DIRECTORY__ + @"/../../packages/full/FSharp.Compiler.Service/lib/netstandard2.0/FSharp.Compiler.Service.dll"
       let lang = "--preferreduilang:en-US"
       let e = Evaluation.FsiEvaluator([|fsharpCoreDir; fcsDir; fcs ;  "-d:BLOG"; "--langversion:preview"; lang |])
       e.EvaluationFailed |> Event.add (fun e -> 
@@ -412,7 +420,7 @@ let processScriptPost (post: Post) source md5 =
 
 let processMarkdownPost (post: Post) source md5 =
   prepareCard post
-  let dest = post.Filename + ".html"
+  let dest = post.OutPath
 
   let output = 
     IO.File.ReadAllText source
@@ -535,6 +543,7 @@ let templatePost hotReload categories recentPosts titler post =
 
 let savePost outputDir post html =
     html |> Html.save (outputDir </> post.FileName)
+   
 
 
 let recentPosts =
@@ -563,7 +572,7 @@ let recentPosts =
     ]
 
 let listPage hotReload outputDir categoriesHtml recentPosts name title (posts: Post list) = 
-    let dest = outputDir </> name + ".html"
+    let dest = outputDir </> name 
     let catPosts =
       posts
       |> List.sortByDescending (fun p -> p.Date)

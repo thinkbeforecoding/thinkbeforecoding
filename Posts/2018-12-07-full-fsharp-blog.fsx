@@ -100,14 +100,17 @@ fsx like this:
 *)
 (*** hide ***)
 #r "netstandard"
-#I @"..\packages\full\FSharp.Formatting\lib\netstandard2.1"
-#r "FSharp.Formatting.Common.dll"
-#r "FSharp.Formatting.Markdown.dll"
-#r "FSharp.Formatting.Literate.dll"
-#r "FSharp.Formatting.CodeFormat.dll"
-#r @"..\packages\full\Fable.React\lib\netstandard2.0\Fable.React.dll"
-#I @"..\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\"
-#r "System.Security.Cryptography.Csp"
+#r "nuget: FSharp.Formatting"
+#r "nuget: Fable.React"
+#r "nuget: FSharp.Compiler.Service"
+// #I @"../packages/full/FSharp.Formatting/lib/netstandard2.1"
+// #r "FSharp.Formatting.Common.dll"
+// #r "FSharp.Formatting.Markdown.dll"
+// #r "FSharp.Formatting.Literate.dll"
+// #r "FSharp.Formatting.CodeFormat.dll"
+// #r @"../packages/full/Fable.React/lib/netstandard2.0/Fable.React.dll"
+// #I @"../packages/full/FSharp.Compiler.Service/lib/netstandard2.0/"
+// #r "System.Security.Cryptography.Csp"
 
 (**
 *here I use .. because this blog post is in a subfolder in my project*
@@ -174,9 +177,9 @@ let snipet =
     printfn "Hello"
     """
 let parse source =
-    let fsharpCoreDir = "-I:" + __SOURCE_DIRECTORY__ + @"\..\packages\full\FSharp.Core\lib\netstandard2.0\"
-    let fcsDir = "-I:" + __SOURCE_DIRECTORY__ + @"\..\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\"
-    let fcs = "-r:" + __SOURCE_DIRECTORY__ + @"\..\packages\full\FSharp.Compiler.Service\lib\netstandard2.0\FSharp.Compiler.Service.dll"
+    let fsharpCoreDir = "-I:" + __SOURCE_DIRECTORY__ + @"/../packages/full/FSharp.Core/lib/netstandard2.0/"
+    let fcsDir = "-I:" + __SOURCE_DIRECTORY__ + @"/../packages/full/FSharp.Compiler.Service/lib/netstandard2.0/"
+    let fcs = "-r:" + __SOURCE_DIRECTORY__ + @"/../packages/full/FSharp.Compiler.Service/lib/netstandard2.0/FSharp.Compiler.Service.dll"
 
     Literate.ParseScriptString(
                 source, 
@@ -279,7 +282,7 @@ use renderToString *)
 let render html =
   fragment [] [ 
     RawText "<!doctype html>"
-    RawText "\n" 
+    RawText "/n" 
     html ]
   |> Fable.ReactServer.renderToString 
 
@@ -301,9 +304,10 @@ Using Fsharp data, generating the RSS feed is straight forward:
 
  *)
 
-#I @"..\packages\full\FSharp.Data\lib\netstandard2.0\"
-#r "System.Xml.Linq"
-#r "FSharp.Data"
+// #I @"../packages/full/FSharp.Data/lib/netstandard2.0/"
+// #r "System.Xml.Linq"
+// #r "FSharp.Data"
+#r "nuget: FSharp.Data"
 open System
 open FSharp.Data
 open System.Security.Cryptography

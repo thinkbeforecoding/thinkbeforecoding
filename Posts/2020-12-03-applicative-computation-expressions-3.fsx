@@ -1,6 +1,6 @@
 (*** hide ***)
-// #r @"..\packages\System.IO.Ports\lib\netstandard2.0\System.IO.Ports.dll"
-#r @"..\packages\System.IO.Ports\runtimes\win\lib\netstandard2.0\System.IO.Ports.dll"
+//#r @"../packages/System.IO.Ports/runtimes/unix/lib/net8.0/System.IO.Ports.dll"
+#r "nuget: System.IO.Ports"
 (** 
 *this post is part of the [F# Advent Calendar 2020](https://sergeytihon.com/2020/10/22/f-advent-calendar-in-english-2020/)*
 

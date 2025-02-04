@@ -49,7 +49,7 @@ let main args =
                 match hostRedirects.TryGetValue(context.Request.Host.Host) with
                 | false, _ -> next.Invoke(context)
                 | true, target -> 
-                    let location = UriBuilder(context.Request.GetEncodedUrl(), Host = target).Uri
+                    let location = UriBuilder(context.Request.GetEncodedUrl(), Host = target,Scheme = "https", Port = -1) .Uri
                     context.Response.Redirect( string location, true)
                     Task.CompletedTask
             ) |> ignore

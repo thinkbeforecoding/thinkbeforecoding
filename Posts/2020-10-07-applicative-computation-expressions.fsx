@@ -1,6 +1,7 @@
 (*** hide ***)
 open System
-#load @"..\.paket\load\netstandard2.0\full\FSharp.Data.fsx"
+//#load @"../.paket/load/netstandard2.0/full/FSharp.Data.fsx"
+#r "nuget: FSharp.Data"
 (** 
 In [the last post](/post/2020/10/03/applicatives-irl) we saw how to implement
 applicatives using `map`, `map2` and `apply` to define `<!>` and `<*>` operators.

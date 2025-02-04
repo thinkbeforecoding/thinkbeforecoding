@@ -15,6 +15,9 @@ type Post = {
     member this.FullUrl =
       "/post/" + this.Date.ToLocalTime().ToString("yyyy/MM/dd/") + Net.WebUtility.UrlEncode this.Url
 
+    member this.OutPath =
+        this.Date.ToLocalTime().ToString("yyyy/MM/dd/") + this.Url.Replace(":","")
+
 
 
 type PostJson = JsonProvider<const(__SOURCE_DIRECTORY__ + "/posts.json")>

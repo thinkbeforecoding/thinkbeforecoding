@@ -1,6 +1,7 @@
 (*** hide ***)
 open System
-#load @"..\.paket\load\netstandard2.0\full\FSharp.Data.fsx"
+//#load @"../.paket/load/netstandard2.0/full/FSharp.Data.fsx"
+#r "nuget: FSharp.Data"
 open FSharp.Data
 type ZipCode = FSharp.Data.JsonProvider<"http://api.zippopotam.us/GB/EC1">
 let dist (lata: decimal,longa: decimal) (latb: decimal, longb: decimal) =

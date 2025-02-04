@@ -11,7 +11,7 @@ let feedXml = """<?xml version="1.0" encoding="utf-8"?>
   xml:lang="en">
   
   <title type="html">Think Before Coding</title>
-  <link href="http://thinkbeforecoding.com:82/feed/atom" rel="self" type="application/atom+xml"/>
+  <link href="http://feeds.thinkbeforecoding.com/" rel="self" type="application/atom+xml"/>
   <link href="http://thinkbeforecoding.com/" rel="alternate" type="text/html"
   title=""/>
   <updated>2017-12-09T01:20:21+01:00</updated>
@@ -46,7 +46,7 @@ lt;/div&gt;</content>
 
 type Rss = XmlProvider<feedXml>
 let links: Rss.Link[] = [|
-    Rss.Link("https://thinkbeforecoding.com/feed/atom","self", "application/atom+xml", null)
+    Rss.Link("https://feeds.thinkbeforecoding.com","self", "application/atom+xml", null)
     Rss.Link("https://thinkbeforecoding.com/","alternate", "text/html", "thinkbeforecoding")
     |]
 
