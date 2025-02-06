@@ -7,6 +7,8 @@ open System.Threading.Tasks
 open Microsoft.AspNetCore.Http
 open System.Collections.Generic
 open Microsoft.AspNetCore.Http.Extensions
+open Microsoft.Extensions.Logging
+open System.Linq
 
         
 
@@ -23,18 +25,26 @@ let main args =
 
     let app = builder.Build()
 
+    let logger = app.Services.GetService<ILogger>()
+
+
     match builder.Configuration.GetSection("Redirects") with
     | null -> ()
     | section ->
         for redirect in section.GetChildren()  do
             let target = redirect["Target"]
             let path = redirect["Path"]
-            let permanent = match redirect["Temporary"] with | null -> false | b -> not (Boolean.Parse b)
-            app.MapGet(path, (fun c -> 
-                c.Response.Redirect(target, permanent)
-                Task.CompletedTask
-            )) |> ignore
+            let hosts = redirect.GetSection("Hosts").GetChildren().Select(fun x -> x.Value).ToArray()
 
+            let permanent = match redirect["Temporary"] with | null -> false | b -> not (Boolean.Parse b)
+            let handler =
+                app.MapGet(path, (fun c -> 
+                    c.Response.Redirect(target, permanent)
+                    Task.CompletedTask
+                ))
+            if not (isNull hosts) then
+                handler.RequireHost(hosts) |> ignore
+            
 
     app.MapReverseProxy() |> ignore
 

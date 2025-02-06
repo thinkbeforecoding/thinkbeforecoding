@@ -13,7 +13,7 @@ type Post = {
     member this.Filename =
       this.Date.ToLocalTime().ToString("yyyy-MM-dd-") + this.Url.Replace(":","")
     member this.FullUrl =
-      "/post/" + this.Date.ToLocalTime().ToString("yyyy/MM/dd/") + Net.WebUtility.UrlEncode this.Url
+      "/post/" + this.Date.ToLocalTime().ToString("yyyy/MM/dd/") + Net.WebUtility.UrlEncode (this.Url.Replace(":",""))
 
     member this.OutPath =
         this.Date.ToLocalTime().ToString("yyyy/MM/dd/") + this.Url.Replace(":","")
